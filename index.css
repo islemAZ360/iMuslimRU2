@@ -1,0 +1,414 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Cinzel:wght@400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+
+body {
+  background-color: #020402;
+  overflow-x: hidden;
+  color: #fff;
+  font-family: 'Manrope', sans-serif;
+}
+
+:root[lang="ar"] body {
+  font-family: 'Amiri', serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020402;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                  ANIMATIONS                                */
+/* -------------------------------------------------------------------------- */
+
+@keyframes rotate-atmosphere {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes float-needle {
+
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-3px);
+  }
+}
+
+@keyframes shine {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes float-particle {
+
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.3;
+  }
+
+  50% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.8;
+  }
+}
+
+@keyframes scan {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse-slow {
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.6);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes shine-sweep {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+
+  100% {
+    transform: translateX(200%) skewX(-15deg);
+  }
+}
+
+@keyframes glow-pulse-gold {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+  }
+}
+
+@keyframes divine-float {
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-5px) scale(1.01);
+  }
+}
+
+.divine-border {
+  position: relative;
+  background: linear-gradient(135deg, #050A08, #000);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.divine-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0.5;
+}
+
+.shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-effect::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shine-sweep 4s infinite;
+  pointer-events: none;
+}
+
+.gold-glow {
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.15);
+}
+
+.text-gold-bright {
+  color: #F9E496;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                  BACKGROUNDS                               */
+/* -------------------------------------------------------------------------- */
+
+.golden-atmosphere {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 250vw;
+  height: 250vw;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.2), transparent 60%),
+    radial-gradient(circle at 70% 30%, rgba(255, 223, 0, 0.15), transparent 50%),
+    conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(212, 175, 55, 0.05) 60deg, transparent 120deg);
+  animation: rotate-atmosphere 100s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.floating-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, #D4AF37 1px, transparent 1px),
+    radial-gradient(circle, #fff 1px, transparent 1px);
+  background-size: 50px 50px, 90px 90px;
+  background-position: 0 0, 20px 20px;
+  animation: float-particle 20s linear infinite;
+  opacity: 0.3;
+}
+
+.gold-dust {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E");
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+}
+
+.mashrabiya-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  background-image:
+    radial-gradient(circle at center, transparent 0%, transparent 40%, #020402 100%),
+    repeating-linear-gradient(45deg, rgba(212, 175, 55, 0.04) 0px, rgba(212, 175, 55, 0.04) 1px, transparent 1px, transparent 20px),
+    repeating-linear-gradient(-45deg, rgba(212, 175, 55, 0.04) 0px, rgba(212, 175, 55, 0.04) 1px, transparent 1px, transparent 20px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                  UTILITIES                                 */
+/* -------------------------------------------------------------------------- */
+
+.glass-panel {
+  background: rgba(10, 20, 15, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 0 20px rgba(212, 175, 55, 0.03);
+}
+
+.text-gold-gradient {
+  background: linear-gradient(to bottom, #FCF6BA, #D4AF37, #AA771C);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                            ANCIENT COMPASS                                 */
+/* -------------------------------------------------------------------------- */
+
+.ancient-compass-rim {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 20%),
+    conic-gradient(from 45deg, #5c4008, #8A6E24, #D4AF37, #F9E496, #D4AF37, #8A6E24, #5c4008);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.9),
+    inset 0 2px 5px rgba(255, 255, 255, 0.4),
+    inset 0 0 40px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  position: relative;
+  border-radius: 50%;
+}
+
+.ancient-dial-plate {
+  background-color: #0c0905;
+  background-image:
+    repeating-conic-gradient(rgba(212, 175, 55, 0.05) 0deg, rgba(212, 175, 55, 0.05) 1deg, transparent 1.5deg, transparent 10deg),
+    repeating-radial-gradient(circle at center, transparent 0, transparent 29px, rgba(212, 175, 55, 0.1) 30px, transparent 31px);
+  box-shadow: inset 0 0 50px #000;
+}
+
+.kaaba-icon-css {
+  width: 28px;
+  height: 32px;
+  background: linear-gradient(135deg, #1a1a1a, #000);
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  transform-style: preserve-3d;
+}
+
+.kaaba-icon-css::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #D4AF37, #F9E496, #D4AF37);
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.6);
+}
+
+/* -------------------------------------------------------------------------- */
+/*                            ROYAL CALENDAR                                  */
+/* -------------------------------------------------------------------------- */
+
+.royal-scroll-card {
+  background: linear-gradient(180deg, #1a1505 0%, #050301 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.royal-scroll-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("https://www.transparenttextures.com/patterns/aged-paper.png");
+  opacity: 0.1;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.date-card-selected {
+  background: linear-gradient(135deg, #2b200b 0%, #000000 100%);
+  border: 1px solid #D4AF37;
+  box-shadow:
+    0 0 25px rgba(212, 175, 55, 0.3),
+    inset 0 0 15px rgba(212, 175, 55, 0.1);
+  transform: scale(1.05);
+}
+
+.date-card-selected::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, transparent 40%, rgba(255, 215, 0, 0.3) 50%, transparent 60%);
+  background-size: 200% 200%;
+  animation: shine 3s infinite linear;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.glowing-text {
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.8), 0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+.islamic-pattern-bg {
+  background-color: #050505;
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+    repeating-linear-gradient(60deg, rgba(212, 175, 55, 0.05) 0px, transparent 1px, transparent 10px),
+    repeating-linear-gradient(-60deg, rgba(212, 175, 55, 0.05) 0px, transparent 1px, transparent 10px);
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              AUTOFILL FIX                                  */
+/* -------------------------------------------------------------------------- */
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #050a08 inset !important;
+  -webkit-text-fill-color: white !important;
+  caret-color: white !important;
+  transition: background-color 5000s ease-in-out 0s;
+}

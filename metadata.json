@@ -1,0 +1,9 @@
+{
+  "name": "iMuslimRU",
+  "description": "A comprehensive Islamic lifestyle app featuring prayer times, AI-powered Halal scanning, health tracking, and spiritual tools designed with a premium golden-emerald aesthetic.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
