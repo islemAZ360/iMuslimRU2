@@ -79,7 +79,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [theme, setTheme] = useState<'dark' | 'light'>('dark');
     const [isLoading, setIsLoading] = useState(true);
 
-    // Load from LocalStorage on mount
+    // Load from LocalStorage on mount & Request Location
     useEffect(() => {
         const savedLocation = localStorage.getItem('userLocation');
         const savedSettings = localStorage.getItem('userSettings');
@@ -92,6 +92,29 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (savedProfile) setProfile(JSON.parse(savedProfile));
         if (savedHealthStats) setHealthStats(JSON.parse(savedHealthStats));
         if (savedTheme) setTheme(savedTheme as 'dark' | 'light');
+
+        // Request Location Permission & Data
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    // Only update if we don't have a location or if it's different (optional, but good for now just to force update)
+                    // For now, let's just update it.
+                    // We need to reverse geocode to get city/country, but for now let's store lat/lng.
+                    // If we have a saved location with city/country, we might want to keep that until we can reverse geocode.
+                    // But the user specifically wants the *request* to happen.
+
+                    setLocationState(prev => ({
+                        ...prev, // Keep existing city/country if any
+                        lat: latitude,
+                        lng: longitude
+                    }));
+                },
+                (error) => {
+                    console.error("Location permission denied or error:", error);
+                }
+            );
+        }
 
         setIsLoading(false);
     }, []);

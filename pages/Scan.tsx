@@ -23,6 +23,21 @@ const Scan: React.FC = () => {
         }
     }, [showHistory]);
 
+    // Proactively request camera permission on mount
+    useEffect(() => {
+        // This forces the browser to show the "Allow Camera" prompt if not already granted.
+        // We don't actually need the stream here, just the permission.
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                // Permission granted. Stop the stream immediately to release the camera.
+                stream.getTracks().forEach(track => track.stop());
+            })
+            .catch(err => {
+                console.log("Camera permission denied or dismissed:", err);
+                // We can't force it, but at least we asked.
+            });
+    }, []);
+
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -273,8 +288,8 @@ const Scan: React.FC = () => {
                             </div>
                             {/* Status Stamp */}
                             <div className={`px-3 py-1.5 border-2 rounded-lg backdrop-blur-md ${result?.status === 'Haram' ? 'border-red-500/60 bg-red-900/10 text-red-500' :
-                                    result?.status === 'Halal' ? 'border-emerald-500/60 bg-emerald-900/10 text-emerald-500' :
-                                        'border-orange-500/60 bg-orange-900/10 text-orange-500'
+                                result?.status === 'Halal' ? 'border-emerald-500/60 bg-emerald-900/10 text-emerald-500' :
+                                    'border-orange-500/60 bg-orange-900/10 text-orange-500'
                                 }`}>
                                 <div className="text-center">
                                     <span className="block text-[8px] uppercase tracking-widest opacity-80">STATUS</span>
