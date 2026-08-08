@@ -35,7 +35,20 @@ const Profile: React.FC = () => {
     };
 
     const handleSaveProfile = () => {
-        updateProfile({ ...formData });
+        const dataToSave = { ...formData };
+        
+        // Clean up arrays before saving
+        if (typeof dataToSave.allergies === 'string') {
+            dataToSave.allergies = (dataToSave.allergies as string).split(',').map(s => s.trim()).filter(Boolean);
+        }
+        if (typeof dataToSave.diseases === 'string') {
+            dataToSave.diseases = (dataToSave.diseases as string).split(',').map(s => s.trim()).filter(Boolean);
+        }
+        if (typeof dataToSave.medications === 'string') {
+            dataToSave.medications = (dataToSave.medications as string).split(',').map(s => s.trim()).filter(Boolean);
+        }
+
+        updateProfile(dataToSave);
         // Sync API key to geminiService so it takes effect immediately
         if (formData.apiKey && formData.apiKey.length > 10) {
             syncGeminiKey(formData.apiKey);
@@ -265,7 +278,7 @@ const Profile: React.FC = () => {
                                                     <input
                                                         type="text"
                                                         value={Array.isArray(formData.allergies) ? formData.allergies.join(', ') : (formData.allergies || '')}
-                                                        onChange={(e) => setFormData({ ...formData, allergies: e.target.value.split(',').map(s => s.trim()) })}
+                                                        onChange={(e) => setFormData({ ...formData, allergies: e.target.value as any })}
                                                         className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-white/20 focus:outline-none focus:ring-0 border-none font-medium text-sm tracking-wide"
                                                         placeholder={t('allergies_placeholder')}
                                                         autoComplete="off"
@@ -281,7 +294,7 @@ const Profile: React.FC = () => {
                                                     <input
                                                         type="text"
                                                         value={Array.isArray(formData.diseases) ? formData.diseases.join(', ') : (formData.diseases || '')}
-                                                        onChange={(e) => setFormData({ ...formData, diseases: e.target.value.split(',').map(s => s.trim()) })}
+                                                        onChange={(e) => setFormData({ ...formData, diseases: e.target.value as any })}
                                                         className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-white/20 focus:outline-none focus:ring-0 border-none font-medium text-sm tracking-wide"
                                                         placeholder={t('diseases_placeholder')}
                                                         autoComplete="off"
@@ -297,7 +310,7 @@ const Profile: React.FC = () => {
                                                     <input
                                                         type="text"
                                                         value={Array.isArray(formData.medications) ? formData.medications.join(', ') : (formData.medications || '')}
-                                                        onChange={(e) => setFormData({ ...formData, medications: e.target.value.split(',').map(s => s.trim()) })}
+                                                        onChange={(e) => setFormData({ ...formData, medications: e.target.value as any })}
                                                         className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-white/20 focus:outline-none focus:ring-0 border-none font-medium text-sm tracking-wide"
                                                         placeholder={t('medications_placeholder')}
                                                         autoComplete="off"
