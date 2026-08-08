@@ -30,6 +30,7 @@ const Health: React.FC = () => {
 
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState<AnalysisResult | null>(null);
+    const [lastImage, setLastImage] = useState<string | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -48,6 +49,7 @@ const Health: React.FC = () => {
             reader.onloadend = () => {
                 const base64String = reader.result as string;
                 const base64Data = base64String.split(',')[1];
+                setLastImage(base64Data);
                 runAnalysis(base64Data);
             };
             reader.readAsDataURL(file);
@@ -74,7 +76,7 @@ const Health: React.FC = () => {
                     "propheticInsight": "A short spiritual or health insight based on Prophetic Medicine (Tib An-Nabawi) related to this food, considering the user's allergies/diseases."
                 }
             `;
-            const aiResponse = await analyzeImage(base64Data, prompt, profile.apiKey);
+            const aiResponse = await analyzeImage(base64Data, prompt);
             if (aiResponse) {
                 const cleaned = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
                 const parsedResult = JSON.parse(cleaned);
@@ -95,22 +97,35 @@ const Health: React.FC = () => {
         }
     };
 
+    const handleAskSheikh = async () => {
+        if (!result || !lastImage) return;
+        try {
+            const { createScanConversation } = await import('../services/aiChatService');
+            const summary = {
+                name: result.foodName,
+                status: result.grade ? `Health Grade ${result.grade}` : 'Unknown',
+                reason: `${result.verdict} — ${result.calories} kcal. ${result.propheticInsight || ''}`,
+                origin: '',
+                ingredients: result.ingredients?.map((i: any) => i.name) || [],
+                alternatives: result.tags || [],
+            };
+            const conv = await createScanConversation(lastImage, summary);
+            navigate('/ai', { state: { conversationId: conv.id } });
+        } catch (error) {
+            console.error('Failed to create Sheikh AI conversation:', error);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#000504] text-white font-sans relative overflow-x-hidden flex flex-col items-center pb-32" dir={language === 'ar' ? 'rtl' : 'ltr'}>
 
-            {/* --- REFINED STABLE BACKGROUND --- */}
-            <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+            {/* Dark Mode Fixed Background */}
+            <div className="fixed inset-0 max-w-md mx-auto z-0 overflow-hidden pointer-events-none">
                 <div className="absolute inset-0 bg-[#000504]"></div>
 
                 {/* Subtle Ambient Glows */}
-                <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-emerald-950/20 blur-[150px] rounded-full opacity-60"></div>
-                <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] bg-gold-950/20 blur-[150px] rounded-full opacity-60"></div>
-
-                {/* Static Grid Pattern */}
-                <div className="absolute inset-0 opacity-[0.03]" style={{
-                    backgroundImage: 'linear-gradient(rgba(212, 175, 55, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(212, 175, 55, 0.3) 1px, transparent 1px)',
-                    backgroundSize: '50px 50px'
-                }}></div>
+                <div className="absolute top-[-20%] left-[-20%] w-[70%] h-[70%] bg-emerald-950/15 blur-[80px] rounded-full opacity-60"></div>
+                <div className="absolute bottom-[-20%] right-[-20%] w-[70%] h-[70%] bg-gold-950/15 blur-[80px] rounded-full opacity-60"></div>
             </div>
 
             {/* Header */}
@@ -136,28 +151,25 @@ const Health: React.FC = () => {
 
                         {/* MOLECULAR SCANNER HUD */}
                         <div
-                            className="relative size-80 flex items-center justify-center mb-12 cursor-pointer group"
+                            className="relative size-64 flex items-center justify-center mb-10 cursor-pointer group"
                             onClick={() => cameraInputRef.current?.click()}
                         >
                             {/* Outer Static Ring */}
                             <div className="absolute inset-0 rounded-full border border-emerald-500/10"></div>
 
-                            {/* Rotating Dashed Ring */}
-                            <div className="absolute inset-4 rounded-full border border-dashed border-gold/20 animate-[spin_60s_linear_infinite]"></div>
+                            {/* Static Dashed Ring */}
+                            <div className="absolute inset-4 rounded-full border border-dashed border-gold/20"></div>
 
-                            {/* Reverse Rotating Tech Ring */}
-                            <div className="absolute inset-10 rounded-full border-2 border-emerald-900/30 border-t-emerald-500/50 border-r-transparent animate-[spin_10s_linear_infinite_reverse]"></div>
-
-                            {/* Center Glow */}
-                            <div className={`absolute inset-0 bg-emerald-500/5 blur-3xl rounded-full transition-all duration-500 ${analyzing ? 'bg-emerald-500/20 scale-110' : ''}`}></div>
+                            {/* Static Tech Ring */}
+                            <div className="absolute inset-10 rounded-full border border-emerald-900/40"></div>
 
                             {/* Inner Circle / Button */}
-                            <div className="absolute inset-20 rounded-full bg-gradient-to-br from-black to-[#052e25] border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.1)] flex flex-col items-center justify-center z-10 group-hover:scale-105 transition-transform duration-500 overflow-hidden">
+                            <div className="absolute inset-16 rounded-full bg-gradient-to-br from-black to-[#052e25] border border-emerald-500/30 flex flex-col items-center justify-center z-10 group-hover:scale-105 transition-transform duration-300 overflow-hidden">
 
                                 {analyzing ? (
                                     <>
                                         <div className="absolute inset-0 bg-emerald-500/10 animate-pulse"></div>
-                                        <div className="w-full h-0.5 bg-emerald-400/50 absolute top-1/2 shadow-[0_0_15px_#10b981] animate-scan-line"></div>
+                                        <div className="w-full h-0.5 bg-emerald-400/50 absolute top-1/2 animate-scan-line"></div>
                                         <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.3em] animate-pulse">Scanning...</span>
                                     </>
                                 ) : (
@@ -169,7 +181,7 @@ const Health: React.FC = () => {
                             </div>
 
                             {/* Targeting Corners */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 pointer-events-none">
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 pointer-events-none">
                                 <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-gold/60"></div>
                                 <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-gold/60"></div>
                                 <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-gold/60"></div>
@@ -177,7 +189,7 @@ const Health: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="text-center mb-12">
+                        <div className="text-center mb-10">
                             <h2 className="text-[10px] font-bold text-gold/60 uppercase tracking-[0.4em] mb-3">
                                 Align Food for Molecular Scan
                             </h2>
@@ -190,14 +202,14 @@ const Health: React.FC = () => {
                         <div className="flex gap-4 w-full justify-center">
                             <button
                                 onClick={() => cameraInputRef.current?.click()}
-                                className="flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-900/30 border border-emerald-500/20 text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-900/50 hover:border-emerald-500/50 transition-all text-emerald-100 shadow-lg"
+                                className="flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-900/30 border border-emerald-500/20 text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-900/50 hover:border-emerald-500/50 transition-all text-emerald-100"
                             >
                                 <span className="material-symbols-outlined text-lg">photo_camera</span>
                                 {t.capture}
                             </button>
                             <button
                                 onClick={() => fileInputRef.current?.click()}
-                                className="flex items-center gap-2 px-6 py-3 rounded-full bg-gold-900/20 border border-gold/20 text-[10px] font-bold uppercase tracking-widest hover:bg-gold-900/40 hover:border-gold/50 transition-all text-gold-100 shadow-lg"
+                                className="flex items-center gap-2 px-6 py-3 rounded-full bg-gold-900/20 border border-gold/20 text-[10px] font-bold uppercase tracking-widest hover:bg-gold-900/40 hover:border-gold/50 transition-all text-gold-100"
                             >
                                 <span className="material-symbols-outlined text-lg">upload_file</span>
                                 {t.upload}
@@ -208,23 +220,19 @@ const Health: React.FC = () => {
                         <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
                     </div>
                 ) : (
-                    <div className="space-y-6 animate-in slide-in-from-bottom-10 duration-1000 pb-10">
+                    <div className="space-y-5 animate-in fade-in duration-500 pb-10">
                         {/* RESULT CARD */}
-                        <div className="relative bg-[#05100e] border border-emerald-500/20 rounded-[2rem] p-8 overflow-hidden shadow-2xl">
-                            <div className="absolute top-0 right-0 p-6 opacity-50">
-                                <span className="font-royal text-6xl font-bold text-white/5">{result.grade}</span>
-                            </div>
-
+                        <div className="relative bg-[#05100e] border border-emerald-500/20 rounded-2xl p-6 overflow-hidden">
                             <div className="relative z-10">
-                                <span className={`inline-block px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest mb-4 border ${result.grade === 'A' ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' :
+                                <span className={`inline-block px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest mb-3 border ${result.grade === 'A' ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' :
                                         result.grade === 'B' ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' :
                                             'bg-orange-500/10 border-orange-500/40 text-orange-400'
                                     }`}>
                                     Health Grade {result.grade}
                                 </span>
 
-                                <h2 className="text-3xl font-royal font-bold text-white mb-2">{result.foodName}</h2>
-                                <p className="text-sm text-emerald-100/70 font-medium leading-relaxed mb-6">{result.verdict}</p>
+                                <h2 className="text-2xl font-royal font-bold text-white mb-2">{result.foodName}</h2>
+                                <p className="text-sm text-emerald-100/70 font-medium leading-relaxed mb-5">{result.verdict}</p>
 
                                 {/* Macros Grid */}
                                 <div className="grid grid-cols-3 gap-3 mb-6">
@@ -250,12 +258,21 @@ const Health: React.FC = () => {
                                 </div>
 
                                 {/* Action */}
-                                <button
-                                    onClick={() => setResult(null)}
-                                    className="w-full py-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold uppercase tracking-widest transition-all"
-                                >
-                                    {t.scan_new}
-                                </button>
+                                <div className="flex flex-col gap-2.5">
+                                    <button
+                                        onClick={handleAskSheikh}
+                                        className="w-full py-4 rounded-xl bg-gold/10 border border-gold/40 hover:bg-gold/20 text-gold-200 text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <span className="material-symbols-outlined text-base">auto_awesome</span>
+                                        Discuss with Sheikh AI
+                                    </button>
+                                    <button
+                                        onClick={() => setResult(null)}
+                                        className="w-full py-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold uppercase tracking-widest transition-all"
+                                    >
+                                        {t.scan_new}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

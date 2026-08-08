@@ -7,7 +7,7 @@ import Compass from '../components/Compass';
 import CalendarModal from '../components/CalendarModal';
 
 const Prayer: React.FC = () => {
-    const { timings, hijriDate, nextPrayer, timeRemaining, loading, calendarData, qiblaDirection } = usePrayer();
+    const { timings, hijriDate, nextPrayer, timeRemaining, loading, calendarData, qiblaDirection, error, refresh } = usePrayer();
     const { location } = useUser();
     const { heading } = useCompassHeading();
     const [distanceToKaaba, setDistanceToKaaba] = useState<string>("...");
@@ -92,25 +92,42 @@ const Prayer: React.FC = () => {
         );
     }
 
+    // Error state (no cached data either)
+    if (!timings && error) {
+        return (
+            <div className="min-h-screen bg-[#020402] flex flex-col items-center justify-center px-8 text-center">
+                <span className="material-symbols-outlined text-5xl text-gold/50 mb-4">cloud_off</span>
+                <h2 className="text-xl font-royal font-bold text-white mb-2">Prayer times unavailable</h2>
+                <p className="text-sm text-white/40 mb-6 max-w-xs leading-relaxed">{error}</p>
+                <button
+                    onClick={refresh}
+                    className="px-6 py-3 rounded-full bg-gold/15 border border-gold/40 text-gold-200 text-xs font-bold uppercase tracking-widest hover:bg-gold/25 transition-colors"
+                >
+                    Try Again
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="bg-[#020402] font-display text-white antialiased min-h-screen relative overflow-x-hidden pb-32">
 
-            {/* LUXURY ANIMATED BACKGROUNDS */}
-            <div className="golden-atmosphere"></div>
-            <div className="floating-particles"></div>
-            <div className="mashrabiya-overlay"></div>
-            <div className="gold-dust"></div>
+            {/* Subtle Background */}
+            <div className="fixed inset-0 max-w-md mx-auto pointer-events-none">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_rgba(212,175,55,0.05),_transparent_60%)]"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,_rgba(6,78,59,0.15),_transparent_60%)]"></div>
+            </div>
 
             <div className="relative flex flex-col w-full z-10">
 
                 {/* Header */}
-                <header className="flex items-center justify-between px-6 pt-12 pb-6 relative z-10 animate-entrance">
+                <header className="flex items-center justify-between px-6 pt-10 pb-6 relative z-10">
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gold-light/80 mb-2">
                             <span className="material-symbols-outlined text-sm text-gold">location_on</span>
                             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-gold">{location?.city || 'Unknown'}</span>
                         </div>
-                        <h1 className="text-4xl font-royal font-bold tracking-tight text-transparent bg-clip-text bg-gold-metallic drop-shadow-[0_2px_10px_rgba(212,175,55,0.3)]">
+                        <h1 className="text-3xl font-royal font-bold tracking-tight text-transparent bg-clip-text bg-gold-metallic">
                             {hijriDate ? `${hijriDate.day} ${hijriDate.month.en}` : '...'}
                         </h1>
                         <p className="text-white/40 text-[10px] font-medium uppercase tracking-[0.2em] mt-1 pl-1">
@@ -120,17 +137,15 @@ const Prayer: React.FC = () => {
                 </header>
 
                 {/* HERO CARD - NEXT PRAYER */}
-                <div className="px-5 py-2 relative z-10 animate-entrance stagger-1">
-                    <div className="relative rounded-[32px] p-[1px] bg-gradient-to-br from-[#D4AF37] via-[#F9E496] to-transparent shadow-[0_10px_40px_rgba(0,0,0,0.6)] group">
-                        <div className="absolute inset-0 bg-gold/5 blur-2xl rounded-[32px] transition-opacity opacity-50 group-hover:opacity-80"></div>
-                        <div className="relative rounded-[31px] glass-panel p-6 overflow-hidden min-h-[220px]">
+                <div className="px-5 py-2 relative z-10">
+                    <div className="relative rounded-[24px] p-[1px] bg-gradient-to-br from-[#D4AF37] via-[#F9E496] to-transparent shadow-lg">
+                        <div className="relative rounded-[23px] glass-panel p-5 overflow-hidden min-h-[200px]">
 
-                            <div className="relative z-10 flex flex-col justify-between h-full gap-8">
+                            <div className="relative z-10 flex flex-col justify-between h-full gap-6">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/30 bg-gold/5 backdrop-blur-md mb-4">
+                                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/30 bg-gold/5 mb-3">
                                             <span className="relative flex h-2 w-2">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                             </span>
                                             <span className="text-[9px] font-bold text-gold uppercase tracking-widest">
@@ -139,27 +154,27 @@ const Prayer: React.FC = () => {
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Upcoming Prayer</span>
-                                            <h2 className="text-6xl font-royal text-white tracking-tighter drop-shadow-2xl bg-clip-text text-transparent bg-gradient-to-b from-white via-[#fff8e7] to-[#eaddcf]">
+                                            <h2 className="text-4xl font-royal text-white tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-[#fff8e7] to-[#eaddcf]">
                                                 {nextPrayer}
                                             </h2>
                                         </div>
                                         <div className="flex items-center gap-2 mt-2">
                                             <span className="text-gold/60 text-[10px] uppercase tracking-widest">Starts in</span>
-                                            <p className="text-gold text-sm font-medium tracking-wide drop-shadow-md font-mono">
+                                            <p className="text-gold text-sm font-medium tracking-wide font-mono">
                                                 {timeRemaining}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                                <div className="mt-auto pt-3 border-t border-white/5 flex items-center justify-between">
                                     <div className="flex flex-col">
                                         <p className="text-[9px] text-white/40 uppercase tracking-widest mb-1">Currently</p>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-lg font-royal text-white/80">{activePeriodName}</span>
+                                            <span className="text-base font-royal text-white/80">{activePeriodName}</span>
                                         </div>
                                     </div>
-                                    <div className="size-12 border border-white/10 rounded-xl flex flex-col items-center justify-center bg-white/5">
+                                    <div className="size-11 border border-white/10 rounded-xl flex flex-col items-center justify-center bg-white/5">
                                         <span className="text-[8px] text-white/40">Juz</span>
                                         <span className="text-sm font-bold text-gold">14</span>
                                     </div>
@@ -170,27 +185,23 @@ const Prayer: React.FC = () => {
                 </div>
 
                 {/* PRAYER LIST */}
-                <section className="px-5 mt-10 relative z-10 animate-entrance stagger-2">
+                <section className="px-5 mt-8 relative z-10">
                     <div className="flex items-center gap-4 mb-5">
                         <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
-                        <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-gold/80 drop-shadow-sm text-center">
+                        <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-gold/80 text-center">
                             Prayer Schedule
                         </h3>
                         <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
                     </div>
 
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-2.5">
                         {prayers.map((prayer, idx) => {
                             const isNext = prayer === nextPrayer;
 
-                            // User generally wants to see the schedule clearly. 
-                            // Highlight the NEXT prayer strongly, maybe? Or current. 
-                            // Let's stick to the list style but cleaner.
-
                             return (
-                                <div key={prayer} style={{ animationDelay: `${idx * 100}ms` }} className={`
-                                    flex items-center justify-between p-4 rounded-xl border transition-all duration-300
-                                    ${isNext ? 'bg-gold/10 border-gold/40 shadow-[0_0_20px_rgba(212,175,55,0.1)]' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05]'}
+                                <div key={prayer} className={`
+                                    flex items-center justify-between p-4 rounded-xl border transition-colors
+                                    ${isNext ? 'bg-gold/10 border-gold/40' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05]'}
                                 `}>
                                     <div className="flex items-center gap-4">
                                         <span className={`material-symbols-outlined text-xl ${isNext ? 'text-gold' : 'text-white/20'}`}>
@@ -206,15 +217,15 @@ const Prayer: React.FC = () => {
                 </section>
 
                 {/* ANCIENT QIBLA COMPASS */}
-                <section className="px-5 mt-16 relative z-10 animate-entrance stagger-3">
+                <section className="px-5 mt-12 relative z-10">
                     <Compass heading={heading} qiblaDirection={qiblaDirection} distanceToKaaba={distanceToKaaba} />
                 </section>
 
                 {/* ROYAL SCROLL CALENDAR */}
-                <section className="mt-16 mb-10 relative z-10 animate-entrance stagger-4">
-                    <div className="px-6 mb-6 flex items-end justify-between">
+                <section className="mt-12 mb-10 relative z-10">
+                    <div className="px-6 mb-5 flex items-end justify-between">
                         <div>
-                            <h3 className="text-2xl font-royal font-bold text-white drop-shadow-md">Calendar</h3>
+                            <h3 className="text-xl font-royal font-bold text-white">Calendar</h3>
                             <p className="text-xs text-gold/60 uppercase tracking-widest mt-1">Hijri & Gregorian</p>
                         </div>
                         <button
@@ -266,8 +277,8 @@ const Prayer: React.FC = () => {
                                 <div className="absolute inset-0 bg-gradient-to-r from-[#0B3B2D] to-black opacity-90"></div>
 
                                 <div className="relative z-10 p-5 flex items-center gap-5">
-                                    <div className="flex flex-col items-center justify-center size-14 rounded-xl bg-gold/10 border border-gold/30 backdrop-blur-md">
-                                        <span className="material-symbols-outlined text-gold text-2xl animate-pulse">star</span>
+                                    <div className="flex flex-col items-center justify-center size-12 rounded-xl bg-gold/10 border border-gold/30">
+                                        <span className="material-symbols-outlined text-gold text-xl">star</span>
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="text-xl font-royal font-bold text-white mb-0.5">{nextHoliday.date.hijri.holidays[0]}</h4>

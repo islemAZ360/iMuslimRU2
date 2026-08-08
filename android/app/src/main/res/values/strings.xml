@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">iMuslimRU</string>
+    <string name="title_activity_main">iMuslimRU</string>
+    <string name="package_name">io.imuslimru.app</string>
+    <string name="custom_url_scheme">io.imuslimru.app</string>
+</resources>

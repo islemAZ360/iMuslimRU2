@@ -55,71 +55,120 @@ interface PrayerContextType {
 
 const PrayerContext = createContext<PrayerContextType | undefined>(undefined);
 
+const CACHE_KEY = 'prayer_cache_v1';
+const FETCH_TIMEOUT_MS = 12000;
+
+interface PrayerCache {
+    timings: PrayerTimings | null;
+    hijriDate: HijriDate | null;
+    calendarData: CalendarDay[] | null;
+    qiblaDirection: number | null;
+}
+
+const loadCache = (): PrayerCache => {
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return { timings: null, hijriDate: null, calendarData: null, qiblaDirection: null };
+        return JSON.parse(raw);
+    } catch {
+        return { timings: null, hijriDate: null, calendarData: null, qiblaDirection: null };
+    }
+};
+
+/**
+ * Qibla direction computed locally (great-circle bearing to the Kaaba).
+ * No network request needed — the page never waits on an API for this.
+ */
+const computeQibla = (lat: number, lng: number): number => {
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    const toDeg = (r: number) => (r * 180) / Math.PI;
+    const phi1 = toRad(lat);
+    const phi2 = toRad(21.4225);
+    const dLambda = toRad(39.8262 - lng);
+    const y = Math.sin(dLambda);
+    const x = Math.cos(phi1) * Math.tan(phi2) - Math.sin(phi1) * Math.cos(dLambda);
+    return (toDeg(Math.atan2(y, x)) + 360) % 360;
+};
+
 export const PrayerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { location, settings } = useUser();
-    const [timings, setTimings] = useState<PrayerTimings | null>(null);
-    const [hijriDate, setHijriDate] = useState<HijriDate | null>(null);
-    const [calendarData, setCalendarData] = useState<CalendarDay[] | null>(null);
+
+    // Seed state from the local cache so the page renders instantly,
+    // even before (or without) a network response.
+    const cached = loadCache();
+    const [timings, setTimings] = useState<PrayerTimings | null>(cached.timings);
+    const [hijriDate, setHijriDate] = useState<HijriDate | null>(cached.hijriDate);
+    const [calendarData, setCalendarData] = useState<CalendarDay[] | null>(cached.calendarData);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [nextPrayer, setNextPrayer] = useState<string | null>(null);
     const [timeRemaining, setTimeRemaining] = useState<string>("00:00:00");
-    const [qiblaDirection, setQiblaDirection] = useState<number | null>(null);
+    const [qiblaDirection, setQiblaDirection] = useState<number | null>(cached.qiblaDirection);
 
     const fetchPrayerTimes = async () => {
         if (!location) return;
 
+        // Qibla is computed locally — instant, offline-safe
+        const qibla = computeQibla(location.lat, location.lng);
+        setQiblaDirection(qibla);
+
         setLoading(true);
         setError(null);
+
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
         try {
             const date = new Date();
             const month = date.getMonth() + 1;
             const year = date.getFullYear();
 
-            // Fetch Calendar for the whole month
             const response = await fetch(
-                `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${location.lat}&longitude=${location.lng}&method=${settings.method}`
+                `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${location.lat}&longitude=${location.lng}&method=${settings.method}`,
+                { signal: controller.signal }
             );
 
             if (!response.ok) throw new Error('Failed to fetch prayer calendar');
 
             const data = await response.json();
-            if (data.code === 200) {
-                const days: CalendarDay[] = data.data;
-                setCalendarData(days);
-
-                // Find today's data
-                // The API returns days sorted 0..last
-                // Index = date.getDate() - 1 usually, but safer to match date string if needed.
-                // Or just use today's index
-                const todayIndex = date.getDate() - 1;
-                const todayData = days[todayIndex];
+            if (data.code === 200 && Array.isArray(data.data) && data.data.length > 0) {
+                const todayIndex = Math.min(Math.max(date.getDate() - 1, 0), data.data.length - 1);
+                const todayData = data.data[todayIndex];
 
                 if (todayData) {
                     setTimings(todayData.timings);
                     setHijriDate(todayData.date.hijri);
+                    setCalendarData(data.data);
+                    try {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify({
+                            timings: todayData.timings,
+                            hijriDate: todayData.date.hijri,
+                            calendarData: data.data,
+                            qiblaDirection: qibla,
+                        } as PrayerCache));
+                    } catch {
+                        // Cache full — ignore
+                    }
                 }
             } else {
                 setError('Error parsing API response');
             }
-
-            // Fetch Qibla
-            const qiblaRes = await fetch(`https://api.aladhan.com/v1/qibla/${location.lat}/${location.lng}`);
-            const qiblaData = await qiblaRes.json();
-            if (qiblaData.code === 200) {
-                setQiblaDirection(qiblaData.data.direction);
+        } catch (err: any) {
+            if (err?.name === 'AbortError') {
+                setError('Timed out — showing saved times');
+            } else {
+                setError(err instanceof Error ? err.message : 'Unknown error');
             }
-
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
+            clearTimeout(timer);
             setLoading(false);
         }
     };
 
     useEffect(() => {
         fetchPrayerTimes();
-    }, [location, settings.method]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location?.lat, location?.lng, settings.method]);
 
     // Countdown Logic
     useEffect(() => {
@@ -133,11 +182,10 @@ export const PrayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
             let minDiff = Infinity;
 
             for (const prayer of prayers) {
-                // Parse time logic - same as before
-                const timeStr = timings[prayer as keyof PrayerTimings].split(' ')[0]; // Handle "04:12 (EEST)" format if present
+                const timeStr = (timings[prayer as keyof PrayerTimings] || '00:00').split(' ')[0];
                 const [hours, minutes] = timeStr.split(':').map(Number);
                 const prayerDate = new Date(now);
-                prayerDate.setHours(hours, minutes, 0, 0);
+                prayerDate.setHours(hours || 0, minutes || 0, 0, 0);
 
                 if (prayerDate > now) {
                     const diffMs = prayerDate.getTime() - now.getTime();
@@ -150,12 +198,11 @@ export const PrayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
             if (!next) {
                 next = 'Fajr';
-                // Handle tomorrow logic... simplistic for now, assumes same time tomorrow
-                const timeStr = timings['Fajr'].split(' ')[0];
+                const timeStr = (timings['Fajr'] || '05:00').split(' ')[0];
                 const [hours, minutes] = timeStr.split(':').map(Number);
                 const prayerDate = new Date(now);
                 prayerDate.setDate(prayerDate.getDate() + 1);
-                prayerDate.setHours(hours, minutes, 0, 0);
+                prayerDate.setHours(hours || 0, minutes || 0, 0, 0);
                 minDiff = prayerDate.getTime() - now.getTime();
             }
 
@@ -165,7 +212,6 @@ export const PrayerProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
             setNextPrayer(next);
             setTimeRemaining(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-
         }, 1000);
 
         return () => clearInterval(interval);

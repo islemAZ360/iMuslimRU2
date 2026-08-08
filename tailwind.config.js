@@ -65,8 +65,8 @@ export default {
                 'gold-foil': "linear-gradient(45deg, #C5A059 0%, #FFD700 20%, #FDB931 40%, #C5A059 60%, #FFD700 80%, #C5A059 100%)",
             },
             boxShadow: {
-                'gold-glow': '0 0 20px 2px rgba(212, 175, 55, 0.4)',
-                'emerald-glow': '0 0 30px 10px rgba(16, 185, 129, 0.3)',
+                'gold-glow': '0 0 16px rgba(212, 175, 55, 0.2)',
+                'emerald-glow': '0 0 20px rgba(16, 185, 129, 0.15)',
             },
             animation: {
                 'spin-slow': 'spin 12s linear infinite',
@@ -82,8 +82,8 @@ export default {
                     '100%': { transform: 'rotate(-360deg)' },
                 },
                 'pulse-glow': {
-                    '0%, 100%': { opacity: '1', boxShadow: '0 0 30px rgba(234,179,8,0.6)' },
-                    '50%': { opacity: '.7', boxShadow: '0 0 15px rgba(234,179,8,0.3)' },
+                    '0%, 100%': { opacity: '1', boxShadow: '0 0 14px rgba(234,179,8,0.3)' },
+                    '50%': { opacity: '.9', boxShadow: '0 0 8px rgba(234,179,8,0.15)' },
                 },
                 'float': {
                     '0%, 100%': { transform: 'translateY(0px) translateX(0px)', opacity: '0.3' },

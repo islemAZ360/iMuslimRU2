@@ -28,20 +28,17 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
             : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+        <div className="fixed inset-0 z-50 max-w-md mx-auto overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" dir={language === 'ar' ? 'rtl' : 'ltr'}>
             {/* Background backdrop */}
             <div
-                className="fixed inset-0 bg-black/85 backdrop-blur-md transition-opacity"
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
                 aria-hidden="true"
             ></div>
 
             <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
                 {/* Modal panel */}
-                <div className="relative transform overflow-hidden rounded-2xl bg-[#0a0a0a] border border-gold/30 p-6 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg animate-entrance">
-                    {/* Background Pattern */}
-                    <div className="absolute inset-0 islamic-pattern-bg opacity-20 pointer-events-none"></div>
-
+                <div className="relative transform overflow-hidden rounded-2xl bg-[#0a0a0a] border border-gold/30 p-6 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                     <div className="relative z-10">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-royal font-bold text-gold-metallic" id="modal-title">

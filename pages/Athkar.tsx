@@ -103,6 +103,7 @@ const Athkar: React.FC = () => {
     const [target, setTarget] = useState(100);
     const [activeCategory, setActiveCategory] = useState<string>('Istighfar');
     const [showSmartTip, setShowSmartTip] = useState(true);
+    const [showResetModal, setShowResetModal] = useState(false);
 
     // Stats persistence logic
     const [stats, setStats] = useState<Record<string, number>>(() => {
@@ -175,9 +176,7 @@ const Athkar: React.FC = () => {
     };
 
     const handleReset = () => {
-        if (window.confirm("Reset session counter?")) {
-            setCount(0);
-        }
+        setShowResetModal(true);
     };
 
     const handleCategorySelect = (cat: string) => {
@@ -207,66 +206,64 @@ const Athkar: React.FC = () => {
 
             {/* Smart Recommendation Header */}
             {showSmartTip && (
-                <div className="w-full mb-8 divine-border rounded-3xl p-5 flex items-center justify-between animate-in slide-in-from-top duration-700 shine-effect relative group overflow-hidden shadow-2xl">
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-gold/5 to-transparent pointer-events-none"></div>
-                    <div className="flex items-center gap-4 relative z-10">
-                        <div className="size-12 rounded-2xl bg-gold/10 flex items-center justify-center border border-gold/40 shadow-gold-glow-sm group-hover:scale-110 transition-transform duration-500">
-                            <span className="material-symbols-outlined text-gold-bright animate-pulse text-2xl">tips_and_updates</span>
+                <div className="w-full mb-6 rounded-2xl border border-gold/20 bg-black/40 p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-xl bg-gold/10 flex items-center justify-center border border-gold/30">
+                            <span className="material-symbols-outlined text-gold-bright text-xl">tips_and_updates</span>
                         </div>
                         <div>
                             <h4 className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.3em] mb-1">Divine Guidance</h4>
-                            <p className="text-sm text-white/90 font-medium">It's a blessed time for <span className="text-gold-bright font-bold underline decoration-gold/30 underline-offset-4">{activeCategory} Athkar</span>.</p>
+                            <p className="text-sm text-white/90 font-medium">It's a blessed time for <span className="text-gold-bright font-bold">{activeCategory} Athkar</span>.</p>
                         </div>
                     </div>
-                    <button onClick={() => setShowSmartTip(false)} className="size-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all relative z-10">
+                    <button onClick={() => setShowSmartTip(false)} className="size-9 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
                         <span className="material-symbols-outlined text-md">close</span>
                     </button>
                 </div>
             )}
 
             {/* Header */}
-            <div className="text-center mb-12 relative w-full animate-in slide-in-from-bottom duration-1000">
-                <h1 className="font-arabic text-7xl text-gold-bright drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)] mb-4 tracking-wide">الإيمان والأذكار</h1>
-                <div className="flex items-center justify-center gap-4 mb-6">
-                    <div className="h-px w-12 bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
+            <div className="text-center mb-8 relative w-full">
+                <h1 className="font-arabic text-3xl text-gold-bright mb-3 tracking-wide">الإيمان والأذكار</h1>
+                <div className="flex items-center justify-center gap-4 mb-5">
+                    <div className="h-px w-10 bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
                     <p className="text-[11px] font-bold text-emerald-300 uppercase tracking-[0.5em]">{t('faith_progress')}</p>
-                    <div className="h-px w-12 bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
+                    <div className="h-px w-10 bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
                 </div>
 
-                {/* Daily Goal Tracker - Enhanced */}
-                <div className="max-w-[280px] mx-auto p-4 rounded-3xl bg-black/40 border border-white/5 shadow-inner backdrop-blur-sm">
+                {/* Daily Goal Tracker */}
+                <div className="max-w-[280px] mx-auto p-4 rounded-2xl bg-black/40 border border-white/5">
                     <div className="flex justify-between text-[9px] font-bold text-gray-500 uppercase mb-2 tracking-widest">
                         <span>Spiritual Journey</span>
                         <span className="text-gold-bright">{dailyTotal} / {DAILY_GOAL}</span>
                     </div>
-                    <div className="h-2 w-full bg-black/60 rounded-full overflow-hidden border border-white/10 relative">
+                    <div className="h-2 w-full bg-black/60 rounded-full overflow-hidden border border-white/10">
                         <div
-                            className="h-full bg-gradient-to-r from-gold/40 via-gold-bright to-gold/40 rounded-full shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all duration-1000 relative"
+                            className="h-full bg-gradient-to-r from-gold/40 via-gold-bright to-gold/40 rounded-full transition-all duration-500"
                             style={{ width: `${Math.min((dailyTotal / DAILY_GOAL) * 100, 100)}%` }}
                         >
-                            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:20px_20px] animate-[shimmer_2s_infinite_linear]"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Categories Grid - Scrollable and more premium */}
-            <div className="w-full overflow-x-auto no-scrollbar mb-10 pb-4">
-                <div className="flex gap-5 min-w-max px-2">
+            {/* Categories Grid */}
+            <div className="w-full overflow-x-auto no-scrollbar mb-8 pb-2">
+                <div className="flex gap-3 min-w-max px-2">
                     {categories.map((cat) => (
                         <button
                             key={cat.id}
                             onClick={() => handleCategorySelect(cat.id)}
-                            className={`flex flex-col items-center gap-3 px-7 py-5 rounded-[2.5rem] border transition-all duration-500 group/cat ${activeCategory === cat.id ? 'bg-emerald-900/30 border-gold-bright shadow-[0_0_30px_rgba(212,175,55,0.25)] scale-110 divine-border shine-effect' : 'bg-black/60 border-white/10 hover:border-gold/40 hover:scale-105'}`}
+                            className={`flex flex-col items-center gap-2 px-5 py-4 rounded-2xl border transition-all duration-300 group/cat ${activeCategory === cat.id ? 'bg-emerald-900/30 border-gold-bright scale-105' : 'bg-black/60 border-white/10 hover:border-gold/40'}`}
                         >
-                            <div className={`size-14 rounded-2xl flex items-center justify-center border transition-all duration-500 ${activeCategory === cat.id ? 'bg-gold/20 border-gold-bright shadow-gold-glow-sm' : 'bg-white/5 border-white/10 group-hover/cat:bg-white/10'}`}>
-                                <span className={`material-symbols-outlined text-3xl transition-transform duration-500 ${activeCategory === cat.id ? 'text-gold-bright scale-110' : 'text-white/30 group-hover/cat:text-gold/60'}`}>
+                            <div className={`size-12 rounded-xl flex items-center justify-center border ${activeCategory === cat.id ? 'bg-gold/20 border-gold-bright' : 'bg-white/5 border-white/10 group-hover/cat:bg-white/10'}`}>
+                                <span className={`material-symbols-outlined text-2xl ${activeCategory === cat.id ? 'text-gold-bright' : 'text-white/30 group-hover/cat:text-gold/60'}`}>
                                     {cat.icon}
                                 </span>
                             </div>
                             <div className="text-center">
-                                <p className={`text-[10px] font-bold uppercase tracking-[0.25em] ${activeCategory === cat.id ? 'text-gold-bright' : 'text-gray-500'}`}>{cat.id}</p>
-                                <p className="font-arabic text-sm text-white/70 mt-1">{cat.label}</p>
+                                <p className={`text-[9px] font-bold uppercase tracking-[0.25em] ${activeCategory === cat.id ? 'text-gold-bright' : 'text-gray-500'}`}>{cat.id}</p>
+                                <p className="font-arabic text-sm text-white/70 mt-0.5">{cat.label}</p>
                             </div>
                         </button>
                     ))}
@@ -274,52 +271,42 @@ const Athkar: React.FC = () => {
             </div>
 
             {/* Main Tasbih Card */}
-            <div className="w-full rounded-[4rem] bg-gradient-to-b from-emerald-950/90 to-black border border-gold/30 p-10 relative overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.8)] mb-12 group divine-border shine-effect animate-in zoom-in-95 duration-700">
-                <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] pointer-events-none"></div>
-
-                {/* Visual Accent */}
-                <div className="absolute -top-20 -right-20 size-64 bg-gold/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-gold/20 transition-all duration-1000"></div>
-                <div className="absolute -bottom-20 -left-20 size-64 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-emerald-500/20 transition-all duration-1000"></div>
-
+            <div className="w-full rounded-3xl bg-gradient-to-b from-emerald-950/90 to-black border border-gold/20 p-5 relative overflow-hidden mb-10">
                 <div className="relative z-10 flex flex-col items-center">
-                    <div className="w-full flex justify-between items-center mb-10">
-                        <div className="flex items-center gap-3 px-6 py-2.5 rounded-full bg-black/60 border border-gold/20 backdrop-blur-xl shadow-xl">
-                            <div className="size-2 rounded-full bg-gold animate-pulse shadow-gold-glow-sm"></div>
-                            <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.4em]">{activeCategory} Ritual</span>
+                    <div className="w-full flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 border border-gold/20">
+                            <div className="size-2 rounded-full bg-gold"></div>
+                            <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.3em]">{activeCategory} Ritual</span>
                         </div>
-                        <button onClick={() => setTarget(target === 33 ? 100 : 33)} className="px-6 py-2.5 rounded-full bg-white/5 border border-white/20 text-[10px] font-bold text-white uppercase tracking-[0.3em] hover:bg-white/10 hover:border-gold/40 transition-all backdrop-blur-md">
+                        <button onClick={() => setTarget(target === 33 ? 100 : 33)} className="px-4 py-2 rounded-full bg-white/5 border border-white/20 text-[10px] font-bold text-white uppercase tracking-[0.3em] hover:bg-white/10 hover:border-gold/40 transition-all">
                             Goal: {target}
                         </button>
                     </div>
 
-                    <div className="min-h-[160px] flex flex-col items-center justify-center text-center max-w-[320px]">
-                        <h3 className="font-arabic text-6xl text-gold-bright mb-6 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] leading-relaxed animate-in slide-in-from-bottom-4 duration-1000">
+                    <div className="min-h-[120px] flex flex-col items-center justify-center text-center max-w-[320px]">
+                        <h3 className="font-arabic text-3xl text-gold-bright mb-4 leading-relaxed">
                             {currentDhikr.arabic}
                         </h3>
-                        <p className="text-base font-serif italic text-gray-400 mb-2 leading-relaxed opacity-80">
+                        <p className="text-sm font-serif italic text-gray-400 mb-2 leading-relaxed opacity-80">
                             "{currentDhikr.translation}"
                         </p>
                     </div>
 
-                    {/* Counter Circle - Divine Mode */}
-                    <div onClick={handleCount} className="relative size-80 flex items-center justify-center my-10 cursor-pointer active:scale-95 transition-all select-none tap-highlight-transparent group/counter">
-                        {/* Divine Layers */}
-                        <div className="absolute inset-0 rounded-full border-[1.5px] border-gold/10 scale-110 animate-[spin_60s_linear_infinite] opacity-50"></div>
-                        <div className="absolute inset-0 rounded-full border-[1.5px] border-gold/5 scale-[1.22] animate-[spin_80s_linear_infinite_reverse] opacity-30"></div>
+                    {/* Counter Circle */}
+                    <div onClick={handleCount} className="relative size-64 flex items-center justify-center my-8 cursor-pointer active:scale-95 transition-all select-none tap-highlight-transparent group/counter">
+                        <div className="absolute inset-0 rounded-full border-[8px] border-[#1a1508] bg-gradient-to-br from-gold/10 to-transparent"></div>
 
-                        <div className="absolute inset-0 rounded-full border-[10px] border-[#1a1508] shadow-[0_0_70px_rgba(212,175,55,0.15),inset_0_0_40px_rgba(0,0,0,0.8)] bg-gradient-to-br from-gold/15 to-transparent"></div>
-
-                        <svg className="absolute inset-0 size-full -rotate-90 p-4">
-                            <circle cx="50%" cy="50%" r="90" stroke="#0a0a0a" strokeWidth="10" fill="transparent" />
+                        <svg className="absolute inset-0 size-full -rotate-90 p-3">
+                            <circle cx="50%" cy="50%" r="90" stroke="#0a0a0a" strokeWidth="8" fill="transparent" />
                             <circle
                                 cx="50%" cy="50%" r="90"
                                 stroke="url(#goldGradient)"
-                                strokeWidth="10"
+                                strokeWidth="8"
                                 fill="transparent"
                                 strokeDasharray={2 * Math.PI * 90}
                                 strokeDashoffset={(2 * Math.PI * 90) - (count / target) * (2 * Math.PI * 90)}
                                 strokeLinecap="round"
-                                className="transition-all duration-700 ease-out drop-shadow-[0_0_12px_rgba(212,175,55,0.6)]"
+                                className="transition-all duration-500 ease-out"
                             />
                             <defs>
                                 <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -330,18 +317,14 @@ const Athkar: React.FC = () => {
                             </defs>
                         </svg>
 
-                        <div className="size-64 rounded-full bg-[#030605] shadow-[inset_0_15px_40px_rgba(0,0,0,1)] border border-gold/30 flex flex-col items-center justify-center relative z-10 group-hover/counter:border-gold/60 transition-all duration-700 overflow-hidden">
-                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_rgba(212,175,55,0.08),_transparent)]"></div>
-                            <div className="absolute top-1/4 w-full h-px bg-gradient-to-r from-transparent via-gold/10 to-transparent"></div>
-                            <div className="absolute bottom-1/4 w-full h-px bg-gradient-to-r from-transparent via-gold/10 to-transparent"></div>
-
-                            <span className="text-[10rem] font-serif font-black text-white drop-shadow-[0_8px_20px_rgba(0,0,0,0.8)] leading-none -mb-4 tracking-tighter">{count}</span>
-                            <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-gold-bright/60 to-transparent my-4"></div>
-                            <span className="text-[11px] font-bold text-gold-bright uppercase tracking-[0.5em] opacity-80">Divine Count</span>
+                        <div className="size-48 rounded-full bg-[#030605] border border-gold/25 flex flex-col items-center justify-center relative z-10">
+                            <span className="text-6xl font-serif font-black text-white leading-none tracking-tighter">{count}</span>
+                            <div className="h-0.5 w-16 bg-gradient-to-r from-transparent via-gold-bright/60 to-transparent my-3"></div>
+                            <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.4em] opacity-80">Count</span>
                         </div>
                     </div>
 
-                    <button onClick={handleReset} className="flex items-center justify-center gap-3 px-10 py-5 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold uppercase tracking-[0.3em] text-gray-500 hover:text-gold-bright hover:border-gold-bright/50 hover:bg-gold/5 transition-all active:scale-90 shadow-lg">
+                    <button onClick={handleReset} className="flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold uppercase tracking-[0.3em] text-gray-500 hover:text-gold-bright hover:border-gold-bright/50 hover:bg-gold/5 transition-all active:scale-90">
                         <span className="material-symbols-outlined text-sm">restart_alt</span>
                         Reset Session
                     </button>
@@ -349,43 +332,36 @@ const Athkar: React.FC = () => {
             </div>
 
             {/* Encyclopedia with "Why?" (Benefits) logic */}
-            <div className="w-full mb-16">
-                <div className="flex items-center justify-between mb-10 px-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-2 h-12 bg-gold-bright rounded-full shadow-gold-glow animate-pulse"></div>
+            <div className="w-full mb-12">
+                <div className="flex items-center justify-between mb-6 px-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-1.5 h-9 bg-gold-bright rounded-full"></div>
                         <div>
-                            <h3 className="text-4xl font-arabic text-gold-bright drop-shadow-md">موسوعة الأذكار</h3>
+                            <h3 className="text-2xl font-arabic text-gold-bright">موسوعة الأذكار</h3>
                             <p className="text-[11px] font-bold text-emerald-300 uppercase tracking-[0.4em]">Spiritual Encyclopedia</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="space-y-8">
+                <div className="space-y-4">
                     {athkarData[activeCategory as keyof typeof athkarData]?.map((dhikr, idx) => (
-                        <div key={idx} className="relative rounded-[3rem] bg-emerald-black/40 border border-white/10 p-8 hover:bg-emerald-black/60 transition-all duration-500 group overflow-hidden divine-border shine-effect hover:scale-[1.02] shadow-xl">
-                            <div className="absolute top-0 left-0 h-full w-1.5 bg-gold/20 group-hover:bg-gold-bright transition-all duration-700"></div>
-
-                            {/* Decorative background number */}
-                            <div className="absolute -right-4 -bottom-4 text-9xl font-serif font-black text-white/5 pointer-events-none group-hover:text-gold/10 transition-all duration-1000">
-                                {idx + 1}
+                        <div key={idx} className="relative rounded-2xl bg-emerald-black/40 border border-white/10 p-5 overflow-hidden">
+                            <div className="flex justify-between items-start gap-4 mb-4">
+                                <div className="size-8 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center text-xs text-gold-bright font-bold">{idx + 1}</div>
+                                <p className="font-arabic text-xl text-white text-right flex-1 leading-relaxed">{dhikr.arabic}</p>
                             </div>
 
-                            <div className="flex justify-between items-start gap-6 mb-6">
-                                <div className="size-10 rounded-2xl bg-gold/10 border border-gold/30 flex items-center justify-center text-xs text-gold-bright font-bold shadow-gold-glow-sm">{idx + 1}</div>
-                                <p className="font-arabic text-4xl text-white text-right flex-1 leading-relaxed group-hover:text-gold-bright transition-colors duration-700 drop-shadow-lg">{dhikr.arabic}</p>
-                            </div>
-
-                            <div className="p-6 rounded-[2rem] bg-black/60 border border-white/5 mb-6 backdrop-blur-md group-hover:border-gold/20 transition-all duration-500">
-                                <p className="text-sm text-gray-400 italic mb-3 leading-loose opacity-90 group-hover:opacity-100">"{dhikr.translation}"</p>
+                            <div className="p-4 rounded-xl bg-black/60 border border-white/5 mb-4">
+                                <p className="text-sm text-gray-400 italic mb-3 leading-loose opacity-90">"{dhikr.translation}"</p>
                                 {dhikr.benefit && (
-                                    <div className="mt-4 flex gap-3 items-start p-3 rounded-xl bg-gold/5 border border-gold/10">
-                                        <span className="material-symbols-outlined text-gold-bright text-lg mt-0.5 animate-pulse">auto_awesome</span>
+                                    <div className="mt-3 flex gap-3 items-start p-3 rounded-xl bg-gold/5 border border-gold/10">
+                                        <span className="material-symbols-outlined text-gold-bright text-lg mt-0.5">auto_awesome</span>
                                         <p className="text-xs text-gold/90 font-medium leading-relaxed italic">{dhikr.benefit}</p>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="flex justify-between items-center px-2">
+                            <div className="flex justify-between items-center px-1">
                                 <div className="flex items-center gap-3">
                                     <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-full border border-emerald-400/20 uppercase tracking-[0.2em]">Repeats: {dhikr.count}x</span>
                                 </div>
@@ -395,7 +371,7 @@ const Athkar: React.FC = () => {
                                         setCount(0);
                                         window.scrollTo({ top: 350, behavior: 'smooth' });
                                     }}
-                                    className="px-6 py-3 rounded-2xl bg-gold-bright text-black text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-3 shadow-gold-glow-sm hover:scale-110 active:scale-90 transition-all duration-500"
+                                    className="px-5 py-2.5 rounded-xl bg-gold-bright text-black text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-gold-light transition-all active:scale-95"
                                 >
                                     Engage Ritual <span className="material-symbols-outlined text-sm">auto_fix_high</span>
                                 </button>
@@ -405,18 +381,18 @@ const Athkar: React.FC = () => {
                 </div>
             </div>
 
-            {/* Sunnah & Nawafil Tracker - Redesigned v2 */}
-            <div className="w-full pb-12">
-                <div className="flex items-center justify-between mb-10 px-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-2 h-12 bg-emerald-500 rounded-full shadow-emerald-glow animate-pulse"></div>
+            {/* Sunnah & Nawafil Tracker */}
+            <div className="w-full pb-10">
+                <div className="flex items-center justify-between mb-6 px-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-1.5 h-9 bg-emerald-500 rounded-full"></div>
                         <div>
-                            <h3 className="text-4xl font-arabic text-white drop-shadow-md">السنن والرواتب</h3>
+                            <h3 className="text-2xl font-arabic text-white">السنن والرواتب</h3>
                             <p className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.4em]">Prophetic Traditions</p>
                         </div>
                     </div>
                     {/* 12-Rak'ah Challenge Progress */}
-                    <div className="flex flex-col items-end bg-black/40 p-3 rounded-2xl border border-gold/10 backdrop-blur-sm">
+                    <div className="flex flex-col items-end bg-black/40 p-3 rounded-2xl border border-gold/10">
                         <div className="flex items-center gap-2 mb-2">
                             <span className="material-symbols-outlined text-gold-bright text-sm">home_work</span>
                             <span className="text-[9px] font-bold text-gold-bright uppercase tracking-widest">Jannah Palace</span>
@@ -425,14 +401,14 @@ const Athkar: React.FC = () => {
                             {Array.from({ length: RAWATIB_GOAL }).map((_, i) => (
                                 <div
                                     key={i}
-                                    className={`size-2 rounded-full transition-all duration-700 ${i < completedRawatib ? 'bg-gold-bright shadow-[0_0_10px_rgba(212,175,55,0.8)] scale-125' : 'bg-white/5 border border-white/10'}`}
+                                    className={`size-2 rounded-full transition-colors ${i < completedRawatib ? 'bg-gold-bright' : 'bg-white/5 border border-white/10'}`}
                                 ></div>
                             ))}
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-3">
                     {sunnahData.map((sunnah) => {
                         const isHighlighted = (nextPrayer && sunnah.timeHint.includes(nextPrayer)) ||
                             (nextPrayer === 'Fajr' && sunnah.id === 'tahajjud_prayer') ||
@@ -441,50 +417,86 @@ const Athkar: React.FC = () => {
                         return (
                             <div
                                 key={sunnah.id}
-                                className={`relative rounded-[3rem] bg-emerald-black/30 border transition-all duration-700 overflow-hidden group divine-border shine-effect ${isHighlighted ? 'border-gold-bright shadow-[0_0_40px_rgba(212,175,55,0.15)] scale-[1.03] z-10' : 'border-white/5 hover:border-gold/30'}`}
+                                className={`relative rounded-2xl bg-emerald-black/30 border overflow-hidden ${isHighlighted ? 'border-gold-bright/60' : 'border-white/5 hover:border-gold/30'}`}
                             >
                                 {isHighlighted && (
-                                    <div className="absolute top-0 right-0 px-6 py-2 bg-gold-bright text-black text-[9px] font-black uppercase tracking-[0.3em] rounded-bl-3xl shadow-xl z-20 animate-in slide-in-from-right duration-700">
+                                    <div className="absolute top-0 right-0 px-4 py-1.5 bg-gold-bright text-black text-[9px] font-black uppercase tracking-[0.3em] rounded-bl-2xl z-10">
                                         Active Grace
                                     </div>
                                 )}
 
-                                <div className="p-8 flex items-center gap-8">
-                                    <div className={`size-20 rounded-[2rem] flex items-center justify-center border transition-all duration-700 shadow-2xl relative ${sunnahs[sunnah.id] ? 'bg-gold-bright border-gold shadow-gold-glow rotate-12 scale-110' : 'bg-white/5 border-white/10 group-hover:bg-gold/10 group-hover:border-gold/40'}`}>
-                                        <div className="absolute inset-0 bg-white/10 rounded-inherit opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                        <span className={`material-symbols-outlined text-4xl transition-all duration-700 ${sunnahs[sunnah.id] ? 'text-black font-black' : 'text-gold/30 group-hover:text-gold-bright group-hover:scale-110'}`}>
+                                <div className="p-5 flex items-center gap-4">
+                                    <div className={`size-14 rounded-2xl flex items-center justify-center border transition-all ${sunnahs[sunnah.id] ? 'bg-gold-bright border-gold' : 'bg-white/5 border-white/10 group-hover:bg-gold/10 group-hover:border-gold/40'}`}>
+                                        <span className={`material-symbols-outlined text-2xl ${sunnahs[sunnah.id] ? 'text-black' : 'text-gold/30'}`}>
                                             {sunnah.icon}
                                         </span>
                                     </div>
 
                                     <div className="flex-1">
-                                        <div className="flex items-baseline gap-4 mb-2">
-                                            <h4 className="font-arabic text-4xl text-white group-hover:text-gold-bright transition-colors duration-500 drop-shadow-md">{sunnah.name}</h4>
-                                            <span className="text-[11px] font-bold text-emerald-400/70 uppercase tracking-widest">{sunnah.rakahs} Rak'ahs</span>
+                                        <div className="flex items-baseline gap-3 mb-1">
+                                            <h4 className="font-arabic text-xl text-white">{sunnah.name}</h4>
+                                            <span className="text-[10px] font-bold text-emerald-400/70 uppercase tracking-widest">{sunnah.rakahs} Rak'ahs</span>
                                         </div>
-                                        <p className="text-[11px] font-bold text-gold-bright/70 uppercase tracking-[0.25em] mb-2">{sunnah.desc} • <span className="text-white/60">{sunnah.timeHint}</span></p>
-                                        <p className="text-xs text-gray-500 italic font-serif leading-relaxed line-clamp-1 group-hover:line-clamp-none transition-all duration-700 opacity-80 group-hover:opacity-100">"{sunnah.virtue}"</p>
+                                        <p className="text-[10px] font-bold text-gold-bright/70 uppercase tracking-[0.25em] mb-1">{sunnah.desc} • <span className="text-white/60">{sunnah.timeHint}</span></p>
+                                        <p className="text-xs text-gray-500 italic font-serif leading-relaxed line-clamp-1">"{sunnah.virtue}"</p>
                                     </div>
 
                                     <button
                                         onClick={() => handleSunnahToggle(sunnah.id)}
-                                        className={`size-16 rounded-[1.5rem] flex items-center justify-center border transition-all duration-500 relative overflow-hidden ${sunnahs[sunnah.id] ? 'bg-emerald-500 border-white/30 scale-110 shadow-emerald-glow' : 'bg-white/5 border-white/10 hover:border-gold/50 hover:bg-gold/10'}`}
+                                        className={`size-12 rounded-xl flex items-center justify-center border transition-all ${sunnahs[sunnah.id] ? 'bg-emerald-500 border-white/30' : 'bg-white/5 border-white/10 hover:border-gold/50 hover:bg-gold/10'}`}
                                     >
-                                        <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                        <span className={`material-symbols-outlined text-2xl transition-all duration-500 ${sunnahs[sunnah.id] ? 'text-white font-black scale-125' : 'text-gray-600 group-hover:text-gold-bright'}`}>
+                                        <span className={`material-symbols-outlined text-xl ${sunnahs[sunnah.id] ? 'text-white' : 'text-gray-600 group-hover:text-gold-bright'}`}>
                                             {sunnahs[sunnah.id] ? 'done_all' : 'add'}
                                         </span>
                                     </button>
                                 </div>
 
                                 {sunnahs[sunnah.id] && (
-                                    <div className="absolute bottom-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600 animate-in fade-in slide-in-from-left duration-1000 shadow-emerald-glow"></div>
+                                    <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600"></div>
                                 )}
                             </div>
                         );
                     })}
                 </div>
             </div>
+
+            {/* Custom Reset Modal */}
+            {showResetModal && (
+                <div className="fixed inset-0 z-[100] max-w-md mx-auto flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-emerald-950/90 border border-gold/30 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative overflow-hidden">
+                        <div className="absolute -top-10 -right-10 size-32 bg-gold/10 rounded-full blur-2xl pointer-events-none"></div>
+                        
+                        <div className="flex flex-col items-center text-center relative z-10">
+                            <div className="size-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+                                <span className="material-symbols-outlined text-red-400 text-3xl">restart_alt</span>
+                            </div>
+                            
+                            <h3 className="font-arabic text-2xl text-gold-bright mb-2">إعادة تعيين الجلسة</h3>
+                            <p className="text-sm font-medium text-gray-300 mb-6">
+                                Are you sure you want to reset the session counter? This action cannot be undone.
+                            </p>
+                            
+                            <div className="flex w-full gap-3">
+                                <button 
+                                    onClick={() => setShowResetModal(false)}
+                                    className="flex-1 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-gray-400 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        setCount(0);
+                                        setShowResetModal(false);
+                                    }}
+                                    className="flex-1 py-3.5 rounded-2xl bg-red-500/20 border border-red-500/30 text-xs font-bold text-red-400 uppercase tracking-widest hover:bg-red-500/30 hover:text-red-300 transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)]"
+                                >
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

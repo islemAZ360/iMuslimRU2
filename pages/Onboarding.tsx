@@ -123,14 +123,12 @@ const Onboarding: React.FC = () => {
     <div className="min-h-screen bg-black text-white relative overflow-hidden flex flex-col justify-center px-6 py-12">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-luxury-gradient opacity-80 z-0"></div>
-      <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] z-0"></div>
-      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-glow blur-[120px] opacity-20 pointer-events-none"></div>
 
       <div className="relative z-10 flex flex-col items-center w-full max-w-md mx-auto space-y-8">
 
         {/* Logo Area */}
         <div className="flex flex-col items-center mb-4">
-          <div className="size-20 mb-4 rounded-full bg-gradient-to-br from-gold-light via-gold to-gold-dark p-[2px] shadow-gold-glow animate-pulse-glow">
+          <div className="size-20 mb-4 rounded-full bg-gradient-to-br from-gold-light via-gold to-gold-dark p-[2px] shadow-gold-glow">
             <div className="w-full h-full bg-emerald-black rounded-full flex items-center justify-center">
               <span className="material-symbols-outlined text-4xl text-gold-light">mosque</span>
             </div>
@@ -322,9 +320,8 @@ const Onboarding: React.FC = () => {
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {t('complete_registration')}
-                    <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    <span className="material-symbols-outlined text-lg">arrow_forward</span>
                   </span>
-                  <div className="absolute inset-0 bg-white/30 skew-x-[-20deg] translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out"></div>
                 </button>
               </div>
             </form>

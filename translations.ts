@@ -38,6 +38,15 @@ export const translations = {
         clear_data: "Clear Data",
         juridical_method: "Juridical Method",
         calculation_method: "Calculation Method",
+        email: "Email",
+        gender: "Gender",
+        male: "Male",
+        female: "Female",
+        allergies_optional: "Allergies (Optional)",
+        allergies_placeholder: "e.g. Peanuts, Gluten",
+        diseases_optional: "Chronic Diseases (Optional)",
+        diseases_placeholder: "e.g. Diabetes, Hypertension",
+        api_key_placeholder: "Start with AI...",
         // Onboarding
         join_ummah: "Join the Ummah",
         onboarding_subtitle: "Cultivate your spirit and body with AI-driven Halal insights tailored for you.",
@@ -123,7 +132,13 @@ export const translations = {
         carbs: "Carbs",
         fats: "Fats",
         daily_ritual: "Daily Ritual",
-        premium_member: "Premium Member"
+        premium_member: "Premium Member",
+        discuss_sheikh: "Discuss with Sheikh AI",
+        scan_another: "Scan Another",
+        ai_ready: "Gemini AI · Ready",
+        ai_offline: "Offline",
+        api_required: "API Key Required",
+        setup: "Setup"
     },
     ar: {
         greeting_morning: "صباح الخير",
@@ -164,6 +179,15 @@ export const translations = {
         clear_data: "مسح البيانات",
         juridical_method: "المذهب الفقهي",
         calculation_method: "طريقة الحساب",
+        email: "البريد الإلكتروني",
+        gender: "الجنس",
+        male: "ذكر",
+        female: "أنثى",
+        allergies_optional: "الحساسية (اختياري)",
+        allergies_placeholder: "مثال: الفول السوداني، الجلوتين",
+        diseases_optional: "الأمراض المزمنة (اختياري)",
+        diseases_placeholder: "مثال: السكري، الضغط",
+        api_key_placeholder: "ابدأ مع الذكاء الاصطناعي...",
         // Onboarding
         join_ummah: "انضم إلى الأمة",
         onboarding_subtitle: "نمِّ روحك وجسدك مع رؤى حلال مدعومة بالذكاء الاصطناعي ومصممة خصيصًا لك.",
@@ -249,7 +273,13 @@ export const translations = {
         carbs: "كربوهيدرات",
         fats: "دهون",
         daily_ritual: "الورد اليومي",
-        premium_member: "عضو مميز"
+        premium_member: "عضو مميز",
+        discuss_sheikh: "نقاش مع الشيخ الذكي",
+        scan_another: "مسح منتج آخر",
+        ai_ready: "الذكاء الاصطناعي · جاهز",
+        ai_offline: "غير متصل",
+        api_required: "مفتاح API مطلوب",
+        setup: "إعداد"
     },
     ru: {
         greeting_morning: "Доброе утро",
@@ -290,6 +320,15 @@ export const translations = {
         clear_data: "Очистить данные",
         juridical_method: "Юридический метод",
         calculation_method: "Метод расчета",
+        email: "Электронная почта",
+        gender: "Пол",
+        male: "Мужчина",
+        female: "Женщина",
+        allergies_optional: "Аллергия (необязательно)",
+        allergies_placeholder: "напр. арахис, глютен",
+        diseases_optional: "Хронические заболевания (необязательно)",
+        diseases_placeholder: "напр. Диабет, гипертония",
+        api_key_placeholder: "Начните с ИИ...",
         // Onboarding
         join_ummah: "Присоединяйтесь к Умме",
         onboarding_subtitle: "Развивайте свой дух и тело с помощью ИИ-анализа Halal, созданного специально для вас.",
@@ -375,6 +414,12 @@ export const translations = {
         carbs: "Углеводы",
         fats: "Жиры",
         daily_ritual: "Ежедневный зиكر",
-        premium_member: "Премиум участник"
+        premium_member: "Премиум участник",
+        discuss_sheikh: "Обсудить с ИИ Шейхом",
+        scan_another: "Сканировать другой",
+        ai_ready: "ИИ · Готов",
+        ai_offline: "Не в сети",
+        api_required: "Требуется ключ",
+        setup: "Настроить"
     }
 };

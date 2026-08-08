@@ -11,18 +11,26 @@ export interface ScannedItem {
     timestamp: any;
 }
 
-const COLLECTION_NAME = 'scanned_products';
+const LOCAL_STORAGE_KEY = 'imuslim_scan_history';
 
 export const saveScanResult = async (item: Omit<ScannedItem, 'timestamp' | 'id'>) => {
-    // Only save if Haram, Boycott, or Mushbooh
-    if (item.status === 'Halal' || item.status === 'Unknown') return;
+    // Only skip if Unknown (like network errors)
+    if (item.status === 'Unknown') return;
 
     try {
-        await addDoc(collection(db, COLLECTION_NAME), {
+        const historyStr = localStorage.getItem(LOCAL_STORAGE_KEY);
+        let history: ScannedItem[] = historyStr ? JSON.parse(historyStr) : [];
+        
+        const newItem: ScannedItem = {
             ...item,
-            timestamp: Timestamp.now()
-        });
-        console.log("Item saved to history:", item.name);
+            id: Date.now().toString(),
+            timestamp: Date.now()
+        };
+        
+        history.unshift(newItem);
+        if (history.length > 50) history = history.slice(0, 50); // Keep last 50 scans
+        
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(history));
     } catch (e) {
         console.error("Error saving scan result:", e);
     }
@@ -30,17 +38,8 @@ export const saveScanResult = async (item: Omit<ScannedItem, 'timestamp' | 'id'>
 
 export const getScanHistory = async (): Promise<ScannedItem[]> => {
     try {
-        const q = query(
-            collection(db, COLLECTION_NAME),
-            orderBy('timestamp', 'desc'),
-            limit(50)
-        );
-
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        } as ScannedItem));
+        const historyStr = localStorage.getItem(LOCAL_STORAGE_KEY);
+        return historyStr ? JSON.parse(historyStr) : [];
     } catch (e) {
         console.error("Error fetching history:", e);
         return [];

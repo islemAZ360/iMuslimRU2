@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
+import { setApiKey as syncGeminiKey } from '../services/geminiService';
 
 const Profile: React.FC = () => {
     const { settings, updateSettings, profile, updateProfile, t, location: userLocation } = useUser();
@@ -10,7 +11,12 @@ const Profile: React.FC = () => {
 
     // Local state for form inputs to avoid excessive context updates
     const [formData, setFormData] = useState(profile);
-    const [apiKey, setApiKey] = useState(profile.apiKey || '');
+    const [saved, setSaved] = useState(false);
+    
+    // Sync formData when profile loads from local storage
+    React.useEffect(() => {
+        setFormData(profile);
+    }, [profile]);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,21 +33,25 @@ const Profile: React.FC = () => {
     };
 
     const handleSaveProfile = () => {
-        updateProfile({ ...formData, apiKey });
-        // Ideally show a toast
+        updateProfile({ ...formData });
+        // Sync API key to geminiService so it takes effect immediately
+        if (formData.apiKey && formData.apiKey.length > 10) {
+            syncGeminiKey(formData.apiKey);
+        }
+        // Show saved confirmation
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
     };
 
     return (
-        <div className="min-h-screen w-full relative overflow-hidden flex flex-col font-sans text-white bg-black pb-32 animate-in fade-in duration-1000">
-            {/* Background - Divine Atmosphere */}
+        <div className="min-h-screen w-full relative overflow-y-auto flex flex-col font-sans text-white bg-black pb-32 animate-in fade-in duration-500">
+            {/* Background */}
             <div className="absolute inset-0 z-0 pointer-events-none">
-                <div className="w-full h-full bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-emerald-900/40 via-black to-black"></div>
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] opacity-10 mix-blend-overlay"></div>
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-emerald-500/5 blur-[120px]"></div>
+                <div className="w-full h-full bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-emerald-900/30 via-black to-black"></div>
             </div>
 
-            {/* Header with Rotating Border */}
-            <div className="relative z-10 pt-16 pb-10 flex flex-col items-center animate-in fade-in slide-in-from-top-6 duration-1000">
+            {/* Header with Border */}
+            <div className="relative z-10 pt-14 pb-8 flex flex-col items-center">
                 <input
                     type="file"
                     ref={fileInputRef}
@@ -50,95 +60,84 @@ const Profile: React.FC = () => {
                     accept="image/*"
                 />
                 <div
-                    className="relative size-40 mb-6 group cursor-pointer"
+                    className="relative size-32 mb-5 group cursor-pointer"
                     onClick={() => fileInputRef.current?.click()}
                 >
-                    {/* Outer Rotating Halo */}
-                    <div className="absolute inset-0 rounded-full border border-gold-bright/30 shadow-[0_0_30px_rgba(212,175,55,0.2)] animate-[spin-slow_15s_linear_infinite]"></div>
+                    <div className="absolute inset-0 rounded-full border border-gold-400/30"></div>
                     <div className="absolute inset-2 rounded-full border border-gold/50 shadow-inner"></div>
-                    <div className="absolute inset-3 rounded-full overflow-hidden border-2 border-gold-bright bg-emerald-black/80 shadow-2xl divine-border group-hover:scale-[1.02] transition-transform duration-300 flex items-center justify-center">
+                    <div className="absolute inset-3 rounded-full overflow-hidden border-2 border-gold-400 bg-emerald-black/80 flex items-center justify-center group-hover:scale-[1.02] transition-transform duration-300">
                         {/* Avatar / Initial */}
                         {profile.avatar ? (
                             <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-emerald-950 to-black flex items-center justify-center text-4xl font-serif text-gold-bright drop-shadow-md gold-glow">
+                            <div className="w-full h-full bg-gradient-to-br from-emerald-950 to-black flex items-center justify-center text-4xl font-serif text-gold-400">
                                 {profile.name ? profile.name.charAt(0).toUpperCase() : (profile.email ? profile.email.charAt(0).toUpperCase() : 'U')}
                             </div>
                         )}
 
                         {/* Overlay for "Change Photo" on hover */}
                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <span className="material-symbols-outlined text-gold-bright text-3xl">add_a_photo</span>
+                            <span className="material-symbols-outlined text-gold-400 text-3xl">add_a_photo</span>
                         </div>
                     </div>
-                    {/* Floating Glows */}
-                    <div className="absolute -top-2 -right-2 size-8 bg-gold-bright/20 rounded-full blur-xl animate-pulse"></div>
-                    <div className="absolute -bottom-2 -left-2 size-8 bg-emerald-500/20 rounded-full blur-xl animate-pulse delay-700"></div>
                 </div>
 
-                <h2 className="text-4xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold-bright via-white to-gold-bright bg-[length:200%_auto] animate-[shimmer_4s_linear_infinite] drop-shadow-2xl mb-3">
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold-400 via-white to-gold-400 mb-3">
                     {profile.name || 'User'}
                 </h2>
 
-                <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-gold/5 border border-gold/30 backdrop-blur-2xl shadow-gold-glow-sm">
-                    <span className="material-symbols-outlined text-gold-bright text-sm animate-pulse">verified</span>
-                    <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.4em]">{t('premium_member') || 'PREMIUM MEMBER'}</span>
+                <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-gold/20 via-gold/10 to-gold/20 border border-gold/40 shadow-[0_0_15px_rgba(212,175,55,0.15)] animate-pulse-glow">
+                    <span className="material-symbols-outlined text-gold-400 text-sm">workspace_premium</span>
+                    <span className="text-[10px] font-bold text-gold-400 uppercase tracking-[0.3em] drop-shadow-md">{t('premium_member') || 'PREMIUM MEMBER'}</span>
                 </div>
             </div>
 
-            {/* Tab Switcher - Premium Styling */}
-            <div className="relative z-10 px-6 mb-8 max-w-md mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
-                <div className="flex p-1.5 rounded-[2rem] bg-emerald-black/60 border border-white/10 backdrop-blur-3xl shadow-3xl">
+            {/* Tab Switcher */}
+            <div className="relative z-10 px-6 mb-8 max-w-md mx-auto w-full">
+                <div className="flex p-1.5 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 shadow-lg">
                     <button
                         onClick={() => setActiveTab('profile')}
-                        className={`flex-1 py-4 rounded-[1.5rem] text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-500 relative overflow-hidden group ${activeTab === 'profile' ? 'text-black shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                        className={`flex-1 py-3.5 rounded-xl text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-500 relative overflow-hidden ${activeTab === 'profile' ? 'text-black shadow-[0_0_20px_rgba(212,175,55,0.3)]' : 'text-gray-500 hover:text-gold-400 hover:bg-white/5'}`}
                     >
                         {activeTab === 'profile' && (
-                            <div className="absolute inset-0 bg-gradient-to-br from-gold-bright to-gold animate-in fade-in zoom-in-95 duration-500"></div>
+                            <div className="absolute inset-0 bg-gradient-to-br from-gold-300 via-gold to-gold-600"></div>
                         )}
                         <span className="relative z-10">{t('my_data')}</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('settings')}
-                        className={`flex-1 py-4 rounded-[1.5rem] text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-500 relative overflow-hidden group ${activeTab === 'settings' ? 'text-black shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                        className={`flex-1 py-3.5 rounded-xl text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-500 relative overflow-hidden ${activeTab === 'settings' ? 'text-black shadow-[0_0_20px_rgba(212,175,55,0.3)]' : 'text-gray-500 hover:text-gold-400 hover:bg-white/5'}`}
                     >
                         {activeTab === 'settings' && (
-                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-emerald-600 animate-in fade-in zoom-in-95 duration-500"></div>
+                            <div className="absolute inset-0 bg-gradient-to-br from-gold-300 via-gold to-gold-600"></div>
                         )}
                         <span className="relative z-10">{t('app_settings')}</span>
                     </button>
                 </div>
             </div>
 
-            {/* Content Area - Glass Card */}
-            <div className="relative z-10 px-4 md:px-6 flex-1 max-w-2xl mx-auto w-full animate-in fade-in zoom-in-95 duration-1000 delay-500">
-                <div className="bg-emerald-black/60 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-6 md:p-10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] relative overflow-hidden divine-border shine-effect">
-                    {/* Background Texture */}
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none"></div>
-
+            {/* Content Area */}
+            <div className="relative z-10 px-4 md:px-6 flex-1 max-w-2xl mx-auto w-full">
+                <div className="bg-emerald-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-5 md:p-8 relative overflow-hidden">
                     {/* ---------------- PROFILE TAB ---------------- */}
                     {activeTab === 'profile' && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-700">
-                            <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-700">
-                                {/* Divine Identity Card */}
-                                <div className="relative rounded-[2.5rem] bg-gradient-to-br from-[#0c1210] to-black border border-white/10 p-8 overflow-hidden group divine-border shine-effect">
-                                    {/* Card Background Effects */}
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-gold-500/5 rounded-full blur-[60px] translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
-
+                        <div className="space-y-5">
+                            <div className="space-y-5">
+                                {/* Identity Card */}
+                                <div className="relative rounded-2xl bg-gradient-to-br from-emerald-950/40 via-black to-black border border-white/10 p-6 overflow-hidden shadow-lg">
                                     <div className="relative z-10">
                                         {/* Card Header */}
-                                        <div className="flex items-center justify-between mb-8">
-                                            <div className="flex items-center gap-4">
-                                                <div className="size-14 rounded-2xl bg-gradient-to-br from-gold-500/10 to-black border border-gold-500/20 flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.1)]">
-                                                    <span className="material-symbols-outlined text-gold-500 text-3xl">fingerprint</span>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="size-12 rounded-xl bg-gradient-to-br from-gold-500/10 to-black border border-gold-500/20 flex items-center justify-center">
+                                                    <span className="material-symbols-outlined text-gold-500 text-2xl">fingerprint</span>
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-xl font-serif font-bold text-white tracking-wide">Identity Card</h3>
-                                                    <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] mt-1">Personal Biometrics</p>
+                                                    <h3 className="text-lg font-serif font-bold text-white tracking-wide">Identity Card</h3>
+                                                    <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] mt-0.5">Personal Biometrics</p>
                                                 </div>
                                             </div>
-                                            <div className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-gray-400 font-bold tracking-widest">
+                                            <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-gray-400 font-bold tracking-widest">
                                                 ID: {profile.userId?.substring(0, 8) || 'USER-01'}
                                             </div>
                                         </div>
@@ -146,7 +145,7 @@ const Profile: React.FC = () => {
                                         {/* Inputs Grid - Redesigned with Internal Labels */}
                                         <div className="space-y-5">
                                             {/* Name Field */}
-                                            <div className="relative group/input bg-black/40 border border-white/10 rounded-2xl focus-within:border-gold-500/50 focus-within:bg-black/60 transition-all duration-300">
+                                            <div className="relative group/input bg-white/5 border border-white/10 rounded-2xl focus-within:border-gold-400 focus-within:bg-white/10 focus-within:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all duration-300">
                                                 <label className="absolute top-3 left-5 text-[9px] text-gold-500/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-gold-500 transition-colors">
                                                     {t('display_name')}
                                                 </label>
@@ -154,7 +153,7 @@ const Profile: React.FC = () => {
                                                     type="text"
                                                     value={formData.name || ''}
                                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                    className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-transparent focus:outline-none font-medium text-sm tracking-wide"
+                                                    className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-white/20 focus:outline-none focus:ring-0 border-none font-medium text-sm tracking-wide"
                                                     placeholder="Enter your name"
                                                     autoComplete="off"
                                                 />
@@ -162,33 +161,66 @@ const Profile: React.FC = () => {
                                             </div>
 
                                             {/* Email Field */}
-                                            <div className="relative group/input bg-black/40 border border-white/10 rounded-2xl focus-within:border-gold-500/50 focus-within:bg-black/60 transition-all duration-300">
+                                            <div className="relative group/input bg-white/5 border border-white/10 rounded-2xl focus-within:border-gold-400 focus-within:bg-white/10 focus-within:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all duration-300">
                                                 <label className="absolute top-3 left-5 text-[9px] text-gold-500/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-gold-500 transition-colors">
-                                                    Email
+                                                    {t('email')}
                                                 </label>
                                                 <input
                                                     type="email"
                                                     value={formData.email || ''}
                                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                    className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-transparent focus:outline-none font-medium text-sm tracking-wide"
+                                                    className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-white/20 focus:outline-none focus:ring-0 border-none font-medium text-sm tracking-wide"
                                                     placeholder="Enter your email"
                                                     autoComplete="off"
                                                 />
                                                 <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-white/10 group-focus-within/input:text-gold-500 transition-colors">mail</span>
                                             </div>
 
+                                            {/* Gender Custom Toggle */}
+                                            <div className="relative bg-white/5 border border-white/10 rounded-2xl p-2 pt-7 flex gap-2">
+                                                <label className="absolute top-2 left-4 text-[9px] text-gold-500/60 font-bold uppercase tracking-widest pointer-events-none">
+                                                    {t('gender')}
+                                                </label>
+                                                
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, gender: 'male' })}
+                                                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                                                        formData.gender === 'male'
+                                                            ? 'bg-gold-500 text-black shadow-[0_0_15px_rgba(212,175,55,0.3)]'
+                                                            : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white'
+                                                    }`}
+                                                >
+                                                    <span className="material-symbols-outlined text-[18px]">man</span>
+                                                    {t('male')}
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, gender: 'female' })}
+                                                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                                                        formData.gender === 'female'
+                                                            ? 'bg-gold-500 text-black shadow-[0_0_15px_rgba(212,175,55,0.3)]'
+                                                            : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white'
+                                                    }`}
+                                                >
+                                                    <span className="material-symbols-outlined text-[18px]">woman</span>
+                                                    {t('female')}
+                                                </button>
+                                            </div>
+
                                             {/* Metrics Row */}
                                             <div className="grid grid-cols-2 gap-4">
                                                 {/* Weight */}
-                                                <div className="relative group/input bg-black/40 border border-white/10 rounded-2xl focus-within:border-emerald-500/50 focus-within:bg-black/60 transition-all duration-300">
-                                                    <label className="absolute top-3 left-5 text-[9px] text-emerald-500/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-emerald-500 transition-colors">
+                                                <div className="relative group/input bg-white/5 border border-white/10 rounded-2xl focus-within:border-gold-400 focus-within:bg-white/10 focus-within:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all duration-300">
+                                                    <label className="absolute top-3 left-5 text-[9px] text-gold-500/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-gold-500 transition-colors">
                                                         {t('weight')}
                                                     </label>
                                                     <input
                                                         type="number"
                                                         value={formData.weight || ''}
                                                         onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) || 0 })}
-                                                        className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-transparent focus:outline-none font-mono text-sm tracking-wide"
+                                                        className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-white/20 focus:outline-none focus:ring-0 border-none font-mono text-sm tracking-wide"
                                                         placeholder="00"
                                                         autoComplete="off"
                                                     />
@@ -196,15 +228,15 @@ const Profile: React.FC = () => {
                                                 </div>
 
                                                 {/* Height */}
-                                                <div className="relative group/input bg-black/40 border border-white/10 rounded-2xl focus-within:border-emerald-500/50 focus-within:bg-black/60 transition-all duration-300">
-                                                    <label className="absolute top-3 left-5 text-[9px] text-emerald-500/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-emerald-500 transition-colors">
+                                                <div className="relative group/input bg-white/5 border border-white/10 rounded-2xl focus-within:border-gold-400 focus-within:bg-white/10 focus-within:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all duration-300">
+                                                    <label className="absolute top-3 left-5 text-[9px] text-gold-500/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-gold-500 transition-colors">
                                                         {t('height')}
                                                     </label>
                                                     <input
                                                         type="number"
                                                         value={formData.height || ''}
                                                         onChange={(e) => setFormData({ ...formData, height: parseFloat(e.target.value) || 0 })}
-                                                        className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-transparent focus:outline-none font-mono text-sm tracking-wide"
+                                                        className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-white/20 focus:outline-none focus:ring-0 border-none font-mono text-sm tracking-wide"
                                                         placeholder="000"
                                                         autoComplete="off"
                                                     />
@@ -215,68 +247,73 @@ const Profile: React.FC = () => {
                                             {/* Medical Logic - Allergies & Diseases */}
                                             <div className="space-y-4">
                                                 {/* Allergies */}
-                                                <div className="relative group/input bg-black/40 border border-white/10 rounded-2xl focus-within:border-orange-500/50 focus-within:bg-black/60 transition-all duration-300">
-                                                    <label className="absolute top-3 left-5 text-[9px] text-orange-500/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-orange-500 transition-colors">
-                                                        Allergies (Optional)
+                                                <div className="relative group/input bg-white/5 border border-white/10 rounded-2xl focus-within:border-gold-400 focus-within:bg-white/10 focus-within:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all duration-300">
+                                                    <label className="absolute top-3 left-5 text-[9px] text-gold-500/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-gold-500 transition-colors">
+                                                        {t('allergies_optional')}
                                                     </label>
                                                     <input
                                                         type="text"
                                                         value={Array.isArray(formData.allergies) ? formData.allergies.join(', ') : (formData.allergies || '')}
                                                         onChange={(e) => setFormData({ ...formData, allergies: e.target.value.split(',').map(s => s.trim()) })}
-                                                        className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-transparent focus:outline-none font-medium text-sm tracking-wide"
-                                                        placeholder="e.g. Peanuts, Gluten"
+                                                        className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-white/20 focus:outline-none focus:ring-0 border-none font-medium text-sm tracking-wide"
+                                                        placeholder={t('allergies_placeholder')}
                                                         autoComplete="off"
                                                     />
-                                                    <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-white/10 group-focus-within/input:text-orange-500 transition-colors">warning</span>
+                                                    <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-white/10 group-focus-within/input:text-gold-500 transition-colors">warning</span>
                                                 </div>
 
                                                 {/* Chronic Diseases */}
-                                                <div className="relative group/input bg-black/40 border border-white/10 rounded-2xl focus-within:border-red-500/50 focus-within:bg-black/60 transition-all duration-300">
-                                                    <label className="absolute top-3 left-5 text-[9px] text-red-500/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-red-500 transition-colors">
-                                                        Chronic Diseases (Optional)
+                                                <div className="relative group/input bg-white/5 border border-white/10 rounded-2xl focus-within:border-gold-400 focus-within:bg-white/10 focus-within:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all duration-300">
+                                                    <label className="absolute top-3 left-5 text-[9px] text-gold-500/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-gold-500 transition-colors">
+                                                        {t('diseases_optional')}
                                                     </label>
                                                     <input
                                                         type="text"
                                                         value={Array.isArray(formData.diseases) ? formData.diseases.join(', ') : (formData.diseases || '')}
                                                         onChange={(e) => setFormData({ ...formData, diseases: e.target.value.split(',').map(s => s.trim()) })}
-                                                        className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-transparent focus:outline-none font-medium text-sm tracking-wide"
-                                                        placeholder="e.g. Diabetes, Hypertension"
+                                                        className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-white/20 focus:outline-none focus:ring-0 border-none font-medium text-sm tracking-wide"
+                                                        placeholder={t('diseases_placeholder')}
                                                         autoComplete="off"
                                                     />
-                                                    <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-white/10 group-focus-within/input:text-red-500 transition-colors">medical_services</span>
+                                                    <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-white/10 group-focus-within/input:text-gold-500 transition-colors">medical_services</span>
                                                 </div>
                                             </div>
 
                                             {/* API Key Field */}
-                                            <div className="relative group/input bg-black/40 border border-white/10 rounded-2xl focus-within:border-blue-500/50 focus-within:bg-black/60 transition-all duration-300">
-                                                <label className="absolute top-3 left-5 text-[9px] text-blue-400/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-blue-400 transition-colors">
-                                                    Gemini API Key
-                                                </label>
-                                                <input
-                                                    type="password"
-                                                    value={formData.apiKey || ''}
-                                                    onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-                                                    className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-transparent focus:outline-none font-mono text-xs tracking-wide"
-                                                    placeholder="Start with AI..."
-                                                    autoComplete="off"
-                                                />
-                                                <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-white/10 group-focus-within/input:text-blue-500 transition-colors">key</span>
+                                            <div className="flex flex-col">
+                                                <div className="relative group/input bg-white/5 border border-white/10 rounded-2xl focus-within:border-gold-400 focus-within:bg-white/10 focus-within:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all duration-300">
+                                                    <label className="absolute top-3 left-5 text-[9px] text-gold-400/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-gold-400 transition-colors">
+                                                        {t('api_key')}
+                                                    </label>
+                                                    <input
+                                                        type="password"
+                                                        value={formData.apiKey || ''}
+                                                        onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
+                                                        className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-white/20 focus:outline-none focus:ring-0 border-none font-mono text-xs tracking-wide"
+                                                        placeholder={t('api_key_placeholder')}
+                                                        autoComplete="off"
+                                                    />
+                                                    <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-white/10 group-focus-within/input:text-gold-500 transition-colors">key</span>
+                                                </div>
+                                                <div className="text-left mt-2 pl-2">
+                                                    <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-[10px] text-emerald-400/80 hover:text-emerald-300 underline font-bold tracking-wide">
+                                                        Get Free API Key from OpenRouter.ai
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Save Action - Refined Elegant Button */}
+                                {/* Save Action */}
                                 <button
                                     onClick={handleSaveProfile}
-                                    className="w-full py-5 rounded-2xl bg-gradient-to-r from-gold-900/40 via-gold-900/20 to-gold-900/40 border border-gold-500/30 text-gold-400 font-bold uppercase tracking-[0.3em] text-[10px] shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:bg-gold-500/10 hover:border-gold-500/60 hover:text-gold-bright hover:shadow-[0_0_30px_rgba(212,175,55,0.15)] active:scale-[0.98] transition-all relative overflow-hidden group mb-4"
+                                    className="w-full py-4 rounded-xl bg-gradient-to-r from-gold-900/40 via-gold-900/20 to-gold-900/40 border border-gold-500/30 text-gold-400 font-bold uppercase tracking-[0.3em] text-[10px] hover:bg-gold-500/10 hover:border-gold-500/60 hover:text-gold-400 active:scale-[0.98] transition-all mb-4"
                                 >
                                     <span className="relative z-10 flex items-center justify-center gap-3">
-                                        <span className="material-symbols-outlined text-lg group-hover:scale-110 transition-transform">save</span>
-                                        {t('save_changes')}
+                                        <span className="material-symbols-outlined text-lg">{saved ? 'check_circle' : 'save'}</span>
+                                        {saved ? 'Saved Successfully!' : t('save_changes')}
                                     </span>
-                                    {/* Light sweep effect */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                                 </button>
                             </div>
                         </div>
@@ -284,12 +321,11 @@ const Profile: React.FC = () => {
 
                     {/* ---------------- SETTINGS TAB ---------------- */}
                     {activeTab === 'settings' && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-700">
+                        <div className="space-y-5">
 
                             {/* Ramadan Mode Toggle */}
-                            <div className="bg-gradient-to-r from-emerald-900/40 to-black border border-gold/30 rounded-2xl p-4 flex items-center justify-between shadow-lg relative overflow-hidden group">
-                                <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                <div className="flex items-center gap-4 relative z-10">
+                            <div className="bg-gradient-to-r from-emerald-900/40 to-black border border-gold/30 rounded-2xl p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
                                     <div className={`size-12 rounded-full border flex items-center justify-center transition-colors ${settings.ramadanMode ? 'bg-gold/20 border-gold text-gold' : 'bg-white/5 border-white/10 text-gray-500'}`}>
                                         <span className="material-symbols-outlined text-2xl">mosque</span>
                                     </div>
@@ -300,9 +336,9 @@ const Profile: React.FC = () => {
                                 </div>
                                 <button
                                     onClick={() => updateSettings({ ramadanMode: !settings.ramadanMode })}
-                                    className={`relative w-14 h-8 rounded-full transition-all duration-300 border ${settings.ramadanMode ? 'bg-gold/20 border-gold' : 'bg-black/40 border-white/10'}`}
+                                    className={`relative w-14 h-8 rounded-full transition-colors border ${settings.ramadanMode ? 'bg-gold/20 border-gold' : 'bg-black/40 border-white/10'}`}
                                 >
-                                    <div className={`absolute top-1/2 -translate-y-1/2 size-6 rounded-full shadow-md transition-all duration-300 ${settings.ramadanMode ? 'left-[calc(100%-1.75rem)] bg-gold shadow-[0_0_10px_#d4af37]' : 'left-1 bg-gray-500'}`}></div>
+                                    <div className={`absolute top-1/2 -translate-y-1/2 size-6 rounded-full transition-all duration-300 ${settings.ramadanMode ? 'left-[calc(100%-1.75rem)] bg-gold' : 'left-1 bg-gray-500'}`}></div>
                                 </button>
                             </div>
 
@@ -310,7 +346,7 @@ const Profile: React.FC = () => {
 
                             {/* Language Section - Enhanced */}
                             <div className="space-y-4">
-                                <h3 className="text-xs font-bold text-gold-bright uppercase tracking-[0.3em] ml-2 flex items-center gap-2 opacity-80">
+                                <h3 className="text-xs font-bold text-gold-400 uppercase tracking-[0.3em] ml-2 flex items-center gap-2 opacity-80">
                                     <span className="material-symbols-outlined text-sm">translate</span>
                                     {t('language')}
                                 </h3>
@@ -323,30 +359,28 @@ const Profile: React.FC = () => {
                                         <button
                                             key={lang.code}
                                             onClick={() => updateSettings({ language: lang.code as any })}
-                                            className={`relative overflow-hidden rounded-xl p-4 border transition-all duration-300 group ${settings.language === lang.code
-                                                ? 'bg-gradient-to-r from-gold/20 to-gold/5 border-gold shadow-[0_0_20px_rgba(212,175,55,0.1)]'
+                                            className={`relative rounded-xl p-4 border transition-all duration-300 ${settings.language === lang.code
+                                                ? 'bg-gradient-to-r from-gold/20 to-gold/5 border-gold'
                                                 : 'bg-black/40 border-white/5 hover:border-gold/30 hover:bg-black/60'
                                                 }`}
                                         >
                                             <div className="flex items-center justify-between relative z-10">
                                                 <div className="flex items-center gap-4">
-                                                    <div className={`size-10 rounded-full flex items-center justify-center font-bold text-xs border ${settings.language === lang.code ? 'bg-gold text-black border-gold' : 'bg-white/5 text-gray-400 border-white/10 group-hover:border-gold/30'
+                                                    <div className={`size-10 rounded-full flex items-center justify-center font-bold text-xs border ${settings.language === lang.code ? 'bg-gold text-black border-gold' : 'bg-white/5 text-gray-400 border-white/10'
                                                         }`}>
                                                         {lang.code.toUpperCase()}
                                                     </div>
                                                     <div className="text-left">
-                                                        <p className={`text-sm font-bold ${settings.language === lang.code ? 'text-gold-bright' : 'text-gray-300 group-hover:text-white'}`}>
+                                                        <p className={`text-sm font-bold ${settings.language === lang.code ? 'text-gold-400' : 'text-gray-300'}`}>
                                                             {lang.native}
                                                         </p>
                                                         <p className="text-[10px] text-gray-500 uppercase tracking-wider">{lang.label}</p>
                                                     </div>
                                                 </div>
                                                 {settings.language === lang.code && (
-                                                    <span className="material-symbols-outlined text-gold-bright animate-in zoom-in spin-in-180 duration-500">check_circle</span>
+                                                    <span className="material-symbols-outlined text-gold-400">check_circle</span>
                                                 )}
                                             </div>
-                                            {/* Hover Glow */}
-                                            <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                                         </button>
                                     ))}
                                 </div>
@@ -356,7 +390,7 @@ const Profile: React.FC = () => {
 
                             {/* Location Info (Read Only) */}
                             <div className="space-y-4">
-                                <h3 className="text-xs font-bold text-gold-bright uppercase tracking-[0.3em] ml-2 flex items-center gap-2 opacity-80">
+                                <h3 className="text-xs font-bold text-gold-400 uppercase tracking-[0.3em] ml-2 flex items-center gap-2 opacity-80">
                                     <span className="material-symbols-outlined text-sm">location_on</span>
                                     {t('location')}
                                 </h3>
@@ -384,13 +418,13 @@ const Profile: React.FC = () => {
 
                             <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-8 opacity-50"></div>
 
-                            <button className="w-full py-5 rounded-2xl border border-red-500/20 bg-red-500/5 text-red-500/60 font-bold text-[10px] tracking-[0.5em] uppercase hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/40 transition-all flex items-center justify-center gap-3 group">
-                                <span className="material-symbols-outlined text-lg group-hover:animate-bounce">delete_forever</span>
+                            <button className="w-full py-4 rounded-xl border border-red-900/30 bg-gradient-to-r from-red-900/10 via-red-900/20 to-red-900/10 text-red-400 font-bold text-[10px] tracking-[0.5em] uppercase hover:bg-red-900/30 hover:border-red-500/50 hover:text-red-300 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all flex items-center justify-center gap-3">
+                                <span className="material-symbols-outlined text-lg">delete_forever</span>
                                 {t('clear_data')}
                             </button>
 
                             <div className="pt-6 flex flex-col items-center gap-2 opacity-30">
-                                <p className="text-[9px] text-gold-bright text-center font-mono tracking-[0.4em] uppercase">
+                                <p className="text-[9px] text-gold-400 text-center font-mono tracking-[0.4em] uppercase">
                                     iMuslimRu v1.0.0
                                 </p>
                             </div>

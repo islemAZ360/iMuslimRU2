@@ -59,39 +59,43 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    // Default states
-    const [location, setLocationState] = useState<UserLocation | null>(null);
-    const [settings, setSettings] = useState<UserSettings>({
-        mazhab: 0,
-        method: 3, // Muslim World League as default
-        language: 'en',
-        ramadanMode: false,
+    // Lazily initialize state from LocalStorage to avoid overwriting on first render
+    const [location, setLocationState] = useState<UserLocation | null>(() => {
+        const saved = localStorage.getItem('userLocation');
+        return saved ? JSON.parse(saved) : null;
     });
-    const [profile, setProfile] = useState<UserProfile>({});
-    const [healthStats, setHealthStats] = useState<HealthStats>({
-        calories: 0,
-        grade: '--',
-        lastScanDate: '',
-        waterIntake: 0,
-        steps: 0,
-        dailyGoalCalories: 2000
+    const [settings, setSettings] = useState<UserSettings>(() => {
+        const saved = localStorage.getItem('userSettings');
+        return saved ? JSON.parse(saved) : {
+            mazhab: 0,
+            method: 3, // Muslim World League as default
+            language: 'en',
+            ramadanMode: false,
+        };
     });
-    const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+    const [profile, setProfile] = useState<UserProfile>(() => {
+        const saved = localStorage.getItem('userProfile');
+        return saved ? JSON.parse(saved) : {};
+    });
+    const [healthStats, setHealthStats] = useState<HealthStats>(() => {
+        const saved = localStorage.getItem('userHealthStats');
+        return saved ? JSON.parse(saved) : {
+            calories: 0,
+            grade: '--',
+            lastScanDate: '',
+            waterIntake: 0,
+            steps: 0,
+            dailyGoalCalories: 2000
+        };
+    });
+    const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+        const saved = localStorage.getItem('theme');
+        return (saved as 'dark' | 'light') || 'dark';
+    });
     const [isLoading, setIsLoading] = useState(true);
 
-    // Load from LocalStorage on mount & Request Location
+    // Request Location on mount
     useEffect(() => {
-        const savedLocation = localStorage.getItem('userLocation');
-        const savedSettings = localStorage.getItem('userSettings');
-        const savedProfile = localStorage.getItem('userProfile');
-        const savedHealthStats = localStorage.getItem('userHealthStats');
-        const savedTheme = localStorage.getItem('theme');
-
-        if (savedLocation) setLocationState(JSON.parse(savedLocation));
-        if (savedSettings) setSettings(JSON.parse(savedSettings));
-        if (savedProfile) setProfile(JSON.parse(savedProfile));
-        if (savedHealthStats) setHealthStats(JSON.parse(savedHealthStats));
-        if (savedTheme) setTheme(savedTheme as 'dark' | 'light');
 
         // Request Location Permission & Data
         if ('geolocation' in navigator) {

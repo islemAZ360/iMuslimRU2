@@ -50,11 +50,11 @@ const Stats: React.FC = () => {
     const maxTrend = Math.max(...weeklyTrend, 10); // Avoid division by zero, min scale 10
 
     return (
-        <div className="pb-32 pt-8 px-4 flex flex-col items-center min-h-screen animate-in fade-in duration-700" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+        <div className="pb-32 pt-8 px-4 flex flex-col items-center min-h-screen animate-in fade-in duration-500" dir={language === 'ar' ? 'rtl' : 'ltr'}>
 
             {/* Header */}
             <div className="text-center mb-8 relative w-full">
-                <h1 className="font-arabic text-5xl text-gold-gradient drop-shadow-md mb-2">{t('statistics')}</h1>
+                <h1 className="font-arabic text-3xl text-gold-gradient mb-2">{t('statistics')}</h1>
                 <div className="flex items-center justify-center gap-2 mb-4">
                     <div className="h-px w-8 bg-gold/30"></div>
                     <p className="text-[10px] font-bold text-emerald-light uppercase tracking-[0.2em]">Spiritual Analytics</p>
@@ -64,11 +64,10 @@ const Stats: React.FC = () => {
 
             {/* Smart Insight Banner */}
             {insight && (
-                <div className="w-full mb-8 animate-in slide-in-from-top-4 duration-1000">
-                    <div className="bg-emerald-900/40 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-4 shadow-lg relative overflow-hidden">
-                        <div className="absolute inset-0 bg-emerald-500/5 animate-pulse"></div>
-                        <span className="material-symbols-outlined text-emerald-400 text-3xl relative z-10">psychology</span>
-                        <div className="relative z-10">
+                <div className="w-full mb-6">
+                    <div className="bg-emerald-900/40 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-4">
+                        <span className="material-symbols-outlined text-emerald-400 text-3xl">psychology</span>
+                        <div>
                             <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-1">AI Spiritual Insight</p>
                             <p className="text-sm font-serif text-white italic">"{insight}"</p>
                         </div>
@@ -77,11 +76,8 @@ const Stats: React.FC = () => {
             )}
 
             {/* Premium Summary Cards */}
-            <div className="grid grid-cols-2 gap-4 w-full mb-8">
-                <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-gold/30 rounded-[2.5rem] p-6 relative overflow-hidden shadow-xl group">
-                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <span className="material-symbols-outlined text-7xl text-gold">verified</span>
-                    </div>
+            <div className="grid grid-cols-2 gap-3 w-full mb-6">
+                <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
                     <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">Total Dhikr</p>
                     <h2 className="text-3xl font-serif font-bold text-white mb-1">{totalDhikr.toLocaleString()}</h2>
                     <div className="flex items-center gap-1 text-[8px] text-emerald-400 font-bold uppercase">
@@ -89,10 +85,7 @@ const Stats: React.FC = () => {
                         Lifetime
                     </div>
                 </div>
-                <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-gold/30 rounded-[2.5rem] p-6 relative overflow-hidden shadow-xl group">
-                    <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <span className="material-symbols-outlined text-7xl text-gold">auto_awesome</span>
-                    </div>
+                <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
                     <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">Most Active</p>
                     <h2 className="text-2xl font-serif font-bold text-white mb-1 truncate">{mostActiveCategory}</h2>
                     <div className="text-[8px] text-gold/80 font-bold uppercase">Main Focus</div>
@@ -100,27 +93,22 @@ const Stats: React.FC = () => {
             </div>
 
             {/* Weekly Activity Real Data Chart */}
-            <div className="w-full bg-[#050A08] border border-gold/10 rounded-[3rem] p-8 relative overflow-hidden mb-8 shadow-xl">
-                <div className="absolute top-0 right-0 p-8 opacity-5">
-                    <span className="material-symbols-outlined text-8xl text-gold">timeline</span>
-                </div>
-
-                <h3 className="font-serif font-bold text-white text-xl mb-8 relative z-10 flex items-center gap-3">
-                    <div className="size-1 rounded-full bg-gold shadow-gold-glow animate-pulse"></div>
+            <div className="w-full bg-[#050A08] border border-gold/10 rounded-2xl p-6 relative overflow-hidden mb-6">
+                <h3 className="font-serif font-bold text-white text-lg mb-6 relative z-10 flex items-center gap-3">
+                    <div className="size-1 rounded-full bg-gold"></div>
                     Weekly Devotion Trend
                 </h3>
 
                 <div className="h-40 w-full relative flex items-end justify-between px-2 gap-2">
                     {weeklyTrend.map((val, i) => (
                         <div key={i} className="flex-1 flex flex-col items-center gap-3 group relative h-full justify-end">
-                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gold text-black text-[9px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 z-20 shadow-gold-glow-sm">
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gold text-black text-[9px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-20">
                                 {val}
                             </div>
                             <div
-                                className="w-full max-w-[12px] bg-gradient-to-t from-gold/5 via-gold/40 to-gold rounded-full relative transition-all duration-1000 group-hover:shadow-gold-glow shadow-gold-glow-sm"
+                                className="w-full max-w-[12px] bg-gradient-to-t from-gold/5 via-gold/40 to-gold rounded-full relative transition-all duration-500"
                                 style={{ height: `${Math.max((val / maxTrend) * 100, 5)}%` }} // Min 5% height for visual
                             >
-                                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"></div>
                             </div>
                             <span className="text-[8px] font-bold text-gray-600 uppercase tracking-widest font-mono">
                                 {new Date(Date.now() - (6 - i) * 86400000).toLocaleDateString(language, { weekday: 'narrow' })}
@@ -130,22 +118,20 @@ const Stats: React.FC = () => {
                 </div>
             </div>
 
-            {/* Dhikr Insights Breakdown - Premium Redesign */}
-            <div className="w-full bg-black/40 border border-gold/20 rounded-[3rem] p-8 relative overflow-hidden shadow-2xl mb-8">
-                <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] pointer-events-none"></div>
-
+            {/* Dhikr Insights Breakdown */}
+            <div className="w-full bg-black/40 border border-gold/20 rounded-2xl p-6 relative overflow-hidden mb-8">
                 <div className="relative z-10">
-                    <div className="flex justify-between items-center mb-8 px-2">
+                    <div className="flex justify-between items-center mb-6 px-1">
                         <div className="flex items-center gap-3">
-                            <div className="w-1.5 h-8 bg-gold rounded-full shadow-gold-glow"></div>
-                            <h3 className="font-arabic text-3xl text-gold">إحصائيات الأذكار</h3>
+                            <div className="w-1.5 h-8 bg-gold rounded-full"></div>
+                            <h3 className="font-arabic text-2xl text-gold">إحصائيات الأذكار</h3>
                         </div>
-                        <div className="size-10 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-gold">
+                        <div className="size-9 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-gold">
                             <span className="material-symbols-outlined text-sm">bar_chart</span>
                         </div>
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                         {Object.entries(dhikrStats).length > 0 ? (
                             Object.entries(dhikrStats).sort((a, b) => b[1] - a[1]).map(([cat, val]) => (
                                 <div key={cat} className="group flex flex-col gap-2">
@@ -163,18 +149,17 @@ const Stats: React.FC = () => {
                                             <span className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">Counts</span>
                                         </div>
                                     </div>
-                                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden relative">
+                                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                                         <div
-                                            className="h-full bg-gradient-to-r from-gold/40 to-gold rounded-full shadow-gold-glow-sm transition-all duration-1000 relative z-10"
+                                            className="h-full bg-gradient-to-r from-gold/40 to-gold rounded-full transition-all duration-500"
                                             style={{ width: `${Math.min((val / (totalDhikr || 1)) * 100, 100)}%` }}
                                         ></div>
-                                        <div className="absolute inset-0 bg-white/5"></div>
                                     </div>
                                 </div>
                             ))
                         ) : (
                             <div className="py-12 text-center bg-white/2 rounded-3xl border border-dashed border-gold/10">
-                                <span className="material-symbols-outlined text-gold/20 text-5xl mb-3">analytics</span>
+                                <span className="material-symbols-outlined text-gold/20 text-4xl mb-3">analytics</span>
                                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em]">Spiritual data pending...</p>
                             </div>
                         )}

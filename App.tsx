@@ -10,6 +10,7 @@ import Athkar from './pages/Athkar';
 import Profile from './pages/Profile';
 import Ramadan from './pages/Ramadan';
 import Stats from './pages/Stats';
+import AiChat from './pages/AiChat';
 import BottomNav from './components/BottomNav';
 import MenuOverlay from './components/MenuOverlay';
 
@@ -18,8 +19,9 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="min-h-screen bg-black text-white font-sans overflow-x-hidden selection:bg-gold selection:text-black">
-        <Routes>
+      <div className="min-h-screen bg-desktop-pattern flex justify-center text-white font-sans selection:bg-gold selection:text-black">
+        <div className="w-full max-w-md min-h-screen bg-black relative shadow-2xl border-x border-white/5 flex flex-col overflow-x-hidden">
+          <Routes>
           <Route path="/" element={<Onboarding />} />
           <Route path="/home" element={<Home />} />
           <Route path="/prayer" element={<Prayer />} />
@@ -29,6 +31,7 @@ const App: React.FC = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/ramadan" element={<Ramadan />} />
           <Route path="/stats" element={<Stats />} />
+          <Route path="/ai" element={<AiChat />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
@@ -37,6 +40,7 @@ const App: React.FC = () => {
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
         />
+        </div>
       </div>
     </Router>
   );
