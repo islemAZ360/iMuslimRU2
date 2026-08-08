@@ -174,16 +174,32 @@ const Health: React.FC = () => {
 
                                 {analyzing ? (
                                     <>
-                                        {/* Core pulsing background */}
-                                        <div className="absolute inset-0 bg-emerald-500/10 animate-pulse"></div>
-                                        {/* Spinning tech border */}
-                                        <div className="absolute inset-0 rounded-full border-[3px] border-emerald-900/30 border-t-emerald-400 animate-spin-slow"></div>
+                                        {/* Uploaded image as background (dimmed) */}
+                                        {lastImage && (
+                                            <div 
+                                                className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity grayscale" 
+                                                style={{ backgroundImage: `url(data:image/jpeg;base64,${lastImage})` }}
+                                            />
+                                        )}
+                                        {/* Core pulsing background overlay */}
+                                        <div className="absolute inset-0 bg-emerald-900/20 animate-pulse"></div>
+                                        
+                                        {/* Grid overlay for tech feel */}
+                                        <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.1)_1px,transparent_1px)] bg-[size:15px_15px] opacity-40"></div>
+                                        
+                                        {/* Spinning tech borders */}
+                                        <div className="absolute inset-0 rounded-full border-[2px] border-emerald-900/30 border-t-emerald-400 border-b-emerald-400 animate-spin-slow"></div>
+                                        <div className="absolute inset-2 rounded-full border-[1px] border-emerald-900/30 border-r-emerald-300 border-l-emerald-300 animate-spin-reverse-slow opacity-50"></div>
+                                        
                                         {/* The scanning laser */}
-                                        <div className="w-[120%] h-0.5 bg-emerald-400 absolute -left-[10%] animate-scan shadow-[0_0_15px_rgba(52,211,153,0.9)] z-20"></div>
-                                        {/* Scanning text */}
-                                        <div className="relative z-20 flex flex-col items-center">
-                                            <span className="material-symbols-outlined text-3xl text-emerald-400 mb-1 animate-pulse">troubleshoot</span>
-                                            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.3em] animate-pulse">{t.analyzing || 'Scanning'}</span>
+                                        <div className="w-full h-[2px] bg-emerald-400 absolute left-0 animate-scan shadow-[0_0_20px_3px_rgba(16,185,129,0.8)] z-20"></div>
+                                        
+                                        {/* Scanning text pill */}
+                                        <div className="relative z-20 flex items-center gap-2 bg-[#021812]/80 backdrop-blur-md px-4 py-2 rounded-full border border-emerald-500/30 shadow-[0_0_15px_rgba(2,24,18,0.8)]">
+                                            <span className="material-symbols-outlined text-[14px] text-emerald-400 animate-pulse">troubleshoot</span>
+                                            <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-[0.3em] animate-pulse">
+                                                {t.analyzing || 'Scanning'}
+                                            </span>
                                         </div>
                                     </>
                                 ) : (
