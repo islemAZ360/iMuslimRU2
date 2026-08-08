@@ -4,10 +4,12 @@ import { usePrayer } from '../context/PrayerContext';
 import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import CalendarModal from '../components/CalendarModal';
+import { useLanguage } from '../context/LanguageContext';
 
 const Ramadan: React.FC = () => {
     const { timings, hijriDate, calendarData } = usePrayer();
     const { settings } = useUser();
+    const { language, t } = useLanguage();
     const navigate = useNavigate();
 
     const [timeLeft, setTimeLeft] = useState<{ hours: number, minutes: number, seconds: number } | null>(null);
@@ -91,6 +93,18 @@ const Ramadan: React.FC = () => {
         return `${hour12}:${m} ${suffix}`;
     };
 
+    const getWeekday = (enDay: string) => {
+        if (language === 'ar') {
+            const map: any = { Sunday: 'الأحد', Monday: 'الاثنين', Tuesday: 'الثلاثاء', Wednesday: 'الأربعاء', Thursday: 'الخميس', Friday: 'الجمعة', Saturday: 'السبت' };
+            return map[enDay] || enDay;
+        }
+        if (language === 'ru') {
+            const map: any = { Sunday: 'Воскресенье', Monday: 'Понедельник', Tuesday: 'Вторник', Wednesday: 'Среда', Thursday: 'Четверг', Friday: 'Пятница', Saturday: 'Суббота' };
+            return map[enDay] || enDay;
+        }
+        return enDay;
+    };
+
     // Progress Calculation
     const getProgress = () => {
         if (!timings) return 0;
@@ -114,24 +128,24 @@ const Ramadan: React.FC = () => {
 
     if (!isRamadanEnabled) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-700">
+            <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-700" dir={language === 'ar' ? 'rtl' : 'ltr'}>
                 <div className="size-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 animate-pulse">
                     <span className="material-symbols-outlined text-4xl text-gray-400">mosque</span>
                 </div>
-                <h2 className="text-2xl font-serif font-bold text-white mb-2">Ramadan Mode is Off</h2>
-                <p className="text-sm text-gray-400 max-w-xs mb-8">Enable Ramadan Mode in Settings to access features like Suhoor countdown, Iftar times, and more.</p>
+                <h2 className="text-2xl font-serif font-bold text-white mb-2">{t('ramadan_mode_off')}</h2>
+                <p className="text-sm text-gray-400 max-w-xs mb-8">{t('enable_ramadan_mode')}</p>
                 <button
                     onClick={() => navigate('/settings')}
                     className="px-8 py-3 rounded-full bg-gold/20 border border-gold text-gold font-bold uppercase tracking-widest hover:bg-gold/30 transition-all shadow-gold-glow"
                 >
-                    Go to Settings
+                    {t('go_to_settings')}
                 </button>
             </div>
         );
     }
 
     return (
-        <div className="pb-52 pt-8 px-4 flex flex-col items-center min-h-screen relative">
+        <div className="pb-52 pt-8 px-4 flex flex-col items-center min-h-screen relative" dir={language === 'ar' ? 'rtl' : 'ltr'}>
 
             {/* Decorative Fixed Background Elements */}
             <div className="fixed inset-0 max-w-md mx-auto pointer-events-none z-0">
@@ -141,7 +155,7 @@ const Ramadan: React.FC = () => {
             {/* Header */}
             <div className="text-center mb-8 relative w-full z-10">
                 <h1 className="font-arabic text-4xl text-transparent bg-clip-text bg-gradient-to-b from-[#FFD700] via-[#FFFACD] to-[#C5A059] mb-2 relative z-10">
-                    Ramadan Kareem
+                    {t('ramadan_kareem')}
                 </h1>
                 <div className="inline-flex items-center justify-center px-5 py-1.5 border-y border-gold/30 bg-black/30">
                     <span className="text-[10px] font-bold tracking-[0.3em] text-gold uppercase">
@@ -159,7 +173,7 @@ const Ramadan: React.FC = () => {
 
                     <div className="text-center mb-5">
                         <span className="text-[10px] font-bold text-gold-light/60 uppercase tracking-[0.2em]">
-                            {fastingPhase === 'fasting' ? 'Time Until Iftar' : 'Time Until Suhoor'}
+                            {fastingPhase === 'fasting' ? t('time_until_iftar') : t('time_until_suhoor')}
                         </span>
                     </div>
 
@@ -168,17 +182,17 @@ const Ramadan: React.FC = () => {
                         <div className="flex items-end justify-center gap-4 mb-6">
                             <div className="flex flex-col items-center">
                                 <span className="text-4xl font-serif font-bold text-gold-gradient">{timeLeft.hours.toString().padStart(2, '0')}</span>
-                                <span className="text-[9px] font-bold text-gold-dim uppercase tracking-widest mt-1">Hrs</span>
+                                <span className="text-[9px] font-bold text-gold-dim uppercase tracking-widest mt-1">{t('hrs')}</span>
                             </div>
                             <span className="text-2xl text-gold/40 mb-2">:</span>
                             <div className="flex flex-col items-center">
                                 <span className="text-4xl font-serif font-bold text-gold-gradient">{timeLeft.minutes.toString().padStart(2, '0')}</span>
-                                <span className="text-[9px] font-bold text-gold-dim uppercase tracking-widest mt-1">Min</span>
+                                <span className="text-[9px] font-bold text-gold-dim uppercase tracking-widest mt-1">{t('min')}</span>
                             </div>
                             <span className="text-2xl text-gold/40 mb-2">:</span>
                             <div className="flex flex-col items-center">
                                 <span className="text-4xl font-serif font-bold text-gold-gradient">{timeLeft.seconds.toString().padStart(2, '0')}</span>
-                                <span className="text-[9px] font-bold text-gold-dim uppercase tracking-widest mt-1">Sec</span>
+                                <span className="text-[9px] font-bold text-gold-dim uppercase tracking-widest mt-1">{t('sec')}</span>
                             </div>
                         </div>
                     ) : (
@@ -190,9 +204,9 @@ const Ramadan: React.FC = () => {
                     {/* Progress Bar */}
                     <div className="mb-4 px-2">
                         <div className="flex justify-between text-[9px] font-bold text-gold-dim uppercase tracking-wider mb-2">
-                            <span>Suhoor</span>
-                            <span className="text-center">{fastingPhase === 'fasting' ? 'Fasting...' : 'Eating Allowed'}</span>
-                            <span>Iftar</span>
+                            <span>{t('suhoor')}</span>
+                            <span className="text-center">{fastingPhase === 'fasting' ? t('fasting_progress') : t('eating_allowed')}</span>
+                            <span>{t('iftar')}</span>
                         </div>
                         <div className="h-2 bg-black/50 rounded-full overflow-hidden border border-white/5">
                             <div
@@ -208,14 +222,14 @@ const Ramadan: React.FC = () => {
             <div className="w-full flex items-center justify-between mb-4 px-2 z-10">
                 <div className="flex items-center gap-3">
                     <div className="w-1.5 h-6 bg-gradient-to-b from-gold to-gold-dark rounded-full"></div>
-                    <h3 className="text-xl font-serif font-bold text-white">7-Day Forecast</h3>
+                    <h3 className="text-xl font-serif font-bold text-white">{t('seven_day_forecast')}</h3>
                 </div>
                 <button 
                     onClick={() => setIsCalendarOpen(true)}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 border border-gold/30 text-[10px] font-bold text-gold uppercase tracking-wider hover:bg-gold/10 transition-colors"
                 >
                     <span className="material-symbols-outlined text-sm">calendar_month</span>
-                    Calendar
+                    {t('calendar_title')}
                 </button>
             </div>
 
@@ -234,10 +248,10 @@ const Ramadan: React.FC = () => {
                                 </div>
                                 <div>
                                     <h4 className={`font-bold ${index === 0 ? 'text-base text-white' : 'text-sm text-gray-200'}`}>
-                                        {index === 0 ? 'Today' : day.date.gregorian.weekday.en}
+                                        {index === 0 ? t('today') : getWeekday(day.date.gregorian.weekday.en)} 
                                     </h4>
                                     <p className="text-[10px] font-bold text-gold-dim uppercase tracking-wide">
-                                        {day.date.readable}
+                                        {language === 'ar' ? day.date.hijri.date : day.date.readable}
                                     </p>
                                 </div>
                             </div>
@@ -246,20 +260,20 @@ const Ramadan: React.FC = () => {
                                     <p className={`font-serif font-bold ${index === 0 ? 'text-white text-base' : 'text-gray-300'}`}>
                                         {formatTime(day.timings.Fajr)}
                                     </p>
-                                    <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Suhoor</p>
+                                    <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{t('suhoor')}</p>
                                 </div>
                                 <div className="h-8 w-px bg-gold/20"></div>
                                 <div>
                                     <p className={`font-serif font-bold ${index === 0 ? 'text-gold text-base' : 'text-gray-300'}`}>
                                         {formatTime(day.timings.Maghrib)}
                                     </p>
-                                    <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Iftar</p>
+                                    <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">{t('iftar')}</p>
                                 </div>
                             </div>
                         </div>
                     ))
                 ) : (
-                    <div className="text-center py-10 opacity-50 text-xs">Loading forecast...</div>
+                    <div className="text-center py-10 opacity-50 text-xs">{t('loading')}</div>
                 )}
             </div>
 
@@ -272,14 +286,14 @@ const Ramadan: React.FC = () => {
                                 <span className="material-symbols-outlined text-emerald-400">wb_twilight</span>
                             </div>
                             <div>
-                                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Next Suhoor</p>
+                                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{t('next_suhoor')}</p>
                                 <p className="font-serif font-bold text-white leading-none">{formatTime(timings.Fajr)}</p>
                             </div>
                         </div>
                         <div className="h-8 w-px bg-white/10"></div>
                         <div className="flex items-center gap-3 text-right">
                             <div>
-                                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Next Iftar</p>
+                                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{t('next_iftar')}</p>
                                 <p className="font-serif font-bold text-gold leading-none">{formatTime(timings.Maghrib)}</p>
                             </div>
                             <div className="bg-gold/10 p-2 rounded-lg border border-gold/20">

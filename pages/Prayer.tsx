@@ -68,16 +68,16 @@ const Prayer: React.FC = () => {
     };
 
     // Sunnah Tracker
-    const SUNNAH_PRAYERS: Record<string, { id: string, labelKey: string }[]> = {
-        Fajr: [{ id: 'fajr_before', labelKey: 'sunnah_2_before' }],
+    const SUNNAH_PRAYERS: Record<string, { id: string, labelKey: string, type: 'before'|'after', infoKey: string }[]> = {
+        Fajr: [{ id: 'fajr_before', labelKey: 'sunnah_2_before', type: 'before', infoKey: 'info_sunnah_fajr' }],
         Sunrise: [],
         Dhuhr: [
-            { id: 'dhuhr_before', labelKey: 'sunnah_4_before' },
-            { id: 'dhuhr_after', labelKey: 'sunnah_2_after' }
+            { id: 'dhuhr_before', labelKey: 'sunnah_4_before', type: 'before', infoKey: 'info_sunnah_dhuhr_before' },
+            { id: 'dhuhr_after', labelKey: 'sunnah_2_after', type: 'after', infoKey: 'info_sunnah_dhuhr_after' }
         ],
         Asr: [],
-        Maghrib: [{ id: 'maghrib_after', labelKey: 'sunnah_2_after' }],
-        Isha: [{ id: 'isha_after', labelKey: 'sunnah_2_after' }]
+        Maghrib: [{ id: 'maghrib_after', labelKey: 'sunnah_2_after', type: 'after', infoKey: 'info_sunnah_maghrib' }],
+        Isha: [{ id: 'isha_after', labelKey: 'sunnah_2_after', type: 'after', infoKey: 'info_sunnah_isha' }]
     };
 
     const [sunnahStatus, setSunnahStatus] = useState<Record<string, boolean>>({});

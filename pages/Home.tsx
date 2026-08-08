@@ -208,7 +208,7 @@ const Home: React.FC = () => {
                         </div>
                     </div>
                     <button onClick={() => navigate('/athkar')} className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-gold-bright hover:border-gold/30 transition-all flex items-center gap-2">
-                        View All <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                        {t('view_all')} <span className="material-symbols-outlined text-xs">arrow_forward</span>
                     </button>
                 </div>
 

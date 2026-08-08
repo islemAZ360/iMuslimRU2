@@ -85,7 +85,6 @@ const Stats: React.FC = () => {
     const totalDhikr = Object.values(dhikrStats).reduce((sum, val) => sum + val, 0);
     const mostActiveCategory = Object.entries(dhikrStats).sort((a, b) => b[1] - a[1])[0]?.[0] || 'None';
 
-    const maxTrend = Math.max(...weeklyTrend, 10); // Avoid division by zero, min scale 10
 
     return (
         <div className="pb-32 pt-8 px-4 flex flex-col items-center min-h-screen animate-in fade-in duration-500" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -95,7 +94,7 @@ const Stats: React.FC = () => {
                 <h1 className="font-arabic text-3xl text-gold-gradient mb-2">{t('statistics')}</h1>
                 <div className="flex items-center justify-center gap-2 mb-4">
                     <div className="h-px w-8 bg-gold/30"></div>
-                    <p className="text-[10px] font-bold text-emerald-light uppercase tracking-[0.2em]">Spiritual Analytics</p>
+                    <p className="text-[10px] font-bold text-emerald-light uppercase tracking-[0.2em]">{t('prayer_analytics')}</p>
                     <div className="h-px w-8 bg-gold/30"></div>
                 </div>
             </div>
@@ -141,7 +140,7 @@ const Stats: React.FC = () => {
                 </div>
                 <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
                     <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">{t('most_active') || 'Most Active'}</p>
-                    <h2 className="text-2xl font-serif font-bold text-white mb-1 truncate">{mostActiveCategory}</h2>
+                    <h2 className="text-2xl font-serif font-bold text-white mb-1 truncate">{t(mostActiveCategory.toLowerCase()) || mostActiveCategory}</h2>
                     <div className="text-[8px] text-gold/80 font-bold uppercase">{t('main_focus') || 'Main Focus'}</div>
                 </div>
             </div>
@@ -202,7 +201,7 @@ const Stats: React.FC = () => {
                                                     {cat === 'Morning' ? 'wb_twilight' : cat === 'Evening' ? 'dark_mode' : cat === 'Istighfar' ? 'auto_fix_high' : 'favorite'}
                                                 </span>
                                             </div>
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] group-hover:text-white transition-colors">{cat}</span>
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] group-hover:text-white transition-colors">{t(cat.toLowerCase()) || cat}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xl font-serif font-bold text-white">{val.toLocaleString()}</span>

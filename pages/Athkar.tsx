@@ -212,8 +212,8 @@ const Athkar: React.FC = () => {
                             <span className="material-symbols-outlined text-gold-bright text-xl">tips_and_updates</span>
                         </div>
                         <div>
-                            <h4 className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.3em] mb-1">Divine Guidance</h4>
-                            <p className="text-sm text-white/90 font-medium">It's a blessed time for <span className="text-gold-bright font-bold">{activeCategory} Athkar</span>.</p>
+                            <h4 className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.3em] mb-1">{t('divine_guidance')}</h4>
+                            <p className="text-sm text-white/90 font-medium">{t('blessed_time_for')} <span className="text-gold-bright font-bold">{t(activeCategory.toLowerCase()) || activeCategory} {t('athkar')}</span>.</p>
                         </div>
                     </div>
                     <button onClick={() => setShowSmartTip(false)} className="size-9 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
@@ -224,7 +224,7 @@ const Athkar: React.FC = () => {
 
             {/* Header */}
             <div className="text-center mb-8 relative w-full">
-                <h1 className="font-arabic text-3xl text-gold-bright mb-3 tracking-wide">الإيمان والأذكار</h1>
+                <h1 className="font-arabic text-3xl text-gold-bright mb-3 tracking-wide">{t('athkar')}</h1>
                 <div className="flex items-center justify-center gap-4 mb-5">
                     <div className="h-px w-10 bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
                     <p className="text-[11px] font-bold text-emerald-300 uppercase tracking-[0.5em]">{t('faith_progress')}</p>
@@ -234,7 +234,7 @@ const Athkar: React.FC = () => {
                 {/* Daily Goal Tracker */}
                 <div className="max-w-[280px] mx-auto p-4 rounded-2xl bg-black/40 border border-white/5">
                     <div className="flex justify-between text-[9px] font-bold text-gray-500 uppercase mb-2 tracking-widest">
-                        <span>Spiritual Journey</span>
+                        <span>{t('spiritual_journey')}</span>
                         <span className="text-gold-bright">{dailyTotal} / {DAILY_GOAL}</span>
                     </div>
                     <div className="h-2 w-full bg-black/60 rounded-full overflow-hidden border border-white/10">
@@ -262,7 +262,7 @@ const Athkar: React.FC = () => {
                                 </span>
                             </div>
                             <div className="text-center">
-                                <p className={`text-[9px] font-bold uppercase tracking-[0.25em] ${activeCategory === cat.id ? 'text-gold-bright' : 'text-gray-500'}`}>{cat.id}</p>
+                                <p className={`text-[9px] font-bold uppercase tracking-[0.25em] ${activeCategory === cat.id ? 'text-gold-bright' : 'text-gray-500'}`}>{t(cat.id.toLowerCase()) || cat.id}</p>
                                 <p className="font-arabic text-sm text-white/70 mt-0.5">{cat.label}</p>
                             </div>
                         </button>
@@ -276,10 +276,10 @@ const Athkar: React.FC = () => {
                     <div className="w-full flex justify-between items-center mb-6">
                         <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 border border-gold/20">
                             <div className="size-2 rounded-full bg-gold"></div>
-                            <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.3em]">{activeCategory} Ritual</span>
+                            <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.3em]">{t(activeCategory.toLowerCase()) || activeCategory} {t('ritual')}</span>
                         </div>
                         <button onClick={() => setTarget(target === 33 ? 100 : 33)} className="px-4 py-2 rounded-full bg-white/5 border border-white/20 text-[10px] font-bold text-white uppercase tracking-[0.3em] hover:bg-white/10 hover:border-gold/40 transition-all">
-                            Goal: {target}
+                            {t('goal')}: {target}
                         </button>
                     </div>
 
