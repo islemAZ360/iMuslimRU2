@@ -296,7 +296,7 @@ const Health: React.FC = () => {
                                     <div className="bg-blue-950/20 border border-blue-500/20 rounded-xl p-4">
                                         <div className="flex items-center gap-2 mb-2 text-blue-400">
                                             <span className="material-symbols-outlined text-[16px]">monitor_heart</span>
-                                            <h3 className="text-[10px] font-bold uppercase tracking-widest">Health Impact</h3>
+                                            <h3 className="text-[10px] font-bold uppercase tracking-widest">{t.health_impact || 'Health Impact'}</h3>
                                         </div>
                                         <p className="text-sm text-gray-300 leading-relaxed">{result.healthImpact}</p>
                                     </div>
@@ -305,7 +305,7 @@ const Health: React.FC = () => {
                                         <div className="bg-orange-950/20 border border-orange-500/20 rounded-xl p-4">
                                             <div className="flex items-center gap-2 mb-2 text-orange-400">
                                                 <span className="material-symbols-outlined text-[16px]">fitness_center</span>
-                                                <h3 className="text-[10px] font-bold uppercase tracking-widest">Required Exercise to Burn ({result.calories} kcal)</h3>
+                                                <h3 className="text-[10px] font-bold uppercase tracking-widest">{t.required_exercise || 'Required Exercise to Burn'} ({result.calories} kcal)</h3>
                                             </div>
                                             <ul className="text-sm text-gray-300 leading-relaxed list-disc list-inside">
                                                 {result.burnExercises.map((ex, i) => (
@@ -330,7 +330,7 @@ const Health: React.FC = () => {
                                         className="w-full py-4 rounded-xl bg-blue-900/20 border border-blue-500/30 hover:bg-blue-900/40 text-blue-300 text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                                     >
                                         <span className="material-symbols-outlined text-base">medical_services</span>
-                                        Discuss with Doctor AI
+                                        {t.discuss_doctor || 'Discuss with Doctor AI'}
                                     </button>
                                     <button
                                         onClick={() => setResult(null)}

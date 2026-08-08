@@ -143,7 +143,10 @@ export const translations = {
         ai_ready: "Gemini AI · Ready",
         ai_offline: "Offline",
         api_required: "API Key Required",
-        setup: "Setup"
+        setup: "Setup",
+        health_impact: "Health Impact",
+        required_exercise: "Required Exercise to Burn",
+        discuss_doctor: "Discuss with Doctor AI"
     },
     ar: {
         greeting_morning: "صباح الخير",
@@ -289,7 +292,10 @@ export const translations = {
         ai_ready: "الذكاء الاصطناعي · جاهز",
         ai_offline: "غير متصل",
         api_required: "مفتاح API مطلوب",
-        setup: "إعداد"
+        setup: "إعداد",
+        health_impact: "التأثير الصحي",
+        required_exercise: "التمارين المطلوبة للحرق",
+        discuss_doctor: "نقاش مع الطبيب الذكي"
     },
     ru: {
         greeting_morning: "Доброе утро",
@@ -435,6 +441,9 @@ export const translations = {
         ai_ready: "ИИ · Готов",
         ai_offline: "Не в сети",
         api_required: "Требуется ключ",
-        setup: "Настроить"
+        setup: "Настроить",
+        health_impact: "Влияние на здоровье",
+        required_exercise: "Требуемые упражнения",
+        discuss_doctor: "Обсудить с ИИ Врачом"
     }
 };
