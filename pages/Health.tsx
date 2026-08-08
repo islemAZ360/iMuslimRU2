@@ -63,8 +63,10 @@ const Health: React.FC = () => {
         setResult(null);
         try {
             const context = `User Profile: Weight: ${profile.weight || '--'}kg, Height: ${profile.height || '--'}cm, Allergies: ${profile.allergies?.join(', ') || 'None'}, Diseases: ${profile.diseases?.join(', ') || 'None'}, Medications: ${profile.medications?.join(', ') || 'None'}`;
+            const targetLang = language === 'ar' ? 'Arabic' : language === 'ru' ? 'Russian' : 'English';
             const prompt = `
                 Analyze this image (it may be food, beverage, or medication) for a "Biometric Al-Shifa Analysis" dashboard. ${context}
+                IMPORTANT: You MUST write your analysis (foodName, verdict, ingredients names, healthImpact, propheticInsight, burnExercises) entirely in ${targetLang}.
                 Return a valid JSON object ONLY.
                 Fields:
                 {
@@ -172,9 +174,17 @@ const Health: React.FC = () => {
 
                                 {analyzing ? (
                                     <>
+                                        {/* Core pulsing background */}
                                         <div className="absolute inset-0 bg-emerald-500/10 animate-pulse"></div>
-                                        <div className="w-full h-0.5 bg-emerald-400/50 absolute top-1/2 animate-scan-line"></div>
-                                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.3em] animate-pulse">Scanning...</span>
+                                        {/* Spinning tech border */}
+                                        <div className="absolute inset-0 rounded-full border-[3px] border-emerald-900/30 border-t-emerald-400 animate-spin-slow"></div>
+                                        {/* The scanning laser */}
+                                        <div className="w-[120%] h-0.5 bg-emerald-400 absolute -left-[10%] animate-scan shadow-[0_0_15px_rgba(52,211,153,0.9)] z-20"></div>
+                                        {/* Scanning text */}
+                                        <div className="relative z-20 flex flex-col items-center">
+                                            <span className="material-symbols-outlined text-3xl text-emerald-400 mb-1 animate-pulse">troubleshoot</span>
+                                            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.3em] animate-pulse">{t.analyzing || 'Scanning'}</span>
+                                        </div>
                                     </>
                                 ) : (
                                     <>
