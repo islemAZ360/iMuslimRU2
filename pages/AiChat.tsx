@@ -15,12 +15,15 @@ import {
 } from '../services/chatMemoryService';
 import { sendChatMessage } from '../services/aiChatService';
 import { hasValidApiKey, getApiKey, setApiKey } from '../services/geminiService';
+import { useUser } from '../context/UserContext';
 
 const formatTime = (ts: number) =>
     new Date(ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
 const AiChat: React.FC = () => {
     const location = useLocation();
+    const { settings } = useUser();
+    const isRtl = settings.language === 'ar';
 
     const [activeId, setActiveId] = useState<string | null>(null);
     const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -358,7 +361,7 @@ const AiChat: React.FC = () => {
                                 <img src={m.image} alt="Attached" className="rounded-xl max-h-56 w-auto mb-2 border border-white/10" />
                             )}
                             {m.content && (
-                                <div dir="auto" className="text-sm text-white/95 leading-relaxed break-words space-y-2 [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&_strong]:text-gold-300">
+                                <div dir={isRtl ? 'rtl' : 'ltr'} className={`text-sm text-white/95 leading-relaxed break-words space-y-2 [&>p]:mb-2 [&>ul]:list-disc ${isRtl ? '[&>ul]:pr-5' : '[&>ul]:pl-5'} [&>ol]:list-decimal ${isRtl ? '[&>ol]:pr-5' : '[&>ol]:pl-5'} [&_strong]:text-gold-300 ${isRtl ? 'text-right' : 'text-left'}`}>
                                     <ReactMarkdown>{m.content}</ReactMarkdown>
                                 </div>
                             )}
@@ -372,7 +375,7 @@ const AiChat: React.FC = () => {
                 {sending && streamingText !== null && (
                     <div className="flex justify-start">
                         <div className="max-w-[85%] px-4 py-3 rounded-2xl bg-emerald-950/40 border border-white/10 rounded-bl-md">
-                            <div dir="auto" className="text-sm text-white/95 leading-relaxed break-words space-y-2 [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&_strong]:text-gold-300">
+                            <div dir={isRtl ? 'rtl' : 'ltr'} className={`text-sm text-white/95 leading-relaxed break-words space-y-2 [&>p]:mb-2 [&>ul]:list-disc ${isRtl ? '[&>ul]:pr-5' : '[&>ul]:pl-5'} [&>ol]:list-decimal ${isRtl ? '[&>ol]:pr-5' : '[&>ol]:pl-5'} [&_strong]:text-gold-300 ${isRtl ? 'text-right' : 'text-left'}`}>
                                 <ReactMarkdown>{streamingText + ' ▋'}</ReactMarkdown>
                             </div>
                         </div>
@@ -437,8 +440,8 @@ const AiChat: React.FC = () => {
                         onChange={e => setInput(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                         placeholder={`Message ${active.persona?.includes('Doctor AI') ? 'Doctor AI' : 'Sheikh AI'}...`}
-                        className="flex-1 min-w-0 bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold/40 transition-colors"
-                        dir="auto"
+                        className={`flex-1 min-w-0 bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold/40 transition-colors ${isRtl ? 'text-right' : 'text-left'}`}
+                        dir={isRtl ? 'rtl' : 'ltr'}
                     />
                     <button
                         onClick={handleSend}
