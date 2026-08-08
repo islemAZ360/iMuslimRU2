@@ -222,10 +222,10 @@ const Health: React.FC = () => {
 
                         <div className="text-center mb-10">
                             <h2 className="text-[10px] font-bold text-gold/60 uppercase tracking-[0.4em] mb-3">
-                                Align Food for Molecular Scan
+                                {t.align_food || 'Align Food for Molecular Scan'}
                             </h2>
                             <p className="text-xs text-white/30 max-w-[200px] mx-auto leading-relaxed">
-                                AI-powered nutritional & prophetic analysis engine
+                                {t.biometric_intelligence || 'AI-powered nutritional & prophetic analysis engine'}
                             </p>
                         </div>
 

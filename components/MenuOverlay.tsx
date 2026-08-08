@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
+import { translations } from '../translations';
 
 interface MenuOverlayProps {
   isOpen: boolean;
@@ -8,6 +10,9 @@ interface MenuOverlayProps {
 
 const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const { settings } = useUser();
+  const language = settings.language || 'en';
+  const t = translations[language as keyof typeof translations] || translations.en;
 
   if (!isOpen) return null;
 
@@ -23,31 +28,31 @@ const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, onClose }) => {
           <div className="flex flex-col p-2 space-y-1">
             <button onClick={() => handleNav('/stats')} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gold/10 transition-colors group border border-transparent hover:border-gold/20">
               <span className="material-symbols-outlined text-gold group-hover:text-gold-light text-2xl transition-colors">bar_chart</span>
-              <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">Statistics</span>
+              <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">{t.statistics}</span>
             </button>
 
             <button onClick={() => handleNav('/athkar')} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gold/10 transition-colors group border border-transparent hover:border-gold/20">
               <span className="material-symbols-outlined text-gold group-hover:text-gold-light text-2xl transition-colors">volunteer_activism</span>
-              <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">Iman & Athkar</span>
+              <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">{t.iman_and_athkar}</span>
             </button>
 
             {/* Link to new Ramadan Page */}
             <button onClick={() => handleNav('/ramadan')} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gold/10 transition-colors group border border-transparent hover:border-gold/20">
               <span className="material-symbols-outlined text-gold group-hover:text-gold-light text-2xl transition-colors">nights_stay</span>
-              <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">Ramadan</span>
+              <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">{t.ramadan}</span>
             </button>
 
             {/* Link to Sheikh AI Chat */}
             <button onClick={() => handleNav('/ai')} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gold/10 transition-colors group border border-transparent hover:border-gold/20">
               <span className="material-symbols-outlined text-gold group-hover:text-gold-light text-2xl transition-colors">auto_awesome</span>
-              <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">Sheikh AI</span>
+              <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">{t.sheikh_ai}</span>
             </button>
 
             <div className="h-px bg-gold/10 my-1 mx-4"></div>
 
             <button onClick={() => handleNav('/profile')} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gold/10 transition-colors group border border-transparent hover:border-gold/20">
               <span className="material-symbols-outlined text-gold group-hover:text-gold-light text-2xl transition-colors">settings</span>
-              <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">Settings</span>
+              <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">{t.settings}</span>
             </button>
           </div>
         </div>
