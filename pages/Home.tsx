@@ -88,7 +88,7 @@ const Home: React.FC = () => {
                 <div>
                     <div className="flex items-center gap-1 text-gold-bright/60 text-[10px] font-bold uppercase tracking-[0.3em] mb-1">
                         <span className="material-symbols-outlined text-sm">location_on</span>
-                        {location ? `${location.city || 'Unknown'}, ${location.country || ''}` : t('location_not_set')}
+                        {location ? `${location.city || t('unknown_location')}, ${location.country || ''}` : t('location_not_set')}
                     </div>
                     {/* Smart Greeting */}
                     <h2 className="text-2xl sm:text-3xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold-bright via-white to-gold-bright leading-tight">
@@ -204,7 +204,7 @@ const Home: React.FC = () => {
                         <div className="w-1.5 h-9 bg-gradient-to-b from-gold-bright to-gold rounded-full"></div>
                         <div>
                             <h3 className="text-2xl font-arabic text-gold-bright tracking-wide">{t('daily_ritual') || 'الورد اليومي'}</h3>
-                            <p className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-[0.4em]">{activeCategory} Session</p>
+                            <p className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-[0.4em]">{t(activeCategory.toLowerCase())} {t('session')}</p>
                         </div>
                     </div>
                     <button onClick={() => navigate('/athkar')} className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-gold-bright hover:border-gold/30 transition-all flex items-center gap-2">
@@ -221,7 +221,7 @@ const Home: React.FC = () => {
                         >
                             <div className="size-12 rounded-xl bg-gold-bright/10 border border-gold/30 flex flex-col items-center justify-center">
                                 <span className="text-gold-bright font-serif font-bold text-xl">{dhikr.count}</span>
-                                <span className="text-[8px] text-gold/60 font-bold uppercase tracking-widest">times</span>
+                                <span className="text-[8px] text-gold/60 font-bold uppercase tracking-widest">{t('times')}</span>
                             </div>
                             <div className="flex-1">
                                 <p className="font-arabic text-lg text-white mb-1 line-clamp-1">{dhikr.arabic}</p>
@@ -248,7 +248,7 @@ const Home: React.FC = () => {
                     <div className="relative z-10">
                         <div>
                             <div className="flex justify-between text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-[0.2em]">
-                                <span>Soul Level</span>
+                                <span>{t('soul_level')}</span>
                                 <span className="text-gold-bright">65%</span>
                             </div>
                             <div className="h-2 w-full bg-black/80 rounded-full overflow-hidden border border-white/10">
@@ -278,7 +278,7 @@ const Home: React.FC = () => {
                                     </div>
                                     <div>
                                         <p className="text-xs font-bold text-white uppercase tracking-wider tabular-nums">
-                                            {healthStats.grade} <span className="text-gray-500/60 font-normal">Grade</span>
+                                            {healthStats.grade} <span className="text-gray-500/60 font-normal">{t('grade')}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -288,7 +288,7 @@ const Home: React.FC = () => {
                                     </div>
                                     <div>
                                         <p className="text-xs font-bold text-white uppercase tracking-wider tabular-nums">
-                                            {healthStats.calories} <span className="text-gray-500/60 font-normal">kcal</span>
+                                            {healthStats.calories} <span className="text-gray-500/60 font-normal">{t('kcal')}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -296,8 +296,8 @@ const Home: React.FC = () => {
                         ) : (
                             <div className="flex flex-col items-center justify-center py-2 text-center opacity-60">
                                 <span className="material-symbols-outlined text-3xl text-emerald-500/50 mb-2">no_meals</span>
-                                <p className="text-[10px] text-gray-400 uppercase tracking-widest">No Recent Scan</p>
-                                <p className="text-[9px] text-gold-500/80 mt-1">Tap to Analyze</p>
+                                <p className="text-[10px] text-gray-400 uppercase tracking-widest">{t('no_recent_scan')}</p>
+                                <p className="text-[9px] text-gold-500/80 mt-1">{t('tap_to_analyze')}</p>
                             </div>
                         )}
                     </div>
@@ -309,11 +309,11 @@ const Home: React.FC = () => {
                 <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gold-bright/20 to-transparent"></div>
                 <h4 className="text-[11px] font-bold text-gold-bright uppercase tracking-[0.4em] mb-5 text-center opacity-80">{t('daily_hadith')}</h4>
                 <p className="text-base sm:text-lg font-serif italic text-white/95 text-center mb-5 leading-[1.8]">
-                    "The best among you are those who have the best manners and character."
+                    {t('hadith_text')}
                 </p>
                 <div className="flex items-center justify-center gap-4 text-[11px] font-bold text-gray-500 uppercase tracking-[0.4em]">
                     <div className="h-px w-8 bg-gold/20"></div>
-                    Sahih Bukhari
+                    {t('sahih_bukhari')}
                     <div className="h-px w-8 bg-gold/20"></div>
                 </div>
             </div>

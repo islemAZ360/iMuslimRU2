@@ -13,9 +13,19 @@ import Stats from './pages/Stats';
 import AiChat from './pages/AiChat';
 import BottomNav from './components/BottomNav';
 import MenuOverlay from './components/MenuOverlay';
+import { useUser } from './context/UserContext';
+import { useLanguage } from './context/LanguageContext';
 
 const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { settings } = useUser();
+  const { language, setLanguage } = useLanguage();
+
+  React.useEffect(() => {
+      if (settings && settings.language && settings.language !== language) {
+          setLanguage(settings.language as any);
+      }
+  }, [settings.language, language, setLanguage]);
 
   return (
     <Router>
