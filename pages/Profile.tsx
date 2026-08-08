@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useUser } from '../context/UserContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { setApiKey as syncGeminiKey } from '../services/geminiService';
 import { auth } from '../firebase';
@@ -8,6 +9,7 @@ import { signOut } from 'firebase/auth';
 
 const Profile: React.FC = () => {
     const { settings, updateSettings, profile, updateProfile, t, location: userLocation } = useUser();
+    const { setLanguage } = useLanguage();
     const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
     const navigate = useNavigate();
 
@@ -398,7 +400,10 @@ const Profile: React.FC = () => {
                                     ].map((lang) => (
                                         <button
                                             key={lang.code}
-                                            onClick={() => updateSettings({ language: lang.code as any })}
+                                            onClick={() => {
+                                                updateSettings({ language: lang.code as any });
+                                                setLanguage(lang.code as any);
+                                            }}
                                             className={`relative rounded-xl p-4 border transition-all duration-300 ${settings.language === lang.code
                                                 ? 'bg-gradient-to-r from-gold/20 to-gold/5 border-gold'
                                                 : 'bg-black/40 border-white/5 hover:border-gold/30 hover:bg-black/60'

@@ -27,8 +27,19 @@ interface LanguageProviderProps {
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
     const [language, setLanguageState] = useState<Language>(() => {
-        const saved = localStorage.getItem('app-language');
-        return (saved === 'en' || saved === 'ar' || saved === 'ru') ? saved : 'en';
+        let saved = localStorage.getItem('app-language');
+        if (!saved) {
+            const userSettingsStr = localStorage.getItem('userSettings');
+            if (userSettingsStr) {
+                try {
+                    const userSettings = JSON.parse(userSettingsStr);
+                    if (userSettings.language) saved = userSettings.language;
+                } catch (e) {
+                    console.error("Error parsing userSettings for language", e);
+                }
+            }
+        }
+        return (saved === 'en' || saved === 'ar' || saved === 'ru') ? saved as Language : 'en';
     });
 
     const [dir, setDir] = useState<Direction>(language === 'ar' ? 'rtl' : 'ltr');

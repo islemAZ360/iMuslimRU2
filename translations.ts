@@ -190,7 +190,8 @@ export const translations = {
         main_focus: "Main Focus",
         lifetime: "Lifetime",
         spiritual_data_pending: "Spiritual data pending...",
-        ai_spiritual_insight: "AI Spiritual Insight"
+        ai_spiritual_insight: "AI Spiritual Insight",
+        close: "Close"
     },
     ar: {
         greeting_morning: "صباح الخير",
@@ -383,7 +384,8 @@ export const translations = {
         main_focus: "التركيز الأساسي",
         lifetime: "طوال الوقت",
         spiritual_data_pending: "في انتظار البيانات الروحية...",
-        ai_spiritual_insight: "رؤية روحانية ذكية"
+        ai_spiritual_insight: "رؤية روحانية ذكية",
+        close: "إغلاق"
     },
     ru: {
         greeting_morning: "Доброе утро",
@@ -576,6 +578,7 @@ export const translations = {
         main_focus: "Главный фокус",
         lifetime: "За все время",
         spiritual_data_pending: "Ожидание данных...",
-        ai_spiritual_insight: "Духовный Инсайт ИИ"
+        ai_spiritual_insight: "ИИ Духовный Инсайт",
+        close: "Закрыть"
     }
 };
