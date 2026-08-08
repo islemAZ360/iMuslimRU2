@@ -29,7 +29,8 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
 
     // Simple Holiday Translator (Aladhan API sends them in English)
     const translateHoliday = (holidayEn: string) => {
-        const h = holidayEn.toLowerCase();
+        // Remove diacritics (like ā, ī, ū) so that simple matching works
+        const h = holidayEn.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         if (language === 'ar') {
             if (h.includes('ashura')) return 'يوم عاشوراء';
             if (h.includes('veiling') && h.includes('muhammad')) return 'وفاة النبي محمد ﷺ';
