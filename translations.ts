@@ -162,7 +162,12 @@ export const translations = {
         prayer_schedule: "Prayer Schedule",
         calendar_title: "Calendar",
         hijri_gregorian: "Hijri & Gregorian",
-        view_all: "View All"
+        view_all: "View All",
+        
+        // Sunnah
+        sunnah_2_before: "2 Raka'at Before",
+        sunnah_4_before: "4 Raka'at Before",
+        sunnah_2_after: "2 Raka'at After"
     },
     ar: {
         greeting_morning: "صباح الخير",
@@ -327,7 +332,12 @@ export const translations = {
         prayer_schedule: "جدول الصلوات",
         calendar_title: "التقويم",
         hijri_gregorian: "الهجري والميلادي",
-        view_all: "عرض الكل"
+        view_all: "عرض الكل",
+        
+        // Sunnah
+        sunnah_2_before: "ركعتان قبليّة",
+        sunnah_4_before: "٤ ركعات قبليّة",
+        sunnah_2_after: "ركعتان بعديّة"
     },
     ru: {
         greeting_morning: "Доброе утро",
@@ -492,6 +502,11 @@ export const translations = {
         prayer_schedule: "Расписание молитв",
         calendar_title: "Календарь",
         hijri_gregorian: "Хиджра и Григорианский",
-        view_all: "Все"
+        view_all: "Все",
+        
+        // Sunnah
+        sunnah_2_before: "2 ракаата до",
+        sunnah_4_before: "4 ракаата до",
+        sunnah_2_after: "2 ракаата после"
     }
 };

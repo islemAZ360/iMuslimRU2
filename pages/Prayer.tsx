@@ -37,6 +37,38 @@ const Prayer: React.FC = () => {
         localStorage.setItem(key, JSON.stringify(newStatus));
     };
 
+    // Sunnah Tracker
+    const SUNNAH_PRAYERS: Record<string, { id: string, labelKey: string }[]> = {
+        Fajr: [{ id: 'fajr_before', labelKey: 'sunnah_2_before' }],
+        Sunrise: [],
+        Dhuhr: [
+            { id: 'dhuhr_before', labelKey: 'sunnah_4_before' },
+            { id: 'dhuhr_after', labelKey: 'sunnah_2_after' }
+        ],
+        Asr: [],
+        Maghrib: [{ id: 'maghrib_after', labelKey: 'sunnah_2_after' }],
+        Isha: [{ id: 'isha_after', labelKey: 'sunnah_2_after' }]
+    };
+
+    const [sunnahStatus, setSunnahStatus] = useState<Record<string, boolean>>({});
+    useEffect(() => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const key = `sunnah_tracker_${todayStr}`;
+        const saved = localStorage.getItem(key);
+        if (saved) setSunnahStatus(JSON.parse(saved));
+        else setSunnahStatus({});
+    }, []);
+
+    const toggleSunnah = (id: string) => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const key = `sunnah_tracker_${todayStr}`;
+        const newStatus = { ...sunnahStatus, [id]: !sunnahStatus[id] };
+        setSunnahStatus(newStatus);
+        localStorage.setItem(key, JSON.stringify(newStatus));
+    };
+
+
+
     // Calculate Distance to Kaaba
     useEffect(() => {
         if (location) {
@@ -248,28 +280,51 @@ const Prayer: React.FC = () => {
 
                             return (
                                 <div key={prayer} className={`
-                                    flex items-center justify-between p-4 rounded-xl border transition-all duration-300
+                                    flex flex-col p-4 rounded-xl border transition-all duration-300 overflow-hidden
                                     ${isActive ? 'bg-gold/15 border-gold shadow-[0_0_15px_rgba(212,175,55,0.3)]' : (isNext ? 'bg-gold/5 border-gold/30' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05]')}
                                 `}>
-                                    <div className="flex items-center gap-4">
-                                        {showTracker && (
-                                            <button 
-                                                onClick={() => togglePrayed(prayer)}
-                                                className={`size-6 shrink-0 rounded-full border flex items-center justify-center transition-colors ${isPrayed ? 'bg-emerald-500 border-emerald-500' : 'border-white/20 hover:border-gold/50'}`}
-                                            >
-                                                {isPrayed && <span className="material-symbols-outlined text-[14px] text-white">check</span>}
-                                            </button>
-                                        )}
-                                        <div className="flex items-center gap-3">
-                                            <span className={`material-symbols-outlined text-xl ${isActive || isNext ? 'text-gold' : 'text-white/20'}`}>
-                                                {prayer === 'Fajr' || prayer === 'Maghrib' ? 'wb_twilight' : (prayer === 'Isha' ? 'nights_stay' : 'wb_sunny')}
-                                            </span>
-                                            <span className={`font-medium tracking-wide text-sm ${isActive || isNext ? 'text-white' : 'text-white/60'}`}>
-                                                {(t as any)[`prayer_${prayer.toLowerCase()}`] || prayer}
-                                            </span>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            {showTracker && (
+                                                <button 
+                                                    onClick={() => togglePrayed(prayer)}
+                                                    className={`size-6 shrink-0 rounded-full border flex items-center justify-center transition-colors ${isPrayed ? 'bg-emerald-500 border-emerald-500' : 'border-white/20 hover:border-gold/50'}`}
+                                                >
+                                                    {isPrayed && <span className="material-symbols-outlined text-[14px] text-white">check</span>}
+                                                </button>
+                                            )}
+                                            <div className="flex items-center gap-3">
+                                                <span className={`material-symbols-outlined text-xl ${isActive || isNext ? 'text-gold' : 'text-white/20'}`}>
+                                                    {prayer === 'Fajr' || prayer === 'Maghrib' ? 'wb_twilight' : (prayer === 'Isha' ? 'nights_stay' : 'wb_sunny')}
+                                                </span>
+                                                <span className={`font-medium tracking-wide text-sm ${isActive || isNext ? 'text-white' : 'text-white/60'}`}>
+                                                    {(t as any)[`prayer_${prayer.toLowerCase()}`] || prayer}
+                                                </span>
+                                            </div>
                                         </div>
+                                        <span className={`font-medium font-mono text-sm ${isActive || isNext ? 'text-gold' : 'text-white/40'}`} dangerouslySetInnerHTML={{ __html: timings ? formatTime(timings[prayer]) : '--:--' }}></span>
                                     </div>
-                                    <span className={`font-medium font-mono text-sm ${isActive || isNext ? 'text-gold' : 'text-white/40'}`} dangerouslySetInnerHTML={{ __html: timings ? formatTime(timings[prayer]) : '--:--' }}></span>
+                                    
+                                    {/* SUNNAH SUB-MENU */}
+                                    {isPrayed && SUNNAH_PRAYERS[prayer] && SUNNAH_PRAYERS[prayer].length > 0 && (
+                                        <div className="mt-4 pt-3 border-t border-white/5 flex flex-col gap-2.5 pl-[40px] animate-in slide-in-from-top-2 fade-in duration-300">
+                                            {SUNNAH_PRAYERS[prayer].map(sunnah => (
+                                                <div key={sunnah.id} className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <button 
+                                                            onClick={() => toggleSunnah(sunnah.id)}
+                                                            className={`size-5 shrink-0 rounded-full border flex items-center justify-center transition-colors ${sunnahStatus[sunnah.id] ? 'bg-gold border-gold' : 'border-white/20 hover:border-gold/40'}`}
+                                                        >
+                                                            {sunnahStatus[sunnah.id] && <span className="material-symbols-outlined text-[12px] text-[#020402] font-bold">check</span>}
+                                                        </button>
+                                                        <span className={`text-xs ${sunnahStatus[sunnah.id] ? 'text-gold' : 'text-white/70'}`}>
+                                                            {(t as any)[sunnah.labelKey] || sunnah.labelKey}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
