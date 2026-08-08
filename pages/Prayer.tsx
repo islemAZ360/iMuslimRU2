@@ -436,7 +436,10 @@ const Prayer: React.FC = () => {
                     {/* Holiday Banner (if upcoming) */}
                     {nextHoliday && (
                         <div className="px-5">
-                            <div className="relative rounded-2xl overflow-hidden border border-gold/30 group">
+                            <div 
+                                onClick={() => setIsCalendarOpen(true)}
+                                className="relative rounded-2xl overflow-hidden border border-gold/30 group cursor-pointer hover:border-gold/60 transition-colors"
+                            >
                                 <div className="absolute inset-0 islamic-pattern-bg opacity-30"></div>
                                 <div className="absolute inset-0 bg-gradient-to-r from-[#0B3B2D] to-black opacity-90"></div>
 
