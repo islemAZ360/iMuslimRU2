@@ -32,15 +32,28 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
         const h = holidayEn.toLowerCase();
         if (language === 'ar') {
             if (h.includes('ashura')) return 'يوم عاشوراء';
-            if (h.includes('mawlid')) return 'المولد النبوي الشريف';
+            if (h.includes('veiling') && h.includes('muhammad')) return 'وفاة النبي محمد ﷺ';
+            if (h.includes('mawlid') || h.includes('al-nabi')) return 'المولد النبوي الشريف';
             if (h.includes('isra')) return 'الإسراء والمعراج';
             if (h.includes('ramadan')) return 'بداية رمضان';
-            if (h.includes('eid ul fitr') || h.includes('eid al fitr') || h.includes('eid-ul-fitr')) return 'عيد الفطر';
-            if (h.includes('eid ul adha') || h.includes('eid al adha') || h.includes('eid-ul-adha')) return 'عيد الأضحى';
+            if (h.includes('fitr')) return 'عيد الفطر';
+            if (h.includes('adha')) return 'عيد الأضحى';
             if (h.includes('arafa')) return 'يوم عرفة';
             if (h.includes('muharram')) return 'رأس السنة الهجرية';
-            if (h.includes('hassan')) return 'استشهاد الإمام الحسن';
-            if (h.includes('rumi')) return 'مولد جلال الدين الرومي (ق)';
+            
+            // Islamic figures and specific dates
+            if (h.includes('hassan') || h.includes('mujtaba')) return 'استشهاد الإمام الحسن (ع)';
+            if (h.includes('rumi')) return 'مولد مولانا جلال الدين الرومي';
+            if (h.includes('baha') && h.includes('naqshband')) return 'ذكرى وفاة الشيخ بهاء الدين نقشبند (ق)';
+            if (h.includes('masum')) return 'ذكرى وفاة الشيخ محمد المَعصُوم (ق)';
+            if (h.includes('daghestani')) return 'مولد الشيخ عبد الله الدغستاني (ق)';
+            if (h.includes('hamadani')) return 'ذكرى وفاة الشيخ أبو يعقوب يوسف الهمذاني (ق)';
+            if (h.includes('ghujdawani')) return 'ذكرى وفاة الشيخ عبد الخالق الغجدواني (ق)';
+            if (h.includes('ahrar')) return 'ذكرى وفاة مولانا عبيد الله أحرار (ق)';
+            if (h.includes('zahid')) return 'ذكرى وفاة الشيخ محمد الزاهد (ق)';
+            if (h.includes('anjir') || h.includes('faghnawi')) return 'ذكرى وفاة الشيخ محمود الأنجير الفغْنَوِي (ق)';
+            if (h.includes('sughuri')) return 'ذكرى وفاة الشيخ أبو أحمد السغوري (ق)';
+            if (h.includes('kabbani')) return 'ذكرى وفاة الشيخ عدنان قباني (ق)';
             
             // Generic fallback replacer
             let arText = holidayEn;
@@ -49,21 +62,31 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
             arText = arText.replace(/Shaykh /ig, 'الشيخ ');
             arText = arText.replace(/Mawlana /ig, 'مولانا ');
             arText = arText.replace(/Shah /ig, 'شاه ');
-            arText = arText.replace(/Naqshband/ig, 'نقشبند');
-            arText = arText.replace(/al-Masum/ig, 'المعصوم');
-            arText = arText.replace(/al-Anjir al-Faghnawi/ig, 'أنجير فغنوي');
-            arText = arText.replace(/Adnan Kabbani/ig, 'عدنان قباني');
-            arText = arText.replace(/Baha'uddin/ig, 'بهاء الدين');
             return arText;
         } else if (language === 'ru') {
             if (h.includes('ashura')) return 'Ашура';
-            if (h.includes('mawlid')) return 'Мавлид ан-Наби';
+            if (h.includes('veiling') && h.includes('muhammad')) return 'Уход Пророка Мухаммада ﷺ';
+            if (h.includes('mawlid') || h.includes('al-nabi')) return 'Мавлид ан-Наби';
             if (h.includes('isra')) return 'Исра и Мирадж';
             if (h.includes('ramadan')) return 'Начало Рамадана';
             if (h.includes('fitr')) return 'Ураза-байрам (Ид аль-Фитр)';
             if (h.includes('adha')) return 'Курбан-байрам (Ид аль-Адха)';
             if (h.includes('arafa')) return 'День Арафат';
             if (h.includes('muharram')) return 'Исламский Новый Год';
+            
+            // Islamic figures and specific dates
+            if (h.includes('hassan') || h.includes('mujtaba')) return 'Мученичество Имама Хасана';
+            if (h.includes('rumi')) return 'Рождение Мавляны Джалалуддина Руми';
+            if (h.includes('baha') && h.includes('naqshband')) return 'Годовщина Шейха Бахауддина Накшбанда (к)';
+            if (h.includes('masum')) return 'Годовщина Шейха Мухаммада аль-Масума (к)';
+            if (h.includes('daghestani')) return 'Рождение Шейха Абдуллы Дагестани (к)';
+            if (h.includes('hamadani')) return 'Годовщина Шейха Абу Якуба Юсуфа аль-Хамадани (к)';
+            if (h.includes('ghujdawani')) return 'Годовщина Шейха Абдул Халика аль-Гидждувани (к)';
+            if (h.includes('ahrar')) return 'Годовщина Мавляны Убайдуллы Ахрара (к)';
+            if (h.includes('zahid')) return 'Годовщина Шейха Мухаммада аз-Захида (к)';
+            if (h.includes('anjir') || h.includes('faghnawi')) return 'Годовщина Шейха Махмуда аль-Анджира аль-Фагнави (к)';
+            if (h.includes('sughuri')) return 'Годовщина Шейха Абу Ахмада ас-Сугури (к)';
+            if (h.includes('kabbani')) return 'Годовщина Шейха Аднана Каббани (к)';
             
             let ruText = holidayEn;
             ruText = ruText.replace(/Urs of /ig, 'Годовщина ');
