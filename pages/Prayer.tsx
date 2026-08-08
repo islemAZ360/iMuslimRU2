@@ -21,6 +21,36 @@ const Prayer: React.FC = () => {
 
     // Daily Prayer Tracker
     const [prayedStatus, setPrayedStatus] = useState<Record<string, boolean>>({});
+    
+    // Simple Holiday Translator (Aladhan API sends them in English)
+    const translateHoliday = (holidayEn: string) => {
+        if (!holidayEn) return '';
+        const h = holidayEn.toLowerCase();
+        if (lang === 'ar') {
+            if (h.includes('ashura')) return 'يوم عاشوراء';
+            if (h.includes('mawlid')) return 'المولد النبوي الشريف';
+            if (h.includes('isra')) return 'الإسراء والمعراج';
+            if (h.includes('ramadan')) return 'بداية رمضان';
+            if (h.includes('eid ul fitr') || h.includes('eid al fitr') || h.includes('eid-ul-fitr')) return 'عيد الفطر';
+            if (h.includes('eid ul adha') || h.includes('eid al adha') || h.includes('eid-ul-adha')) return 'عيد الأضحى';
+            if (h.includes('arafa')) return 'يوم عرفة';
+            if (h.includes('muharram')) return 'رأس السنة الهجرية';
+            if (h.includes('hassan')) return 'استشهاد الإمام الحسن';
+            if (h.includes('rumi')) return 'مولد جلال الدين الرومي';
+            if (h.includes('urs')) return holidayEn.replace('Urs of', 'ذكرى وفاة');
+        } else if (lang === 'ru') {
+            if (h.includes('ashura')) return 'Ашура';
+            if (h.includes('mawlid')) return 'Мавлид ан-Наби';
+            if (h.includes('isra')) return 'Исра и Мирадж';
+            if (h.includes('ramadan')) return 'Начало Рамадана';
+            if (h.includes('fitr')) return 'Ураза-байрам (Ид аль-Фитр)';
+            if (h.includes('adha')) return 'Курбан-байрам (Ид аль-Адха)';
+            if (h.includes('arafa')) return 'День Арафат';
+            if (h.includes('muharram')) return 'Исламский Новый Год';
+        }
+        return holidayEn;
+    };
+
     useEffect(() => {
         const todayStr = new Date().toISOString().split('T')[0];
         const key = `prayer_tracker_${todayStr}`;
@@ -415,9 +445,9 @@ const Prayer: React.FC = () => {
                                         <span className="material-symbols-outlined text-gold text-xl">star</span>
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-xl font-royal font-bold text-white mb-0.5">{nextHoliday.date.hijri.holidays[0]}</h4>
+                                        <h4 className="text-xl font-royal font-bold text-white mb-0.5">{translateHoliday(nextHoliday.date.hijri.holidays[0])}</h4>
                                         <p className="text-xs text-gold/70 uppercase tracking-widest">
-                                            {nextHoliday.date.hijri.day} {nextHoliday.date.hijri.month.en}
+                                            {nextHoliday.date.hijri.day} {isRtl ? nextHoliday.date.hijri.month.ar : nextHoliday.date.hijri.month.en}
                                         </p>
                                     </div>
                                     <span className="material-symbols-outlined text-white/20 -rotate-45">arrow_forward</span>
