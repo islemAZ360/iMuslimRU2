@@ -40,8 +40,21 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
             if (h.includes('arafa')) return 'يوم عرفة';
             if (h.includes('muharram')) return 'رأس السنة الهجرية';
             if (h.includes('hassan')) return 'استشهاد الإمام الحسن';
-            if (h.includes('rumi')) return 'مولد جلال الدين الرومي';
-            if (h.includes('urs')) return holidayEn.replace('Urs of', 'ذكرى وفاة'); // Rough fallback
+            if (h.includes('rumi')) return 'مولد جلال الدين الرومي (ق)';
+            
+            // Generic fallback replacer
+            let arText = holidayEn;
+            arText = arText.replace(/Urs of /ig, 'ذكرى وفاة ');
+            arText = arText.replace(/Birth of /ig, 'مولد ');
+            arText = arText.replace(/Shaykh /ig, 'الشيخ ');
+            arText = arText.replace(/Mawlana /ig, 'مولانا ');
+            arText = arText.replace(/Shah /ig, 'شاه ');
+            arText = arText.replace(/Naqshband/ig, 'نقشبند');
+            arText = arText.replace(/al-Masum/ig, 'المعصوم');
+            arText = arText.replace(/al-Anjir al-Faghnawi/ig, 'أنجير فغنوي');
+            arText = arText.replace(/Adnan Kabbani/ig, 'عدنان قباني');
+            arText = arText.replace(/Baha'uddin/ig, 'بهاء الدين');
+            return arText;
         } else if (language === 'ru') {
             if (h.includes('ashura')) return 'Ашура';
             if (h.includes('mawlid')) return 'Мавлид ан-Наби';
@@ -51,6 +64,13 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
             if (h.includes('adha')) return 'Курбан-байрам (Ид аль-Адха)';
             if (h.includes('arafa')) return 'День Арафат';
             if (h.includes('muharram')) return 'Исламский Новый Год';
+            
+            let ruText = holidayEn;
+            ruText = ruText.replace(/Urs of /ig, 'Годовщина ');
+            ruText = ruText.replace(/Birth of /ig, 'Рождение ');
+            ruText = ruText.replace(/Shaykh /ig, 'Шейх ');
+            ruText = ruText.replace(/Mawlana /ig, 'Мавляна ');
+            return ruText;
         }
         return holidayEn;
     };
