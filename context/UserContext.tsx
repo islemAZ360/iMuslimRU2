@@ -135,7 +135,13 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     const userDoc = await getDoc(doc(db, 'users', user.uid));
                     if (userDoc.exists()) {
                         const data = userDoc.data();
-                        if (data.profile) setProfile(prev => ({ ...prev, ...data.profile }));
+                        const loadedProfile = data.profile || {};
+                        if (!loadedProfile.email && user.email) {
+                            loadedProfile.email = user.email;
+                            // Update Firestore silently in the background
+                            setDoc(doc(db, 'users', user.uid), { profile: loadedProfile }, { merge: true });
+                        }
+                        setProfile(prev => ({ ...prev, ...loadedProfile }));
                         if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
                         if (data.healthStats) setHealthStats(prev => ({ ...prev, ...data.healthStats }));
                     }

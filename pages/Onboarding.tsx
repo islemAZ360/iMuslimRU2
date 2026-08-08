@@ -55,6 +55,7 @@ const Onboarding: React.FC = () => {
       // Update profile with Google data
       updateProfile({
         name: user.displayName || 'User',
+        email: user.email || '',
       });
 
       // Check if user exists in Firestore
@@ -91,7 +92,12 @@ const Onboarding: React.FC = () => {
 
       if (authMode === 'email_signup') {
         const result = await createUserWithEmailAndPassword(auth, email, password);
-        updateProfile({ name: email.split('@')[0] });
+        
+        updateProfile({
+          name: email.split('@')[0],
+          email: result.user.email || email,
+        });
+        
         setAuthMode('health_profile');
       } else {
         await signInWithEmailAndPassword(auth, email, password);
