@@ -51,6 +51,7 @@ const Prayer: React.FC = () => {
     };
 
     const [sunnahStatus, setSunnahStatus] = useState<Record<string, boolean>>({});
+    const [activeSunnahInfo, setActiveSunnahInfo] = useState<string | null>(null);
     useEffect(() => {
         const todayStr = new Date().toISOString().split('T')[0];
         const key = `sunnah_tracker_${todayStr}`;
@@ -306,25 +307,43 @@ const Prayer: React.FC = () => {
                                     </div>
                                     
                                     {/* SUNNAH SUB-MENU */}
-                                    {isPrayed && SUNNAH_PRAYERS[prayer] && SUNNAH_PRAYERS[prayer].length > 0 && (
-                                        <div className="mt-4 pt-3 border-t border-white/5 flex flex-col gap-2.5 pl-[40px] animate-in slide-in-from-top-2 fade-in duration-300">
-                                            {SUNNAH_PRAYERS[prayer].map(sunnah => (
-                                                <div key={sunnah.id} className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <button 
-                                                            onClick={() => toggleSunnah(sunnah.id)}
-                                                            className={`size-5 shrink-0 rounded-full border flex items-center justify-center transition-colors ${sunnahStatus[sunnah.id] ? 'bg-gold border-gold' : 'border-white/20 hover:border-gold/40'}`}
-                                                        >
-                                                            {sunnahStatus[sunnah.id] && <span className="material-symbols-outlined text-[12px] text-[#020402] font-bold">check</span>}
-                                                        </button>
-                                                        <span className={`text-xs ${sunnahStatus[sunnah.id] ? 'text-gold' : 'text-white/70'}`}>
-                                                            {(t as any)[sunnah.labelKey] || sunnah.labelKey}
-                                                        </span>
+                                    {(() => {
+                                        const visibleSunnahs = SUNNAH_PRAYERS[prayer]?.filter(s => isPrayed ? true : s.type === 'before') || [];
+                                        if (visibleSunnahs.length === 0) return null;
+                                        
+                                        return (
+                                            <div className="mt-4 pt-3 border-t border-white/5 flex flex-col gap-2.5 pl-[40px] animate-in slide-in-from-top-2 fade-in duration-300">
+                                                {visibleSunnahs.map(sunnah => (
+                                                    <div key={sunnah.id} className="flex flex-col gap-1.5">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-3">
+                                                                <button 
+                                                                    onClick={() => toggleSunnah(sunnah.id)}
+                                                                    className={`size-5 shrink-0 rounded-full border flex items-center justify-center transition-colors ${sunnahStatus[sunnah.id] ? 'bg-gold border-gold' : 'border-white/20 hover:border-gold/40'}`}
+                                                                >
+                                                                    {sunnahStatus[sunnah.id] && <span className="material-symbols-outlined text-[12px] text-[#020402] font-bold">check</span>}
+                                                                </button>
+                                                                <span className={`text-xs ${sunnahStatus[sunnah.id] ? 'text-gold' : 'text-white/70'}`}>
+                                                                    {(t as any)[sunnah.labelKey] || sunnah.labelKey}
+                                                                </span>
+                                                            </div>
+                                                            <button 
+                                                                onClick={() => setActiveSunnahInfo(activeSunnahInfo === sunnah.id ? null : sunnah.id)}
+                                                                className={`p-1 rounded-full transition-colors ${activeSunnahInfo === sunnah.id ? 'text-gold bg-gold/10' : 'text-white/30 hover:text-white/60'}`}
+                                                            >
+                                                                <span className="material-symbols-outlined text-[14px]">info</span>
+                                                            </button>
+                                                        </div>
+                                                        {activeSunnahInfo === sunnah.id && (
+                                                            <div className="text-[10px] text-white/50 bg-white/5 p-2.5 rounded-lg ml-8 leading-relaxed animate-in fade-in slide-in-from-top-1">
+                                                                {(t as any)[sunnah.infoKey]}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+                                                ))}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             );
                         })}

@@ -167,7 +167,12 @@ export const translations = {
         // Sunnah
         sunnah_2_before: "2 Raka'at Before",
         sunnah_4_before: "4 Raka'at Before",
-        sunnah_2_after: "2 Raka'at After"
+        sunnah_2_after: "2 Raka'at After",
+        info_sunnah_fajr: "The 2 Raka'at before Fajr are better than the world and everything in it. (Sahih Muslim)",
+        info_sunnah_dhuhr_before: "Whoever prays 4 Raka'at before Dhuhr, the gates of heaven are opened for them.",
+        info_sunnah_dhuhr_after: "2 Confirmed Raka'at after the Dhuhr prayer.",
+        info_sunnah_maghrib: "2 Confirmed Raka'at after the Maghrib prayer, highly recommended to pray at home.",
+        info_sunnah_isha: "2 Confirmed Raka'at after Isha, which completes the daily 12 Sunnah Rawatib."
     },
     ar: {
         greeting_morning: "صباح الخير",
@@ -337,7 +342,12 @@ export const translations = {
         // Sunnah
         sunnah_2_before: "ركعتان قبليّة",
         sunnah_4_before: "٤ ركعات قبليّة",
-        sunnah_2_after: "ركعتان بعديّة"
+        sunnah_2_after: "ركعتان بعديّة",
+        info_sunnah_fajr: "ركعتا الفجر خير من الدنيا وما فيها. (رواه مسلم)",
+        info_sunnah_dhuhr_before: "تُفتح لها أبواب السماء، ومَن حافظ عليها مع ٤ بعدها حُرّم على النار.",
+        info_sunnah_dhuhr_after: "ركعتان مؤكدتان بعد فريضة الظهر.",
+        info_sunnah_maghrib: "ركعتان مؤكدتان بعد فريضة المغرب، وكان النبي ﷺ يصليهما في بيته.",
+        info_sunnah_isha: "ركعتان مؤكدتان بعد فريضة العشاء، وهما ختام السنن الرواتب اليومية."
     },
     ru: {
         greeting_morning: "Доброе утро",
@@ -507,6 +517,11 @@ export const translations = {
         // Sunnah
         sunnah_2_before: "2 ракаата до",
         sunnah_4_before: "4 ракаата до",
-        sunnah_2_after: "2 ракаата после"
+        sunnah_2_after: "2 ракаата после",
+        info_sunnah_fajr: "2 ракаата сунны перед фаджром лучше, чем этот мир и все, что в нем. (Сахих Муслим)",
+        info_sunnah_dhuhr_before: "Тому, кто молится 4 ракаата перед зухром, открываются врата небес.",
+        info_sunnah_dhuhr_after: "2 подтвержденных ракаата после молитвы Зухр.",
+        info_sunnah_maghrib: "2 подтвержденных ракаата после Магриба, желательно совершать дома.",
+        info_sunnah_isha: "2 подтвержденных ракаата после Иша, завершающие 12 ежедневных сунн раватиб."
     }
 };
