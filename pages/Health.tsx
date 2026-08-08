@@ -85,7 +85,11 @@ const Health: React.FC = () => {
             `;
             const aiResponse = await analyzeImage(base64Data, prompt);
             if (aiResponse) {
-                const cleaned = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+                let cleaned = aiResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+                const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    cleaned = jsonMatch[0];
+                }
                 const parsedResult = JSON.parse(cleaned);
                 setResult(parsedResult);
 
