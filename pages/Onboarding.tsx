@@ -14,6 +14,7 @@ const Onboarding: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const [formData, setFormData] = useState({
     dob: '',
@@ -26,14 +27,19 @@ const Onboarding: React.FC = () => {
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       // Only do this if we are in the initial state to prevent interrupting an active signup flow
-      if (user && authMode === 'initial') {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          navigate('/home');
-        } else {
-          setAuthMode('health_profile');
+      if (user) {
+        if (authMode === 'initial') {
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            navigate('/home');
+          } else {
+            setAuthMode('health_profile');
+            setIsCheckingAuth(false);
+          }
         }
+      } else {
+        setIsCheckingAuth(false);
       }
     });
     return () => unsubscribe();
@@ -162,38 +168,46 @@ const Onboarding: React.FC = () => {
         {/* ---------------- INITIAL STATE ---------------- */}
         {authMode === 'initial' && (
           <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <button
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full py-4 rounded-xl glass-panel flex items-center justify-center gap-3 hover:bg-emerald-900/40 transition-all border border-gold/20 group disabled:opacity-50"
-            >
-              <span className="font-bold text-sm tracking-wide text-white group-hover:text-gold-light transition-colors">
-                {loading ? 'Connecting...' : t('sign_up_google')}
-              </span>
-            </button>
-            <button
-              onClick={() => setAuthMode('email_signup')}
-              className="w-full py-4 rounded-xl glass-panel flex items-center justify-center gap-3 hover:bg-emerald-900/40 transition-all border border-gold/20 group"
-            >
-              <span className="material-symbols-outlined text-gold-dim">mail</span>
-              <span className="font-bold text-sm tracking-wide text-white group-hover:text-gold-light transition-colors">{t('sign_up_email')}</span>
-            </button>
+            {isCheckingAuth ? (
+              <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                <div className="size-8 rounded-full border-2 border-gold/20 border-t-gold animate-spin"></div>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                  className="w-full py-4 rounded-xl glass-panel flex items-center justify-center gap-3 hover:bg-emerald-900/40 transition-all border border-gold/20 group disabled:opacity-50"
+                >
+                  <span className="font-bold text-sm tracking-wide text-white group-hover:text-gold-light transition-colors">
+                    {loading ? 'Connecting...' : t('sign_up_google')}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setAuthMode('email_signup')}
+                  className="w-full py-4 rounded-xl glass-panel flex items-center justify-center gap-3 hover:bg-emerald-900/40 transition-all border border-gold/20 group"
+                >
+                  <span className="material-symbols-outlined text-gold-dim">mail</span>
+                  <span className="font-bold text-sm tracking-wide text-white group-hover:text-gold-light transition-colors">{t('sign_up_email')}</span>
+                </button>
 
-            <button
-              onClick={() => setAuthMode('email_login')}
-              className="w-full py-2 text-xs text-gray-400 hover:text-gold transition-colors underline"
-            >
-              Already have an account? Sign In
-            </button>
+                <button
+                  onClick={() => setAuthMode('email_login')}
+                  className="w-full py-2 text-xs text-gray-400 hover:text-gold transition-colors underline"
+                >
+                  Already have an account? Sign In
+                </button>
 
-            {/* Guest Login */}
-            <button
-              onClick={() => navigate('/home')}
-              className="w-full py-3 rounded-xl border border-white/10 flex items-center justify-center gap-2 hover:bg-white/5 transition-all group mt-2"
-            >
-              <span className="material-symbols-outlined text-gray-400 group-hover:text-white transition-colors text-lg">person_off</span>
-              <span className="font-bold text-sm tracking-wide text-gray-400 group-hover:text-white transition-colors">{t('continue_guest')}</span>
-            </button>
+                {/* Guest Login */}
+                <button
+                  onClick={() => navigate('/home')}
+                  className="w-full py-3 rounded-xl border border-white/10 flex items-center justify-center gap-2 hover:bg-white/5 transition-all group mt-2"
+                >
+                  <span className="material-symbols-outlined text-gray-400 group-hover:text-white transition-colors text-lg">person_off</span>
+                  <span className="text-xs text-gray-400 font-bold tracking-widest uppercase group-hover:text-white transition-colors">Continue as Guest</span>
+                </button>
+              </>
+            )}
           </div>
         )}
 
