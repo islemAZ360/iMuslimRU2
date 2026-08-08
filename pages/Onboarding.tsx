@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { auth, googleProvider, db } from '../firebase';
-import { signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const Onboarding: React.FC = () => {
@@ -22,6 +22,22 @@ const Onboarding: React.FC = () => {
     allergies: '',
     diseases: ''
   });
+
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      // Only do this if we are in the initial state to prevent interrupting an active signup flow
+      if (user && authMode === 'initial') {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          navigate('/home');
+        } else {
+          setAuthMode('health_profile');
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate, authMode]);
 
   const handleGoogleLogin = async () => {
     try {

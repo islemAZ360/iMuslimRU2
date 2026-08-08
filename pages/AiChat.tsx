@@ -283,6 +283,8 @@ const AiChat: React.FC = () => {
         );
     }
 
+    if (!active) return null; // Prevent crashing before active state is loaded
+
     // ---------------- CHAT VIEW ----------------
     return (
         <div className="h-screen flex flex-col max-w-lg mx-auto w-full relative animate-in fade-in duration-300" dir="ltr">
