@@ -66,20 +66,21 @@ const Health: React.FC = () => {
             const targetLang = language === 'ar' ? 'Arabic' : language === 'ru' ? 'Russian' : 'English';
             const prompt = `
                 Analyze this image (it may be food, beverage, or medication) for a "Biometric Al-Shifa Analysis" dashboard. ${context}
-                IMPORTANT: You MUST write your analysis (foodName, verdict, ingredients names, healthImpact, propheticInsight, burnExercises) entirely in ${targetLang}.
-                Return a valid JSON object ONLY.
-                Fields:
+                
+                CRITICAL INSTRUCTION: You MUST translate and write ALL string values (foodName, verdict, tags, ingredients names, burnExercises, healthImpact, propheticInsight) entirely in ${targetLang}. DO NOT write them in English.
+                
+                Return a valid JSON object ONLY using these exact English keys:
                 {
-                    "foodName": "Name of the item (food or medicine)",
+                    "foodName": "Name of item in ${targetLang}",
                     "calories": Number (use 0 for medicine),
                     "grade": "A/B/C/D",
-                    "verdict": "Short summary",
-                    "tags": ["Nutrient-Dense", "Medical", "Prophetic", etc],
+                    "verdict": "Short summary in ${targetLang}",
+                    "tags": ["Tag in ${targetLang}", "Tag in ${targetLang}"],
                     "macros": {"protein": "Xg", "carbs": "Xg", "fats": "Xg"} (use "0g" for medicine),
-                    "ingredients": [{"name": "Ingredient/Active Substance", "value": "Amount/Detail", "status": "good/warning/bad"}],
-                    "burnExercises": ["15 mins running", "30 mins walking"] (leave empty array for medicine or 0 calories),
-                    "healthImpact": "Direct analysis on how this item affects the user given their diseases/allergies/medications. Flag warnings or dangerous interactions clearly.",
-                    "propheticInsight": "A short spiritual or health insight based on Prophetic Medicine (Tib An-Nabawi) related to this item, if applicable."
+                    "ingredients": [{"name": "Ingredient in ${targetLang}", "value": "Amount", "status": "good/warning/bad"}],
+                    "burnExercises": ["Exercise in ${targetLang}", "Exercise in ${targetLang}"] (leave empty array for medicine or 0 calories),
+                    "healthImpact": "Direct analysis on how this item affects the user given their diseases/allergies/medications. Flag warnings clearly. MUST BE IN ${targetLang}",
+                    "propheticInsight": "A short spiritual or health insight based on Prophetic Medicine (Tib An-Nabawi). MUST BE IN ${targetLang}"
                 }
             `;
             const aiResponse = await analyzeImage(base64Data, prompt);
