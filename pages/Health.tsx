@@ -64,20 +64,20 @@ const Health: React.FC = () => {
         try {
             const context = `User Profile: Weight: ${profile.weight || '--'}kg, Height: ${profile.height || '--'}cm, Allergies: ${profile.allergies?.join(', ') || 'None'}, Diseases: ${profile.diseases?.join(', ') || 'None'}, Medications: ${profile.medications?.join(', ') || 'None'}`;
             const prompt = `
-                Analyze this food image for a "Biometric Al-Shifa Analysis" dashboard. ${context}
+                Analyze this image (it may be food, beverage, or medication) for a "Biometric Al-Shifa Analysis" dashboard. ${context}
                 Return a valid JSON object ONLY.
                 Fields:
                 {
-                    "foodName": "Name of food",
-                    "calories": Number,
+                    "foodName": "Name of the item (food or medicine)",
+                    "calories": Number (use 0 for medicine),
                     "grade": "A/B/C/D",
                     "verdict": "Short summary",
-                    "tags": ["Nutrient-Dense", "Prophetic Ingredient", etc],
-                    "macros": {"protein": "Xg", "carbs": "Xg", "fats": "Xg"},
-                    "ingredients": [{"name": "Ingredient", "value": "Amount/Detail", "status": "good/warning/bad"}],
-                    "burnExercises": ["15 mins running", "30 mins walking"],
-                    "healthImpact": "Direct analysis on how this food affects the user given their diseases/allergies/medications. Flag warnings clearly.",
-                    "propheticInsight": "A short spiritual or health insight based on Prophetic Medicine (Tib An-Nabawi) related to this food."
+                    "tags": ["Nutrient-Dense", "Medical", "Prophetic", etc],
+                    "macros": {"protein": "Xg", "carbs": "Xg", "fats": "Xg"} (use "0g" for medicine),
+                    "ingredients": [{"name": "Ingredient/Active Substance", "value": "Amount/Detail", "status": "good/warning/bad"}],
+                    "burnExercises": ["15 mins running", "30 mins walking"] (leave empty array for medicine or 0 calories),
+                    "healthImpact": "Direct analysis on how this item affects the user given their diseases/allergies/medications. Flag warnings or dangerous interactions clearly.",
+                    "propheticInsight": "A short spiritual or health insight based on Prophetic Medicine (Tib An-Nabawi) related to this item, if applicable."
                 }
             `;
             const aiResponse = await analyzeImage(base64Data, prompt);
@@ -238,21 +238,23 @@ const Health: React.FC = () => {
                                 <h2 className="text-2xl font-royal font-bold text-white mb-2">{result.foodName}</h2>
                                 <p className="text-sm text-emerald-100/70 font-medium leading-relaxed mb-5">{result.verdict}</p>
 
-                                {/* Macros Grid */}
-                                <div className="grid grid-cols-3 gap-3 mb-6">
-                                    <div className="bg-black/40 rounded-xl p-3 text-center border border-white/5">
-                                        <div className="text-xs text-white/40 uppercase tracking-wider mb-1">{t.calories}</div>
-                                        <div className="text-lg font-bold text-white">{result.calories}</div>
+                                {/* Macros Grid (Only for food/items with calories) */}
+                                {result.calories > 0 && (
+                                    <div className="grid grid-cols-3 gap-3 mb-6">
+                                        <div className="bg-black/40 rounded-xl p-3 text-center border border-white/5">
+                                            <div className="text-xs text-white/40 uppercase tracking-wider mb-1">{t.calories}</div>
+                                            <div className="text-lg font-bold text-white">{result.calories}</div>
+                                        </div>
+                                        <div className="bg-black/40 rounded-xl p-3 text-center border border-white/5">
+                                            <div className="text-xs text-white/40 uppercase tracking-wider mb-1">{t.protein}</div>
+                                            <div className="text-lg font-bold text-emerald-400">{result.macros.protein || '0g'}</div>
+                                        </div>
+                                        <div className="bg-black/40 rounded-xl p-3 text-center border border-white/5">
+                                            <div className="text-xs text-white/40 uppercase tracking-wider mb-1">{t.carbs}</div>
+                                            <div className="text-lg font-bold text-gold-400">{result.macros.carbs || '0g'}</div>
+                                        </div>
                                     </div>
-                                    <div className="bg-black/40 rounded-xl p-3 text-center border border-white/5">
-                                        <div className="text-xs text-white/40 uppercase tracking-wider mb-1">{t.protein}</div>
-                                        <div className="text-lg font-bold text-emerald-400">{result.macros.protein}</div>
-                                    </div>
-                                    <div className="bg-black/40 rounded-xl p-3 text-center border border-white/5">
-                                        <div className="text-xs text-white/40 uppercase tracking-wider mb-1">{t.carbs}</div>
-                                        <div className="text-lg font-bold text-gold-400">{result.macros.carbs}</div>
-                                    </div>
-                                </div>
+                                )}
 
                                 {/* Health Impact & Exercises */}
                                 <div className="space-y-4 mb-6">
@@ -264,17 +266,19 @@ const Health: React.FC = () => {
                                         <p className="text-sm text-gray-300 leading-relaxed">{result.healthImpact}</p>
                                     </div>
 
-                                    <div className="bg-orange-950/20 border border-orange-500/20 rounded-xl p-4">
-                                        <div className="flex items-center gap-2 mb-2 text-orange-400">
-                                            <span className="material-symbols-outlined text-[16px]">fitness_center</span>
-                                            <h3 className="text-[10px] font-bold uppercase tracking-widest">Required Exercise to Burn ({result.calories} kcal)</h3>
+                                    {result.burnExercises && result.burnExercises.length > 0 && (
+                                        <div className="bg-orange-950/20 border border-orange-500/20 rounded-xl p-4">
+                                            <div className="flex items-center gap-2 mb-2 text-orange-400">
+                                                <span className="material-symbols-outlined text-[16px]">fitness_center</span>
+                                                <h3 className="text-[10px] font-bold uppercase tracking-widest">Required Exercise to Burn ({result.calories} kcal)</h3>
+                                            </div>
+                                            <ul className="text-sm text-gray-300 leading-relaxed list-disc list-inside">
+                                                {result.burnExercises.map((ex, i) => (
+                                                    <li key={i}>{ex}</li>
+                                                ))}
+                                            </ul>
                                         </div>
-                                        <ul className="text-sm text-gray-300 leading-relaxed list-disc list-inside">
-                                            {result.burnExercises?.map((ex, i) => (
-                                                <li key={i}>{ex}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
+                                    )}
                                 </div>
 
                                 {/* Prophetic Insight */}
