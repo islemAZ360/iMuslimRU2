@@ -67,20 +67,22 @@ const Health: React.FC = () => {
             const prompt = `
                 Analyze this image (it may be food, beverage, or medication) for a "Biometric Al-Shifa Analysis" dashboard. ${context}
                 
-                CRITICAL INSTRUCTION: You MUST translate and write ALL string values (foodName, verdict, tags, ingredients names, burnExercises, healthImpact, propheticInsight) entirely in ${targetLang}. DO NOT write them in English.
+                CRITICAL INSTRUCTION 1: You MUST translate and write ALL string values (foodName, verdict, tags, ingredients names, burnExercises, healthImpact, propheticInsight) entirely in ${targetLang}. DO NOT write them in English.
+                CRITICAL INSTRUCTION 2: If the image is a medication, calories MUST be 0, macros MUST be "0g", and burnExercises MUST be an empty array [].
+                CRITICAL INSTRUCTION 3: You MUST return ONLY a strictly valid JSON object. Do not add any text before or after the JSON.
                 
-                Return a valid JSON object ONLY using these exact English keys:
+                Use this exact JSON structure:
                 {
-                    "foodName": "Name of item in ${targetLang}",
-                    "calories": Number (use 0 for medicine),
-                    "grade": "A/B/C/D",
-                    "verdict": "Short summary in ${targetLang}",
-                    "tags": ["Tag in ${targetLang}", "Tag in ${targetLang}"],
-                    "macros": {"protein": "Xg", "carbs": "Xg", "fats": "Xg"} (use "0g" for medicine),
-                    "ingredients": [{"name": "Ingredient in ${targetLang}", "value": "Amount", "status": "good/warning/bad"}],
-                    "burnExercises": ["Exercise in ${targetLang}", "Exercise in ${targetLang}"] (leave empty array for medicine or 0 calories),
-                    "healthImpact": "Direct analysis on how this item affects the user given their diseases/allergies/medications. Flag warnings clearly. MUST BE IN ${targetLang}",
-                    "propheticInsight": "A short spiritual or health insight based on Prophetic Medicine (Tib An-Nabawi). MUST BE IN ${targetLang}"
+                    "foodName": "Name of item in target language",
+                    "calories": 0,
+                    "grade": "A",
+                    "verdict": "Short summary in target language",
+                    "tags": ["Tag in target language"],
+                    "macros": {"protein": "Xg", "carbs": "Xg", "fats": "Xg"},
+                    "ingredients": [{"name": "Ingredient in target language", "value": "Amount", "status": "good"}],
+                    "burnExercises": ["Exercise in target language"],
+                    "healthImpact": "Direct analysis on how this item affects the user given their diseases/allergies/medications. Flag warnings clearly. MUST BE IN target language",
+                    "propheticInsight": "A short spiritual or health insight based on Prophetic Medicine (Tib An-Nabawi). MUST BE IN target language"
                 }
             `;
             const aiResponse = await analyzeImage(base64Data, prompt);
