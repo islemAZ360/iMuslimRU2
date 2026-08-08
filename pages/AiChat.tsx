@@ -224,18 +224,36 @@ const AiChat: React.FC = () => {
                     </div>
                 )}
 
-                {/* New chat */}
-                <button
-                    onClick={() => {
-                        const conv = createConversation();
-                        setActiveId(conv.id);
-                        setNotice(null);
-                    }}
-                    className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-emerald-900/30 border border-emerald-500/30 text-emerald-200 text-xs font-bold uppercase tracking-[0.3em] hover:bg-emerald-900/50 active:scale-[0.99] transition-all mb-8"
-                >
-                    <span className="material-symbols-outlined text-lg">add_comment</span>
-                    New Conversation
-                </button>
+                {/* New chat options */}
+                <div className="grid grid-cols-2 gap-3 mb-8">
+                    <button
+                        onClick={() => {
+                            const conv = createConversation('Sheikh AI', 'Sheikh AI');
+                            setActiveId(conv.id);
+                            setNotice(null);
+                        }}
+                        className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 hover:border-gold/60 text-gold-300 hover:text-gold-200 active:scale-[0.98] transition-all group shadow-[0_0_15px_rgba(212,175,55,0.1)]"
+                    >
+                        <div className="size-12 rounded-full bg-gold/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <span className="material-symbols-outlined text-3xl">mosque</span>
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-center leading-relaxed">Ask Sheikh AI</span>
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            const conv = createConversation('Doctor AI', 'Doctor AI');
+                            setActiveId(conv.id);
+                            setNotice(null);
+                        }}
+                        className="w-full flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-900/10 border border-emerald-500/30 hover:border-emerald-500/60 text-emerald-300 hover:text-emerald-200 active:scale-[0.98] transition-all group shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                    >
+                        <div className="size-12 rounded-full bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <span className="material-symbols-outlined text-3xl">stethoscope</span>
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-center leading-relaxed">Ask Doctor AI</span>
+                    </button>
+                </div>
 
                 {notice && (
                     <div className="mb-4 p-3 rounded-xl bg-gold/10 border border-gold/30 text-[11px] text-gold-200 text-center">{notice}</div>
