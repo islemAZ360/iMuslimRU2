@@ -436,7 +436,7 @@ const AiChat: React.FC = () => {
                         value={input}
                         onChange={e => setInput(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                        placeholder={showIntro ? "Ask Sheikh AI anything..." : "Message Sheikh AI..."}
+                        placeholder={`Message ${active.persona?.includes('Doctor AI') ? 'Doctor AI' : 'Sheikh AI'}...`}
                         className="flex-1 min-w-0 bg-black/50 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold/40 transition-colors"
                         dir="auto"
                     />
