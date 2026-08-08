@@ -46,16 +46,38 @@ const buildHistory = (history: ChatMessage[]): ChatTurn[] => {
 };
 
 export const formatScanResult = (parsed: any): string => {
+    let lang = 'en';
+    try {
+        const profileStr = localStorage.getItem('userProfile');
+        if (profileStr) {
+            lang = JSON.parse(profileStr).language || 'en';
+        }
+    } catch { /* noop */ }
+
+    const isAr = lang === 'ar';
+    const isRu = lang === 'ru';
+
+    const labels = {
+        title: isAr ? '📌 نتيجة التحليل' : isRu ? '📌 Результат анализа' : '📌 Analysis Result',
+        product: isAr ? 'المنتج' : isRu ? 'Продукт' : 'Product',
+        status: isAr ? 'الحالة' : isRu ? 'Статус' : 'Status',
+        reason: isAr ? 'السبب' : isRu ? 'Причина' : 'Reason',
+        origin: isAr ? 'المنشأ' : isRu ? 'Происхождение' : 'Origin',
+        ingredients: isAr ? 'المكونات' : isRu ? 'Ингредиенты' : 'Ingredients',
+        alternatives: isAr ? 'البدائل' : isRu ? 'Альтернативы' : 'Alternatives',
+    };
+
     const lines = [
-        `📌 Analysis Result`,
-        `Product: ${parsed.name || 'Unknown'}`,
-        `Status: ${parsed.status || 'Unknown'}`,
-        `Reason: ${parsed.reason || '-'}`,
-        parsed.origin ? `Origin: ${parsed.origin}` : null,
-        parsed.ingredients?.length ? `Ingredients: ${parsed.ingredients.join(', ')}` : null,
-        parsed.alternatives?.length ? `Alternatives: ${parsed.alternatives.join(', ')}` : null,
+        `**${labels.title}**`,
+        `**${labels.product}:** ${parsed.name || (isAr ? 'غير معروف' : isRu ? 'Неизвестно' : 'Unknown')}`,
+        `**${labels.status}:** ${parsed.status || (isAr ? 'غير معروف' : isRu ? 'Неизвестно' : 'Unknown')}`,
+        `**${labels.reason}:** ${parsed.reason || '-'}`,
+        parsed.origin ? `**${labels.origin}:** ${parsed.origin}` : null,
+        parsed.ingredients?.length ? `**${labels.ingredients}:** ${parsed.ingredients.join(', ')}` : null,
+        parsed.alternatives?.length ? `**${labels.alternatives}:** ${parsed.alternatives.join(', ')}` : null,
     ].filter(Boolean);
-    return lines.join('\n');
+    
+    return lines.join('\n\n');
 };
 
 /**
