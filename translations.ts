@@ -146,7 +146,23 @@ export const translations = {
         setup: "Setup",
         health_impact: "Health Impact",
         required_exercise: "Required Exercise to Burn",
-        discuss_doctor: "Discuss with Doctor AI"
+        discuss_doctor: "Discuss with Doctor AI",
+        
+        // Prayer Page
+        prayer_fajr: "Fajr",
+        prayer_sunrise: "Sunrise",
+        prayer_dhuhr: "Dhuhr",
+        prayer_asr: "Asr",
+        prayer_maghrib: "Maghrib",
+        prayer_isha: "Isha",
+        upcoming_prayer: "Upcoming Prayer",
+        active_now: "Active Now",
+        currently: "Currently",
+        waiting_interval: "Waiting Interval",
+        prayer_schedule: "Prayer Schedule",
+        calendar_title: "Calendar",
+        hijri_gregorian: "Hijri & Gregorian",
+        view_all: "View All"
     },
     ar: {
         greeting_morning: "صباح الخير",
@@ -295,7 +311,23 @@ export const translations = {
         setup: "إعداد",
         health_impact: "التأثير الصحي",
         required_exercise: "التمارين المطلوبة للحرق",
-        discuss_doctor: "نقاش مع الطبيب الذكي"
+        discuss_doctor: "نقاش مع الطبيب الذكي",
+        
+        // Prayer Page
+        prayer_fajr: "الفجر",
+        prayer_sunrise: "الشروق",
+        prayer_dhuhr: "الظهر",
+        prayer_asr: "العصر",
+        prayer_maghrib: "المغرب",
+        prayer_isha: "العشاء",
+        upcoming_prayer: "الصلاة القادمة",
+        active_now: "الوقت الحالي",
+        currently: "نحن الآن في",
+        waiting_interval: "فترة انتظار",
+        prayer_schedule: "جدول الصلوات",
+        calendar_title: "التقويم",
+        hijri_gregorian: "الهجري والميلادي",
+        view_all: "عرض الكل"
     },
     ru: {
         greeting_morning: "Доброе утро",
@@ -444,6 +476,22 @@ export const translations = {
         setup: "Настроить",
         health_impact: "Влияние на здоровье",
         required_exercise: "Требуемые упражнения",
-        discuss_doctor: "Обсудить с ИИ Врачом"
+        discuss_doctor: "Обсудить с ИИ Врачом",
+        
+        // Prayer Page
+        prayer_fajr: "Фаджр",
+        prayer_sunrise: "Восход",
+        prayer_dhuhr: "Зухр",
+        prayer_asr: "Аср",
+        prayer_maghrib: "Магриб",
+        prayer_isha: "Иша",
+        upcoming_prayer: "Следующая молитва",
+        active_now: "Сейчас",
+        currently: "Текущее",
+        waiting_interval: "Ожидание",
+        prayer_schedule: "Расписание молитв",
+        calendar_title: "Календарь",
+        hijri_gregorian: "Хиджра и Григорианский",
+        view_all: "Все"
     }
 };
