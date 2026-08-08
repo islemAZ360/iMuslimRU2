@@ -163,6 +163,9 @@ export const translations = {
         calendar_title: "Calendar",
         hijri_gregorian: "Hijri & Gregorian",
         view_all: "View All",
+        religious_events: "Religious Events",
+        no_events: "No major religious events this month.",
+        loading: "Loading...",
         
         // Sunnah
         sunnah_2_before: "2 Raka'at Before",
@@ -172,7 +175,22 @@ export const translations = {
         info_sunnah_dhuhr_before: "Whoever prays 4 Raka'at before Dhuhr, the gates of heaven are opened for them.",
         info_sunnah_dhuhr_after: "2 Confirmed Raka'at after the Dhuhr prayer.",
         info_sunnah_maghrib: "2 Confirmed Raka'at after the Maghrib prayer, highly recommended to pray at home.",
-        info_sunnah_isha: "2 Confirmed Raka'at after Isha, which completes the daily 12 Sunnah Rawatib."
+        info_sunnah_isha: "2 Confirmed Raka'at after Isha, which completes the daily 12 Sunnah Rawatib.",
+        
+        // Stats Page
+        prayer_analytics: "Prayer Analytics",
+        dhikr_analytics: "Dhikr Analytics",
+        perfect_days: "Perfect Days",
+        fard_prayers: "Fard Logged",
+        sunnah_prayers: "Sunnah Logged",
+        weekly_prayer_trend: "Weekly Prayer Trend",
+        total_dhikr: "Total Dhikr",
+        most_active: "Most Active",
+        counts: "Counts",
+        main_focus: "Main Focus",
+        lifetime: "Lifetime",
+        spiritual_data_pending: "Spiritual data pending...",
+        ai_spiritual_insight: "AI Spiritual Insight"
     },
     ar: {
         greeting_morning: "صباح الخير",
@@ -338,6 +356,9 @@ export const translations = {
         calendar_title: "التقويم",
         hijri_gregorian: "الهجري والميلادي",
         view_all: "عرض الكل",
+        religious_events: "المناسبات الدينية",
+        no_events: "لا توجد مناسبات دينية هذا الشهر.",
+        loading: "جاري التحميل...",
         
         // Sunnah
         sunnah_2_before: "ركعتان قبليّة",
@@ -347,7 +368,22 @@ export const translations = {
         info_sunnah_dhuhr_before: "تُفتح لها أبواب السماء، ومَن حافظ عليها مع ٤ بعدها حُرّم على النار.",
         info_sunnah_dhuhr_after: "ركعتان مؤكدتان بعد فريضة الظهر.",
         info_sunnah_maghrib: "ركعتان مؤكدتان بعد فريضة المغرب، وكان النبي ﷺ يصليهما في بيته.",
-        info_sunnah_isha: "ركعتان مؤكدتان بعد فريضة العشاء، وهما ختام السنن الرواتب اليومية."
+        info_sunnah_isha: "ركعتان مؤكدتان بعد فريضة العشاء، وهما ختام السنن الرواتب اليومية.",
+        
+        // Stats Page
+        prayer_analytics: "إحصائيات الصلاة",
+        dhikr_analytics: "إحصائيات الأذكار",
+        perfect_days: "أيام التمام",
+        fard_prayers: "الفروض المسجلة",
+        sunnah_prayers: "السنن المسجلة",
+        weekly_prayer_trend: "معدل الصلاة الأسبوعي",
+        total_dhikr: "إجمالي الأذكار",
+        most_active: "الأكثر نشاطاً",
+        counts: "تكرار",
+        main_focus: "التركيز الأساسي",
+        lifetime: "طوال الوقت",
+        spiritual_data_pending: "في انتظار البيانات الروحية...",
+        ai_spiritual_insight: "رؤية روحانية ذكية"
     },
     ru: {
         greeting_morning: "Доброе утро",
@@ -511,8 +547,11 @@ export const translations = {
         waiting_interval: "Ожидание",
         prayer_schedule: "Расписание молитв",
         calendar_title: "Календарь",
-        hijri_gregorian: "Хиджра и Григорианский",
-        view_all: "Все",
+        hijri_gregorian: "Хиджри и Григорианский",
+        view_all: "Показать все",
+        religious_events: "Религиозные события",
+        no_events: "Нет событий в этом месяце.",
+        loading: "Загрузка...",
         
         // Sunnah
         sunnah_2_before: "2 ракаата до",
@@ -522,6 +561,21 @@ export const translations = {
         info_sunnah_dhuhr_before: "Тому, кто молится 4 ракаата перед зухром, открываются врата небес.",
         info_sunnah_dhuhr_after: "2 подтвержденных ракаата после молитвы Зухр.",
         info_sunnah_maghrib: "2 подтвержденных ракаата после Магриба, желательно совершать дома.",
-        info_sunnah_isha: "2 подтвержденных ракаата после Иша, завершающие 12 ежедневных сунн раватиб."
+        info_sunnah_isha: "2 подтвержденных ракаата после Иша, завершающие 12 ежедневных сунн раватиб.",
+        
+        // Stats Page
+        prayer_analytics: "Аналитика молитв",
+        dhikr_analytics: "Аналитика зикра",
+        perfect_days: "Идеальные дни",
+        fard_prayers: "Фард прочитано",
+        sunnah_prayers: "Сунна прочитано",
+        weekly_prayer_trend: "Молитвы за неделю",
+        total_dhikr: "Всего Зикр",
+        most_active: "Самые активные",
+        counts: "Раз",
+        main_focus: "Главный фокус",
+        lifetime: "За все время",
+        spiritual_data_pending: "Ожидание данных...",
+        ai_spiritual_insight: "Духовный Инсайт ИИ"
     }
 };

@@ -9,8 +9,13 @@ const Stats: React.FC = () => {
 
     // Stats State
     const [dhikrStats, setDhikrStats] = useState<DhikrStats>({});
-    const [dailyTotal, setDailyTotal] = useState(0);
-    const [weeklyTrend, setWeeklyTrend] = useState<number[]>([]);
+    const [weeklyDhikrTrend, setWeeklyDhikrTrend] = useState<number[]>([]);
+    
+    const [weeklyPrayerTrend, setWeeklyPrayerTrend] = useState<number[]>([]);
+    const [perfectDays, setPerfectDays] = useState(0);
+    const [totalFard, setTotalFard] = useState(0);
+    const [totalSunnah, setTotalSunnah] = useState(0);
+
     const [insight, setInsight] = useState('');
 
     useEffect(() => {
@@ -18,29 +23,62 @@ const Stats: React.FC = () => {
         const savedStats = localStorage.getItem('dhikr_stats');
         if (savedStats) setDhikrStats(JSON.parse(savedStats));
 
-        // Load Daily Total
-        const savedDaily = localStorage.getItem(`dhikr_daily_${today}`);
-        if (savedDaily) setDailyTotal(parseInt(savedDaily, 10));
+        const dTrend = [];
+        const pTrend = [];
+        let pDays = 0;
+        let tFard = 0;
+        let tSunnah = 0;
 
-        // Load Weekly Trend (Last 7 days)
-        const trendData = [];
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             const dateStr = date.toISOString().split('T')[0];
-            const count = parseInt(localStorage.getItem(`dhikr_daily_${dateStr}`) || '0', 10);
-            trendData.push(count);
+            
+            // Dhikr
+            const dCount = parseInt(localStorage.getItem(`dhikr_daily_${dateStr}`) || '0', 10);
+            dTrend.push(dCount);
+
+            // Prayer
+            const savedPrayers = localStorage.getItem(`prayer_tracker_${dateStr}`);
+            let fardCount = 0;
+            if (savedPrayers) {
+                const pObj = JSON.parse(savedPrayers);
+                const count = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].filter(p => pObj[p]).length;
+                fardCount = count;
+                tFard += count;
+                if (count === 5) pDays++;
+            }
+            pTrend.push(fardCount);
+
+            // Sunnah
+            const savedSunnah = localStorage.getItem(`sunnah_tracker_${dateStr}`);
+            if (savedSunnah) {
+                const sObj = JSON.parse(savedSunnah);
+                tSunnah += Object.values(sObj).filter(Boolean).length;
+            }
         }
-        setWeeklyTrend(trendData);
+        
+        setWeeklyDhikrTrend(dTrend);
+        setWeeklyPrayerTrend(pTrend);
+        setPerfectDays(pDays);
+        setTotalFard(tFard);
+        setTotalSunnah(tSunnah);
 
         // Generate Smart Insight
-        const total = Object.values(JSON.parse(savedStats || '{}')).reduce((a: number, b: number) => a + b, 0) as number;
-        if (total === 0) {
-            setInsight(language === 'ar' ? "ابدأ رحلتك الروحية اليوم بذكر الله." : "Start your spiritual journey today with Dhikr.");
-        } else if (trendData[6] > trendData[5]) {
-            setInsight(language === 'ar' ? "ما شاء الله، نشاطك في ازدياد!" : "MashaAllah, your devotion is increasing!");
+        const totalD = Object.values(JSON.parse(savedStats || '{}')).reduce((a: number, b: number) => a + b, 0) as number;
+        
+        if (pDays === 7) {
+            setInsight(language === 'ar' ? "أسبوع مثالي في الصلاة! تقبل الله طاعتك." : (language === 'ru' ? "Идеальная неделя молитв! Пусть Аллах примет." : "A perfect week of prayers! May Allah accept."));
+        } else if (pTrend[6] === 5) {
+            setInsight(language === 'ar' ? "ما شاء الله، أتممت صلواتك الخمس اليوم، حافظ عليها!" : (language === 'ru' ? "МашаАллах, вы завершили 5 молитв сегодня!" : "MashaAllah, you completed all 5 prayers today!"));
+        } else if (tSunnah > 10) {
+            setInsight(language === 'ar' ? "حرصك على السنن الرواتب رائع، استمر." : (language === 'ru' ? "Ваша преданность Сунне прекрасна." : "Your dedication to Sunnah prayers is beautiful."));
+        } else if (totalD === 0 && tFard === 0) {
+            setInsight(language === 'ar' ? "ابدأ رحلتك الروحية اليوم بذكر الله والصلاة." : (language === 'ru' ? "Начните свое духовное путешествие сегодня." : "Start your spiritual journey today with Dhikr."));
+        } else if (dTrend[6] > dTrend[5]) {
+            setInsight(language === 'ar' ? "ما شاء الله، نشاطك في الذكر بازدياد!" : (language === 'ru' ? "МашаАллах, ваша преданность растет!" : "MashaAllah, your devotion is increasing!"));
         } else {
-            setInsight(language === 'ar' ? "ثابر على الذكر، فالقليل الدائم خير." : "Keep valid consistancy, consistent small deeds are beloved.");
+            setInsight(language === 'ar' ? "ثابر على الطاعة، فالقليل الدائم خير." : (language === 'ru' ? "Продолжайте, постоянство любимо Аллахом." : "Keep consistency, small consistent deeds are beloved."));
         }
     }, [today, language]);
 
@@ -68,46 +106,68 @@ const Stats: React.FC = () => {
                     <div className="bg-emerald-900/40 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-4">
                         <span className="material-symbols-outlined text-emerald-400 text-3xl">psychology</span>
                         <div>
-                            <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-1">AI Spiritual Insight</p>
+                            <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-1">{t('ai_spiritual_insight') || 'AI Spiritual Insight'}</p>
                             <p className="text-sm font-serif text-white italic">"{insight}"</p>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Premium Summary Cards */}
-            <div className="grid grid-cols-2 gap-3 w-full mb-6">
-                <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
-                    <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">Total Dhikr</p>
-                    <h2 className="text-3xl font-serif font-bold text-white mb-1">{totalDhikr.toLocaleString()}</h2>
-                    <div className="flex items-center gap-1 text-[8px] text-emerald-400 font-bold uppercase">
-                        <span className="material-symbols-outlined text-[10px]">trending_up</span>
-                        Lifetime
-                    </div>
+            {/* Prayer Summary Cards */}
+            <div className="grid grid-cols-3 gap-3 w-full mb-6">
+                <div className="bg-gradient-to-br from-gold/20 to-black border border-gold/30 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden">
+                    <h2 className="text-2xl font-serif font-bold text-white mb-1">{perfectDays}</h2>
+                    <p className="text-[8px] font-bold text-gold uppercase tracking-widest text-center">{t('perfect_days') || 'Perfect Days'}</p>
                 </div>
-                <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
-                    <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">Most Active</p>
-                    <h2 className="text-2xl font-serif font-bold text-white mb-1 truncate">{mostActiveCategory}</h2>
-                    <div className="text-[8px] text-gold/80 font-bold uppercase">Main Focus</div>
+                <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-emerald-500/30 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden">
+                    <h2 className="text-2xl font-serif font-bold text-white mb-1">{totalFard}</h2>
+                    <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest text-center">{t('fard_prayers') || 'Fard Logged'}</p>
+                </div>
+                <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-emerald-500/30 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden">
+                    <h2 className="text-2xl font-serif font-bold text-white mb-1">{totalSunnah}</h2>
+                    <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest text-center">{t('sunnah_prayers') || 'Sunnah Logged'}</p>
                 </div>
             </div>
 
-            {/* Weekly Activity Real Data Chart */}
+            {/* Dhikr Summary Cards */}
+            <div className="grid grid-cols-2 gap-3 w-full mb-6">
+                <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
+                    <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">{t('total_dhikr') || 'Total Dhikr'}</p>
+                    <h2 className="text-3xl font-serif font-bold text-white mb-1">{totalDhikr.toLocaleString()}</h2>
+                    <div className="flex items-center gap-1 text-[8px] text-emerald-400 font-bold uppercase">
+                        <span className="material-symbols-outlined text-[10px]">trending_up</span>
+                        {t('lifetime') || 'Lifetime'}
+                    </div>
+                </div>
+                <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
+                    <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">{t('most_active') || 'Most Active'}</p>
+                    <h2 className="text-2xl font-serif font-bold text-white mb-1 truncate">{mostActiveCategory}</h2>
+                    <div className="text-[8px] text-gold/80 font-bold uppercase">{t('main_focus') || 'Main Focus'}</div>
+                </div>
+            </div>
+
+            {/* Weekly Prayer Trend Chart */}
             <div className="w-full bg-[#050A08] border border-gold/10 rounded-2xl p-6 relative overflow-hidden mb-6">
                 <h3 className="font-serif font-bold text-white text-lg mb-6 relative z-10 flex items-center gap-3">
                     <div className="size-1 rounded-full bg-gold"></div>
-                    Weekly Devotion Trend
+                    {t('weekly_prayer_trend') || 'Weekly Prayer Trend'}
                 </h3>
 
                 <div className="h-40 w-full relative flex items-end justify-between px-2 gap-2">
-                    {weeklyTrend.map((val, i) => (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-3 group relative h-full justify-end">
-                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gold text-black text-[9px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                                {val}
+                    <div className="absolute inset-0 flex flex-col justify-between py-6 pointer-events-none opacity-20 z-0">
+                        {[5, 4, 3, 2, 1, 0].map(n => (
+                            <div key={n} className="w-full h-px bg-white/20"></div>
+                        ))}
+                    </div>
+
+                    {weeklyPrayerTrend.map((val, i) => (
+                        <div key={i} className="flex-1 flex flex-col items-center gap-3 group relative h-full justify-end z-10">
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gold text-black text-[9px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                                {val}/5
                             </div>
                             <div
-                                className="w-full max-w-[12px] bg-gradient-to-t from-gold/5 via-gold/40 to-gold rounded-full relative transition-all duration-500"
-                                style={{ height: `${Math.max((val / maxTrend) * 100, 5)}%` }} // Min 5% height for visual
+                                className="w-full max-w-[12px] bg-gradient-to-t from-gold/10 via-gold/50 to-gold rounded-full relative transition-all duration-500"
+                                style={{ height: `${Math.max((val / 5) * 100, 5)}%` }} // Min 5% height for visual
                             >
                             </div>
                             <span className="text-[8px] font-bold text-gray-600 uppercase tracking-widest font-mono">
@@ -124,7 +184,7 @@ const Stats: React.FC = () => {
                     <div className="flex justify-between items-center mb-6 px-1">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-8 bg-gold rounded-full"></div>
-                            <h3 className="font-arabic text-2xl text-gold">إحصائيات الأذكار</h3>
+                            <h3 className="font-arabic text-2xl text-gold">{t('dhikr_analytics') || 'إحصائيات الأذكار'}</h3>
                         </div>
                         <div className="size-9 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-gold">
                             <span className="material-symbols-outlined text-sm">bar_chart</span>
@@ -146,7 +206,7 @@ const Stats: React.FC = () => {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xl font-serif font-bold text-white">{val.toLocaleString()}</span>
-                                            <span className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">Counts</span>
+                                            <span className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">{t('counts') || 'Counts'}</span>
                                         </div>
                                     </div>
                                     <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
@@ -160,7 +220,7 @@ const Stats: React.FC = () => {
                         ) : (
                             <div className="py-12 text-center bg-white/2 rounded-3xl border border-dashed border-gold/10">
                                 <span className="material-symbols-outlined text-gold/20 text-4xl mb-3">analytics</span>
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em]">Spiritual data pending...</p>
+                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em]">{t('spiritual_data_pending') || 'Spiritual data pending...'}</p>
                             </div>
                         )}
                     </div>

@@ -27,8 +27,36 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
             ? ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
             : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
 
+    // Simple Holiday Translator (Aladhan API sends them in English)
+    const translateHoliday = (holidayEn: string) => {
+        const h = holidayEn.toLowerCase();
+        if (language === 'ar') {
+            if (h.includes('ashura')) return 'يوم عاشوراء';
+            if (h.includes('mawlid')) return 'المولد النبوي الشريف';
+            if (h.includes('isra')) return 'الإسراء والمعراج';
+            if (h.includes('ramadan')) return 'بداية رمضان';
+            if (h.includes('eid ul fitr') || h.includes('eid al fitr') || h.includes('eid-ul-fitr')) return 'عيد الفطر';
+            if (h.includes('eid ul adha') || h.includes('eid al adha') || h.includes('eid-ul-adha')) return 'عيد الأضحى';
+            if (h.includes('arafa')) return 'يوم عرفة';
+            if (h.includes('muharram')) return 'رأس السنة الهجرية';
+            if (h.includes('hassan')) return 'استشهاد الإمام الحسن';
+            if (h.includes('rumi')) return 'مولد جلال الدين الرومي';
+            if (h.includes('urs')) return holidayEn.replace('Urs of', 'ذكرى وفاة'); // Rough fallback
+        } else if (language === 'ru') {
+            if (h.includes('ashura')) return 'Ашура';
+            if (h.includes('mawlid')) return 'Мавлид ан-Наби';
+            if (h.includes('isra')) return 'Исра и Мирадж';
+            if (h.includes('ramadan')) return 'Начало Рамадана';
+            if (h.includes('fitr')) return 'Ураза-байрам (Ид аль-Фитр)';
+            if (h.includes('adha')) return 'Курбан-байрам (Ид аль-Адха)';
+            if (h.includes('arafa')) return 'День Арафат';
+            if (h.includes('muharram')) return 'Исламский Новый Год';
+        }
+        return holidayEn;
+    };
+
     return (
-        <div className="fixed inset-0 z-50 max-w-md mx-auto overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+        <div className="fixed inset-0 z-[100] max-w-md mx-auto overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" dir={language === 'ar' ? 'rtl' : 'ltr'}>
             {/* Background backdrop */}
             <div
                 className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
@@ -42,7 +70,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
                     <div className="relative z-10">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-royal font-bold text-gold-metallic" id="modal-title">
-                                {t('calendar') || 'Islamic Calendar'}
+                                {t('calendar_title') || 'Islamic Calendar'}
                             </h3>
                             <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
                                 <span className="material-symbols-outlined">close</span>
@@ -85,37 +113,39 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
                         {/* Religious Occasions List */}
                         <div className="border-t border-white/10 pt-4">
                             <h4 className="text-sm font-bold text-white/50 uppercase tracking-widest mb-3">
-                                {language === 'ar' ? 'المناسبات الدينية' : (language === 'ru' ? 'Религиозные события' : 'Religious Events')}
+                                {t('religious_events') || 'Religious Events'}
                             </h4>
                             {holidays.length > 0 ? (
-                                <div className="space-y-2">
+                                <div className="space-y-2 pb-6">
                                     {holidays.map((day, idx) => (
                                         <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-gold/5 border border-gold/10">
                                             <div className="flex flex-col items-center justify-center h-10 w-10 bg-[#0a0a0a] rounded-md border border-gold/30">
                                                 <span className="text-[10px] font-bold text-gold">{day.date.hijri.day}</span>
-                                                <span className="text-[8px] text-white/40 uppercase">{day.date.hijri.month.en.substring(0, 3)}</span>
+                                                <span className="text-[8px] text-white/40 uppercase">
+                                                    {language === 'ar' ? day.date.hijri.month.ar : day.date.hijri.month.en.substring(0, 3)}
+                                                </span>
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-gold-metallic">{day.date.hijri.holidays[0]}</p>
-                                                <p className="text-[10px] text-white/40">{day.date.gregorian.date}</p>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-bold text-gold-metallic leading-tight">{translateHoliday(day.date.hijri.holidays[0])}</p>
+                                                <p className="text-[10px] text-white/40 mt-0.5">{day.date.gregorian.date}</p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-xs text-white/30 italic">
-                                    {language === 'ar' ? 'لا توجد مناسبات قريبة' : (language === 'ru' ? 'Нет событий в этом месяце' : 'No major religious events this month.')}
+                                <p className="text-xs text-white/30 italic pb-6">
+                                    {t('no_events') || 'No major religious events this month.'}
                                 </p>
                             )}
                         </div>
 
-                        <div className="mt-8 flex justify-center">
+                        <div className="mt-8 flex justify-center pb-4">
                             <button
                                 type="button"
                                 className="w-full inline-flex justify-center rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm font-medium text-gold hover:bg-gold/20 focus:outline-none transition-colors uppercase tracking-widest font-bold"
                                 onClick={onClose}
                             >
-                                {language === 'ar' ? 'إغلاق' : (language === 'ru' ? 'Закрыть' : 'Close Calendar')}
+                                {t('close') || 'Close'}
                             </button>
                         </div>
                     </div>
