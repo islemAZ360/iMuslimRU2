@@ -1,4 +1,5 @@
 import { SHEIKH_PERSONA } from './sheikhPersona';
+import { DOCTOR_PERSONA } from './doctorPersona';
 
 /**
  * Unified AI Service for iMuslim using OpenRouter API (via fetch).
@@ -84,8 +85,13 @@ export async function chat(
     useSearch = true,
     persona?: string,
 ): Promise<string> {
+    let actualPersona = SHEIKH_PERSONA;
+    if (persona === 'Doctor AI') actualPersona = DOCTOR_PERSONA;
+    else if (persona === 'Sheikh AI') actualPersona = SHEIKH_PERSONA;
+    else if (persona) actualPersona = persona;
+
     const messages: any[] = [
-        { role: 'system', content: getSystemInstructionWithProfile(persona || SHEIKH_PERSONA) }
+        { role: 'system', content: getSystemInstructionWithProfile(actualPersona) }
     ];
 
     // Build history
