@@ -70,6 +70,7 @@ const Health: React.FC = () => {
                 CRITICAL INSTRUCTION 1: You MUST translate and write ALL string values (foodName, verdict, tags, ingredients names, burnExercises, healthImpact, propheticInsight) entirely in ${targetLang}. DO NOT write them in English.
                 CRITICAL INSTRUCTION 2: If the image is a medication, calories MUST be 0, macros MUST be "0g", and burnExercises MUST be an empty array [].
                 CRITICAL INSTRUCTION 3: You MUST return ONLY a strictly valid JSON object. Do not add any text before or after the JSON.
+                CRITICAL INSTRUCTION 4: DO NOT use double quotes (") inside the string values. Use single quotes (') if needed.
                 
                 Use this exact JSON structure:
                 {
@@ -86,6 +87,7 @@ const Health: React.FC = () => {
                 }
             `;
             const aiResponse = await analyzeImage(base64Data, prompt);
+            console.log("Raw AI Response:", aiResponse);
             if (aiResponse) {
                 let cleaned = aiResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
                 const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
