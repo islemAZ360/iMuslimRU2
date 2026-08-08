@@ -46,6 +46,8 @@ export const translations = {
         allergies_placeholder: "e.g. Peanuts, Gluten",
         diseases_optional: "Chronic Diseases (Optional)",
         diseases_placeholder: "e.g. Diabetes, Hypertension",
+        medications_optional: "Medications & Reasons (Optional)",
+        medications_placeholder: "e.g. Insulin for Diabetes",
         api_key_placeholder: "Start with AI...",
         // Onboarding
         join_ummah: "Join the Ummah",
@@ -186,7 +188,9 @@ export const translations = {
         allergies_optional: "الحساسية (اختياري)",
         allergies_placeholder: "مثال: الفول السوداني، الجلوتين",
         diseases_optional: "الأمراض المزمنة (اختياري)",
-        diseases_placeholder: "مثال: السكري، الضغط",
+        diseases_placeholder: "مثال: السكري، ضغط الدم",
+        medications_optional: "الأدوية وسبب استخدامها (اختياري)",
+        medications_placeholder: "مثال: الإنسولين لمرض السكري",
         api_key_placeholder: "ابدأ مع الذكاء الاصطناعي...",
         // Onboarding
         join_ummah: "انضم إلى الأمة",
@@ -327,7 +331,9 @@ export const translations = {
         allergies_optional: "Аллергия (необязательно)",
         allergies_placeholder: "напр. арахис, глютен",
         diseases_optional: "Хронические заболевания (необязательно)",
-        diseases_placeholder: "напр. Диабет, гипертония",
+        diseases_placeholder: "напр. Диабет, Гипертония",
+        medications_optional: "Лекарства и причины (необязательно)",
+        medications_placeholder: "напр. Инсулин от диабета",
         api_key_placeholder: "Начните с ИИ...",
         // Onboarding
         join_ummah: "Присоединяйтесь к Умме",

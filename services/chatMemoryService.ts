@@ -18,6 +18,7 @@ export interface Conversation {
     messages: ChatMessage[];
     createdAt: number;
     updatedAt: number;
+    persona?: string; // e.g. SHEIKH_PERSONA or DOCTOR_PERSONA
 }
 
 const STORAGE_KEY = 'sheikh_ai_conversations';
@@ -90,13 +91,14 @@ const saveConversations = (list: Conversation[]): void => {
 export const getConversation = (id: string): Conversation | null =>
     loadConversations().find(c => c.id === id) || null;
 
-export const createConversation = (title = 'New Chat'): Conversation => {
+export const createConversation = (title: string = 'New Conversation', persona?: string): Conversation => {
     const conv: Conversation = {
         id: uid(),
         title,
         messages: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        persona
     };
     const list = loadConversations();
     list.unshift(conv);

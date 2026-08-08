@@ -55,6 +55,7 @@ const getSystemInstructionWithProfile = (baseInstruction: string): string => {
             if (profile.weight) details.push(`Weight: ${profile.weight} kg`);
             if (profile.allergies?.length) details.push(`Allergies: ${profile.allergies.join(', ')}`);
             if (profile.diseases?.length) details.push(`Chronic Diseases: ${profile.diseases.join(', ')}`);
+            if (profile.medications?.length) details.push(`Medications: ${profile.medications.join(', ')}`);
             
             if (details.length > 0) {
                 instruction += "\n\nIMPORTANT CONTEXT ABOUT THE USER:\n" + details.join('\n');
@@ -81,9 +82,10 @@ export async function chat(
     imageBase64: string | null,
     onToken?: (delta: string) => void,
     useSearch = true,
+    persona?: string,
 ): Promise<string> {
     const messages: any[] = [
-        { role: 'system', content: getSystemInstructionWithProfile(SHEIKH_PERSONA) }
+        { role: 'system', content: getSystemInstructionWithProfile(persona || SHEIKH_PERSONA) }
     ];
 
     // Build history

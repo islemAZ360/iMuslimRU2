@@ -148,6 +148,7 @@ const AiChat: React.FC = () => {
                     acc += delta;
                     setStreamingText(acc);
                 },
+                conv?.persona
             );
             appendMessage(conv.id, makeMessage('assistant', reply));
         } catch (error: any) {
@@ -265,7 +266,7 @@ const AiChat: React.FC = () => {
                                             <h3 className="text-sm font-bold text-white truncate">{conv.title}</h3>
                                             <span className="text-[9px] text-gray-500 shrink-0 font-mono">{formatTime(conv.updatedAt)}</span>
                                         </div>
-                                        <p className="text-[11px] text-gray-500 truncate">{last ? (last.role === 'user' ? 'You: ' : 'Sheikh AI: ') + last.content : 'Empty conversation'}</p>
+                                        <p className="text-[11px] text-gray-500 truncate">{last ? (last.role === 'user' ? 'You: ' : (active?.persona?.includes('Doctor AI') ? 'Doctor AI: ' : 'Sheikh AI: ')) + last.content : 'Empty conversation'}</p>
                                     </div>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleDelete(conv.id); }}
@@ -283,8 +284,6 @@ const AiChat: React.FC = () => {
     }
 
     // ---------------- CHAT VIEW ----------------
-    const showIntro = active.messages.length === 0;
-
     return (
         <div className="h-screen flex flex-col max-w-lg mx-auto w-full relative animate-in fade-in duration-300" dir="ltr">
             {/* Header */}
@@ -296,11 +295,11 @@ const AiChat: React.FC = () => {
                     <span className="material-symbols-outlined text-lg">arrow_back</span>
                 </button>
                 <div className="flex-1 min-w-0">
-                    <h2 className="text-sm font-bold text-white truncate">{active.title}</h2>
+                    <h2 className="text-sm font-bold text-white truncate">{active.persona?.includes('Doctor AI') ? 'Doctor AI' : active.title}</h2>
                     <p className="text-[9px] uppercase tracking-widest flex items-center gap-1">
                         <span className={`size-1.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
                         <span className={isOnline ? 'text-emerald-400/80' : 'text-red-400/80'}>
-                            {isOnline ? 'Gemini AI · Online' : 'Offline'}
+                            {isOnline ? 'Online' : 'Offline'}
                         </span>
                     </p>
                 </div>
@@ -314,14 +313,18 @@ const AiChat: React.FC = () => {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-                {showIntro && (
+                {active.messages.length === 0 && (
                     <div className="flex flex-col items-center py-8 text-center">
-                        <div className="size-16 rounded-2xl bg-gold/10 border border-gold/30 flex items-center justify-center mb-3">
-                            <span className="material-symbols-outlined text-gold-300 text-3xl">auto_awesome</span>
+                        <div className={`size-16 rounded-2xl ${active.persona?.includes('Doctor AI') ? 'bg-blue-900/20 border-blue-500/30' : 'bg-gold/10 border-gold/30'} border flex items-center justify-center mb-3`}>
+                            <span className={`material-symbols-outlined ${active.persona?.includes('Doctor AI') ? 'text-blue-300' : 'text-gold-300'} text-3xl`}>
+                                {active.persona?.includes('Doctor AI') ? 'medical_services' : 'auto_awesome'}
+                            </span>
                         </div>
-                        <h3 className="text-lg font-serif font-bold text-white">Sheikh AI</h3>
+                        <h3 className="text-lg font-serif font-bold text-white">{active.persona?.includes('Doctor AI') ? 'Doctor AI' : 'Sheikh AI'}</h3>
                         <p className="text-[10px] text-gray-500 max-w-[240px] leading-relaxed mt-1">
-                            Ask anything about Islam, food rulings (halal/haram), or send a product image for analysis. Powered by Gemini AI with Google Search.
+                            {active.persona?.includes('Doctor AI') 
+                                ? 'I can analyze food, suggest exercises, and provide wellness guidance.' 
+                                : 'Ask anything about Islam, food rulings (halal/haram), or send a product image for analysis.'}
                         </p>
                     </div>
                 )}

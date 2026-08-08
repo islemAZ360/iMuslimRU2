@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { setApiKey as syncGeminiKey } from '../services/geminiService';
+import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
 
 const Profile: React.FC = () => {
     const { settings, updateSettings, profile, updateProfile, t, location: userLocation } = useUser();
@@ -41,6 +43,15 @@ const Profile: React.FC = () => {
         // Show saved confirmation
         setSaved(true);
         setTimeout(() => setSaved(false), 2500);
+    };
+
+    const handleSignOut = async () => {
+        try {
+            await signOut(auth);
+            navigate('/');
+        } catch (error) {
+            console.error("Error signing out", error);
+        }
     };
 
     return (
@@ -277,6 +288,22 @@ const Profile: React.FC = () => {
                                                     />
                                                     <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-white/10 group-focus-within/input:text-gold-500 transition-colors">medical_services</span>
                                                 </div>
+
+                                                {/* Medications */}
+                                                <div className="relative group/input bg-white/5 border border-white/10 rounded-2xl focus-within:border-gold-400 focus-within:bg-white/10 focus-within:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all duration-300">
+                                                    <label className="absolute top-3 left-5 text-[9px] text-gold-500/60 font-bold uppercase tracking-widest pointer-events-none group-focus-within/input:text-gold-500 transition-colors">
+                                                        {t('medications_optional')}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        value={Array.isArray(formData.medications) ? formData.medications.join(', ') : (formData.medications || '')}
+                                                        onChange={(e) => setFormData({ ...formData, medications: e.target.value.split(',').map(s => s.trim()) })}
+                                                        className="w-full h-[4.5rem] pt-6 pb-2 px-5 bg-transparent text-white placeholder-white/20 focus:outline-none focus:ring-0 border-none font-medium text-sm tracking-wide"
+                                                        placeholder={t('medications_placeholder')}
+                                                        autoComplete="off"
+                                                    />
+                                                    <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-white/10 group-focus-within/input:text-gold-500 transition-colors">pill</span>
+                                                </div>
                                             </div>
 
                                             {/* API Key Field */}
@@ -417,6 +444,13 @@ const Profile: React.FC = () => {
                             </div>
 
                             <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-8 opacity-50"></div>
+
+                            {auth.currentUser && (
+                                <button onClick={handleSignOut} className="w-full py-4 mb-4 rounded-xl border border-gold/30 bg-gradient-to-r from-gold/10 via-gold/20 to-gold/10 text-gold-400 font-bold text-[10px] tracking-[0.5em] uppercase hover:bg-gold/30 transition-all flex items-center justify-center gap-3">
+                                    <span className="material-symbols-outlined text-lg">logout</span>
+                                    SIGN OUT
+                                </button>
+                            )}
 
                             <button className="w-full py-4 rounded-xl border border-red-900/30 bg-gradient-to-r from-red-900/10 via-red-900/20 to-red-900/10 text-red-400 font-bold text-[10px] tracking-[0.5em] uppercase hover:bg-red-900/30 hover:border-red-500/50 hover:text-red-300 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all flex items-center justify-center gap-3">
                                 <span className="material-symbols-outlined text-lg">delete_forever</span>

@@ -11,8 +11,8 @@ const firebaseConfig = {
     projectId: "imuslim-ed870",
     storageBucket: "imuslim-ed870.firebasestorage.app",
     messagingSenderId: "710978877912",
-    appId: "1:710978877912:web:9be62b46dd027b1b5edaad",
-    measurementId: "G-KSX2B0T81W"
+    appId: "1:710978877912:web:fdefff50aaa2169f5edaad",
+    measurementId: "G-5XB1DTH7X6"
 };
 
 // Initialize Firebase

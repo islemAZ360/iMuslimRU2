@@ -19,6 +19,8 @@ interface AnalysisResult {
     tags: string[];
     macros: { protein: string; carbs: string; fats: string };
     ingredients: Macro[];
+    burnExercises: string[];
+    healthImpact: string;
     propheticInsight: string;
 }
 
@@ -60,7 +62,7 @@ const Health: React.FC = () => {
         setAnalyzing(true);
         setResult(null);
         try {
-            const context = `User Profile: Weight: ${profile.weight || '--'}kg, Height: ${profile.height || '--'}cm, Allergies: ${profile.allergies?.join(', ') || 'None'}, Diseases: ${profile.diseases?.join(', ') || 'None'}`;
+            const context = `User Profile: Weight: ${profile.weight || '--'}kg, Height: ${profile.height || '--'}cm, Allergies: ${profile.allergies?.join(', ') || 'None'}, Diseases: ${profile.diseases?.join(', ') || 'None'}, Medications: ${profile.medications?.join(', ') || 'None'}`;
             const prompt = `
                 Analyze this food image for a "Biometric Al-Shifa Analysis" dashboard. ${context}
                 Return a valid JSON object ONLY.
@@ -73,7 +75,9 @@ const Health: React.FC = () => {
                     "tags": ["Nutrient-Dense", "Prophetic Ingredient", etc],
                     "macros": {"protein": "Xg", "carbs": "Xg", "fats": "Xg"},
                     "ingredients": [{"name": "Ingredient", "value": "Amount/Detail", "status": "good/warning/bad"}],
-                    "propheticInsight": "A short spiritual or health insight based on Prophetic Medicine (Tib An-Nabawi) related to this food, considering the user's allergies/diseases."
+                    "burnExercises": ["15 mins running", "30 mins walking"],
+                    "healthImpact": "Direct analysis on how this food affects the user given their diseases/allergies/medications. Flag warnings clearly.",
+                    "propheticInsight": "A short spiritual or health insight based on Prophetic Medicine (Tib An-Nabawi) related to this food."
                 }
             `;
             const aiResponse = await analyzeImage(base64Data, prompt);
@@ -97,22 +101,22 @@ const Health: React.FC = () => {
         }
     };
 
-    const handleAskSheikh = async () => {
+    const handleAskDoctor = async () => {
         if (!result || !lastImage) return;
         try {
             const { createScanConversation } = await import('../services/aiChatService');
             const summary = {
                 name: result.foodName,
                 status: result.grade ? `Health Grade ${result.grade}` : 'Unknown',
-                reason: `${result.verdict} — ${result.calories} kcal. ${result.propheticInsight || ''}`,
+                reason: `${result.verdict} — ${result.calories} kcal.\nExercises: ${result.burnExercises?.join(', ')}.\nImpact: ${result.healthImpact}`,
                 origin: '',
                 ingredients: result.ingredients?.map((i: any) => i.name) || [],
                 alternatives: result.tags || [],
             };
-            const conv = await createScanConversation(lastImage, summary);
+            const conv = await createScanConversation(lastImage, summary, 'Doctor AI');
             navigate('/ai', { state: { conversationId: conv.id } });
         } catch (error) {
-            console.error('Failed to create Sheikh AI conversation:', error);
+            console.error('Failed to create Doctor AI conversation:', error);
         }
     };
 
@@ -250,6 +254,29 @@ const Health: React.FC = () => {
                                     </div>
                                 </div>
 
+                                {/* Health Impact & Exercises */}
+                                <div className="space-y-4 mb-6">
+                                    <div className="bg-blue-950/20 border border-blue-500/20 rounded-xl p-4">
+                                        <div className="flex items-center gap-2 mb-2 text-blue-400">
+                                            <span className="material-symbols-outlined text-[16px]">monitor_heart</span>
+                                            <h3 className="text-[10px] font-bold uppercase tracking-widest">Health Impact</h3>
+                                        </div>
+                                        <p className="text-sm text-gray-300 leading-relaxed">{result.healthImpact}</p>
+                                    </div>
+
+                                    <div className="bg-orange-950/20 border border-orange-500/20 rounded-xl p-4">
+                                        <div className="flex items-center gap-2 mb-2 text-orange-400">
+                                            <span className="material-symbols-outlined text-[16px]">fitness_center</span>
+                                            <h3 className="text-[10px] font-bold uppercase tracking-widest">Required Exercise to Burn ({result.calories} kcal)</h3>
+                                        </div>
+                                        <ul className="text-sm text-gray-300 leading-relaxed list-disc list-inside">
+                                            {result.burnExercises?.map((ex, i) => (
+                                                <li key={i}>{ex}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+
                                 {/* Prophetic Insight */}
                                 <div className="bg-emerald-950/30 border border-emerald-500/10 rounded-xl p-5 mb-6 relative overflow-hidden">
                                     <span className="material-symbols-outlined absolute top-2 right-2 text-emerald-500/10 text-4xl">auto_awesome</span>
@@ -260,11 +287,11 @@ const Health: React.FC = () => {
                                 {/* Action */}
                                 <div className="flex flex-col gap-2.5">
                                     <button
-                                        onClick={handleAskSheikh}
-                                        className="w-full py-4 rounded-xl bg-gold/10 border border-gold/40 hover:bg-gold/20 text-gold-200 text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                                        onClick={handleAskDoctor}
+                                        className="w-full py-4 rounded-xl bg-blue-900/20 border border-blue-500/30 hover:bg-blue-900/40 text-blue-300 text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                                     >
-                                        <span className="material-symbols-outlined text-base">auto_awesome</span>
-                                        Discuss with Sheikh AI
+                                        <span className="material-symbols-outlined text-base">medical_services</span>
+                                        Discuss with Doctor AI
                                     </button>
                                     <button
                                         onClick={() => setResult(null)}

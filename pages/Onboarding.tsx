@@ -40,11 +40,8 @@ const Onboarding: React.FC = () => {
       const userDoc = await getDoc(userDocRef);
 
       if (userDoc.exists()) {
-        // User exists, load data and go home
+        // User exists, UserContext onAuthStateChanged will handle loading data
         console.log("User found in Firestore, redirecting to Home");
-        const userData = userDoc.data();
-        // Update context with fetched data
-        updateProfile(userData);
         navigate('/home');
       } else {
         // New user, go to setup
@@ -105,10 +102,8 @@ const Onboarding: React.FC = () => {
       // Set default location to London/User's choice if we had a picker. For now mock.
       setLocation({ lat: 51.5074, lng: -0.1278, city: 'London', country: 'UK' });
 
-      // Save to Firestore
-      if (auth.currentUser) {
-        await setDoc(doc(db, 'users', auth.currentUser.uid), profileData, { merge: true });
-      }
+      // UserContext will automatically save to Firestore due to the useEffect
+
 
       navigate('/home');
     } catch (e) {

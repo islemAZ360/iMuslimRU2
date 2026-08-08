@@ -18,6 +18,7 @@ export async function sendChatMessage(
     text: string,
     imageBase64: string | null,
     onToken?: (delta: string) => void,
+    persona?: string
 ): Promise<string> {
     if (!hasValidApiKey()) {
         throw new Error('API_KEY_MISSING');
@@ -31,7 +32,7 @@ export async function sendChatMessage(
         cleanImage = cleanImage.replace(/^data:image\/\w+;base64,/, '');
     }
 
-    return chat(turns, text, cleanImage, onToken, true);
+    return chat(turns, text, cleanImage, onToken, true, persona);
 }
 
 const buildHistory = (history: ChatMessage[]): ChatTurn[] => {
@@ -62,8 +63,8 @@ export const formatScanResult = (parsed: any): string => {
  * user turn = the product image, assistant turn = the analysis result.
  * The user can then continue discussing with Sheikh AI.
  */
-export const createScanConversation = async (imageBase64: string, parsed: any): Promise<Conversation> => {
-    const conv = createConversation('Product Analysis');
+export const createScanConversation = async (imageBase64: string, parsed: any, persona?: string): Promise<Conversation> => {
+    const conv = createConversation('Halal Scanner', persona);
     const compressed = await compressImage(`data:image/jpeg;base64,${imageBase64}`);
     appendMessage(conv.id, makeMessage(
         'user',

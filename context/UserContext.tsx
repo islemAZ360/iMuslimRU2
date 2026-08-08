@@ -1,5 +1,8 @@
 import * as React from 'react';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { auth, db } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Types
 export interface UserLocation {
@@ -24,6 +27,7 @@ export interface UserProfile {
     gender?: 'male' | 'female';
     allergies?: string[];
     diseases?: string[];
+    medications?: string[];
     apiKey?: string;
     userId?: string;
     email?: string;
@@ -123,21 +127,50 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(false);
     }, []);
 
-    // Save to LocalStorage effects
+    // Firebase Auth Listener
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        if (data.profile) setProfile(prev => ({ ...prev, ...data.profile }));
+                        if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
+                        if (data.healthStats) setHealthStats(prev => ({ ...prev, ...data.healthStats }));
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data from Firestore", error);
+                }
+            }
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // Save to LocalStorage and Firestore effects
     useEffect(() => {
         if (location) localStorage.setItem('userLocation', JSON.stringify(location));
     }, [location]);
 
     useEffect(() => {
         localStorage.setItem('userSettings', JSON.stringify(settings));
+        if (auth.currentUser) {
+            setDoc(doc(db, 'users', auth.currentUser.uid), { settings }, { merge: true }).catch(console.error);
+        }
     }, [settings]);
 
     useEffect(() => {
         localStorage.setItem('userProfile', JSON.stringify(profile));
+        if (auth.currentUser) {
+            setDoc(doc(db, 'users', auth.currentUser.uid), { profile }, { merge: true }).catch(console.error);
+        }
     }, [profile]);
 
     useEffect(() => {
         localStorage.setItem('userHealthStats', JSON.stringify(healthStats));
+        if (auth.currentUser) {
+            setDoc(doc(db, 'users', auth.currentUser.uid), { healthStats }, { merge: true }).catch(console.error);
+        }
     }, [healthStats]);
 
     useEffect(() => {
