@@ -37,11 +37,29 @@ const Home: React.FC = () => {
     }, [today]);
 
     useEffect(() => {
-        const hour = new Date().getHours();
-        if (hour >= 4 && hour < 10) setActiveCategory('Morning');
-        else if (hour >= 16 && hour < 20) setActiveCategory('Evening');
-        else setActiveCategory('Istighfar');
-    }, []);
+        if (timings && timings.Fajr && timings.Maghrib) {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+
+            const [fajrH, fajrM] = timings.Fajr.split(':').map(Number);
+            const fajrTime = fajrH * 60 + fajrM;
+
+            const [asrH, asrM] = timings.Asr.split(':').map(Number);
+            const asrTime = asrH * 60 + asrM;
+
+            const [maghribH, maghribM] = timings.Maghrib.split(':').map(Number);
+            const maghribTime = maghribH * 60 + maghribM;
+
+            if (currentTime >= fajrTime && currentTime < asrTime) setActiveCategory('Morning');
+            else if (currentTime >= asrTime && currentTime < maghribTime + 60) setActiveCategory('Evening');
+            else setActiveCategory('Istighfar');
+        } else {
+            const hour = new Date().getHours();
+            if (hour >= 4 && hour < 12) setActiveCategory('Morning');
+            else if (hour >= 15 && hour < 20) setActiveCategory('Evening');
+            else setActiveCategory('Istighfar');
+        }
+    }, [timings]);
 
     // Helper to format 24h to 12h or 24h based on locale
     const formatTime = (time: string) => {
@@ -160,24 +178,27 @@ const Home: React.FC = () => {
                 </div>
             </div>
 
-            {/* Quick Actions Grid */}
-            <div className="grid grid-cols-4 gap-3 mb-8">
+            {/* Quick Actions Scrollable */}
+            <div className="flex overflow-x-auto gap-4 mb-8 pb-4 scrollbar-hide px-2 snap-x">
                 {[
-                    { icon: 'qr_code_scanner', label: t('scan_food'), path: '/scan', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' },
-                    { icon: 'cycle', label: t('tasbih'), path: '/athkar', color: 'bg-gold/10 text-gold-bright border-gold/30' },
-                    { icon: 'explore', label: t('qibla_short'), path: '/prayer', color: 'bg-blue-500/10 text-blue-400 border-blue-500/30' },
-                    { icon: 'calendar_month', label: t('calendar'), path: '/prayer', color: 'bg-purple-500/10 text-purple-400 border-purple-500/30' },
+                    { icon: 'qr_code_scanner', label: t('scan_food') || 'Scan', path: '/scan', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' },
+                    { icon: 'cycle', label: t('tasbih') || 'Tasbih', path: '/athkar', color: 'bg-gold/10 text-gold-bright border-gold/30' },
+                    { icon: 'explore', label: t('qibla_short') || 'Qibla', path: '/prayer', color: 'bg-blue-500/10 text-blue-400 border-blue-500/30' },
+                    { icon: 'calendar_month', label: t('calendar') || 'Calendar', path: '/prayer', color: 'bg-purple-500/10 text-purple-400 border-purple-500/30' },
+                    { icon: 'nights_stay', label: t('ramadan') || 'Ramadan', path: '/ramadan', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' },
+                    { icon: 'monitoring', label: t('statistics') || 'Stats', path: '/stats', color: 'bg-rose-500/10 text-rose-400 border-rose-500/30' },
+                    { icon: 'smart_toy', label: t('sheikh_ai') || 'AI Chat', path: '/aichat', color: 'bg-teal-500/10 text-teal-400 border-teal-500/30' },
                 ].map((action, i) => (
                     <button
                         key={i}
                         onClick={() => navigate(action.path)}
-                        className={`flex flex-col items-center gap-2 group animate-in fade-in duration-500`}
+                        className={`flex flex-col items-center gap-2 group animate-in fade-in duration-500 min-w-[72px] snap-center`}
                         style={{ animationDelay: `${i * 80}ms` }}
                     >
-                        <div className={`size-14 rounded-2xl border flex items-center justify-center transition-all group-hover:scale-105 group-active:scale-95 shadow-md ${action.color}`}>
-                            <span className="material-symbols-outlined text-2xl">{action.icon}</span>
+                        <div className={`size-16 rounded-2xl border flex items-center justify-center transition-all group-hover:scale-105 group-active:scale-95 shadow-md ${action.color}`}>
+                            <span className="material-symbols-outlined text-3xl">{action.icon}</span>
                         </div>
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center group-hover:text-white transition-colors">{action.label}</span>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center group-hover:text-white transition-colors">{action.label}</span>
                     </button>
                 ))}
             </div>
@@ -194,6 +215,11 @@ const Home: React.FC = () => {
                     <p className="font-arabic text-xl sm:text-2xl text-white text-right mb-4 leading-[1.8]">
                         فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ
                     </p>
+                    {language !== 'ar' && (
+                        <p className="text-sm text-gray-300 italic font-serif mb-4 leading-relaxed text-center">
+                            "So remember Me; I will remember you. And be grateful to Me and do not deny Me."
+                        </p>
+                    )}
                     <div className="flex justify-between items-center border-t border-white/10 pt-4">
                         <div className="flex items-center gap-2 text-[11px] font-bold text-gold-bright/60 uppercase tracking-[0.4em]">
                             <span className="material-symbols-outlined text-sm">bookmark</span>
@@ -268,6 +294,11 @@ const Home: React.FC = () => {
                             <div className="h-2 w-full bg-black/80 rounded-full overflow-hidden border border-white/10">
                                 <div className="h-full bg-gradient-to-r from-gold to-gold-bright rounded-full transition-all duration-700" style={{ width: `${Math.min((dailyTotal / 1000) * 100, 100)}%` }}></div>
                             </div>
+                            {Object.values(stats).reduce((a, b) => a + b, 0) > 0 && (
+                                <p className="text-[9px] text-gray-500 mt-3 text-center uppercase tracking-widest">
+                                    {t('lifetime') || 'Lifetime'}: <span className="text-gold-bright font-bold">{Object.values(stats).reduce((a, b) => a + b, 0)}</span>
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -331,6 +362,14 @@ const Home: React.FC = () => {
                     <div className="h-px w-8 bg-gold/20"></div>
                 </div>
             </div>
+
+            {/* AI Assistant FAB */}
+            <button
+                onClick={() => navigate('/aichat')}
+                className="fixed bottom-24 right-6 size-14 bg-gradient-to-br from-gold-light via-gold to-gold-dark rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] flex items-center justify-center text-emerald-black hover:scale-110 active:scale-95 transition-all z-50 animate-bounce"
+            >
+                <span className="material-symbols-outlined text-2xl">smart_toy</span>
+            </button>
 
         </div>
     );
