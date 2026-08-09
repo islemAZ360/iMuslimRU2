@@ -103,6 +103,18 @@ const Health: React.FC = () => {
                     grade: parsedResult.grade,
                     lastScanDate: new Date().toISOString(),
                 });
+
+                // Haptic feedback on success
+                try {
+                    if (navigator.vibrate) {
+                        if (parsedResult.grade === 'A' || parsedResult.grade === 'B') {
+                            navigator.vibrate([50, 50, 50]);
+                        } else {
+                            navigator.vibrate([200, 100, 200]);
+                        }
+                    }
+                } catch (e) {}
+
             }
         } catch (e) {
             console.error(e);
@@ -125,7 +137,7 @@ const Health: React.FC = () => {
                 alternatives: result.tags || [],
             };
             const conv = await createScanConversation(lastImage, summary, 'Doctor AI');
-            navigate('/ai', { state: { conversationId: conv.id } });
+            navigate('/aichat', { state: { conversationId: conv.id } });
         } catch (error) {
             console.error('Failed to create Doctor AI conversation:', error);
         }
@@ -271,7 +283,16 @@ const Health: React.FC = () => {
                                 </span>
 
                                 <h2 className="text-2xl font-royal font-bold text-white mb-2">{result.foodName}</h2>
-                                <p className="text-sm text-emerald-100/70 font-medium leading-relaxed mb-5">{result.verdict}</p>
+                                <p className="text-sm text-emerald-100/70 font-medium leading-relaxed mb-4">{result.verdict}</p>
+
+                                {/* Tags */}
+                                {result.tags && result.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mb-5">
+                                        {result.tags.map((tag, i) => (
+                                            <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-[10px] text-gray-400 font-bold uppercase tracking-wider">{tag}</span>
+                                        ))}
+                                    </div>
+                                )}
 
                                 {/* Macros Grid (Only for food/items with calories) */}
                                 {result.calories > 0 && (
@@ -287,6 +308,33 @@ const Health: React.FC = () => {
                                         <div className="bg-black/40 rounded-xl p-3 text-center border border-white/5">
                                             <div className="text-xs text-white/40 uppercase tracking-wider mb-1">{t.carbs}</div>
                                             <div className="text-lg font-bold text-gold-400">{result.macros.carbs || '0g'}</div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Smart Ingredients List */}
+                                {result.ingredients && result.ingredients.length > 0 && (
+                                    <div className="mb-6 bg-black/30 rounded-xl border border-white/5 overflow-hidden">
+                                        <div className="bg-white/5 px-4 py-2 border-b border-white/5 flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-[14px] text-gold-400">science</span>
+                                            <h3 className="text-[10px] font-bold text-gold-400 uppercase tracking-widest">{t.molecular_profile || 'Molecular Profile'}</h3>
+                                        </div>
+                                        <div className="p-3 grid grid-cols-1 gap-2">
+                                            {result.ingredients.map((ing, i) => (
+                                                <div key={i} className={`flex items-center justify-between p-2 rounded-lg border ${
+                                                    ing.status === 'good' ? 'bg-emerald-900/10 border-emerald-500/20 text-emerald-300' :
+                                                    ing.status === 'bad' ? 'bg-red-900/10 border-red-500/20 text-red-300' :
+                                                    'bg-orange-900/10 border-orange-500/20 text-orange-300'
+                                                }`}>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-[14px]">
+                                                            {ing.status === 'good' ? 'check_circle' : ing.status === 'bad' ? 'warning' : 'info'}
+                                                        </span>
+                                                        <span className="text-xs font-medium">{ing.name}</span>
+                                                    </div>
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">{ing.value}</span>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 )}
