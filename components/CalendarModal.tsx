@@ -245,10 +245,19 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
                                         return (
                                             <div
                                                 key={idx}
+                                                onClick={() => {
+                                                    if (hasHoliday) {
+                                                        const holidayIndex = holidays.findIndex(h => h.date.gregorian.date === day.date.gregorian.date);
+                                                        if (holidayIndex !== -1) {
+                                                            setExpandedEvent(holidayIndex);
+                                                            document.getElementById('events-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                        }
+                                                    }
+                                                }}
                                                 className={`
                                                     aspect-square flex flex-col items-center justify-center rounded-lg border relative transition-all duration-200
                                                     ${isToday ? 'bg-gold/20 border-gold/60 text-white shadow-[0_0_10px_rgba(212,175,55,0.2)]' : 'bg-white/5 border-white/5 text-white/60 hover:bg-white/10'}
-                                                    ${hasHoliday ? 'border-gold/40' : ''}
+                                                    ${hasHoliday ? 'border-gold/40 cursor-pointer hover:bg-gold/20 hover:scale-105' : ''}
                                                 `}
                                             >
                                                 <span className={`text-sm font-bold font-royal ${hasHoliday ? 'text-gold' : ''}`}>
@@ -266,7 +275,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
                         </div>
 
                         {/* Religious Occasions List */}
-                        <div className="border-t border-white/10 pt-4">
+                        <div id="events-list" className="border-t border-white/10 pt-4 scroll-mt-6">
                             <h4 className="text-sm font-bold text-white/50 uppercase tracking-widest mb-3">
                                 {t('religious_events') || 'Religious Events'}
                             </h4>
