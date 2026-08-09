@@ -271,12 +271,18 @@ const Prayer: React.FC = () => {
                     </div>
                 </header>
 
-                {/* HERO CARD - NEXT PRAYER */}
-                <div className="px-5 py-2 relative z-10">
-                    <div className="relative rounded-[24px] p-[1px] bg-gradient-to-br from-[#D4AF37] via-[#F9E496] to-transparent shadow-[0_10px_40px_rgba(212,175,55,0.15)]">
-                        <div className="relative rounded-[23px] glass-panel p-5 overflow-hidden min-h-[200px]">
+                {/* Background ambient lighting */}
+                <div className="fixed inset-0 pointer-events-none -z-10">
+                    <div className="absolute top-[20%] left-[50%] -translate-x-1/2 w-full max-w-lg h-96 bg-gold/10 blur-[100px] rounded-full opacity-50"></div>
+                </div>
+
+                    {/* HERO CARD - NEXT PRAYER */}
+                    <div className="px-5 py-2 relative z-10">
+                    <div className="relative rounded-3xl p-[1px] bg-gradient-to-b from-gold/60 via-gold/20 to-transparent shadow-[0_15px_40px_rgba(212,175,55,0.15)] group overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                        <div className="relative rounded-[23px] bg-emerald-950/40 backdrop-blur-xl p-6 min-h-[200px] flex flex-col justify-between">
                             {/* Islamic geometric background */}
-                            <div className="absolute inset-0 islamic-pattern-bg opacity-30 mix-blend-overlay"></div>
+                            <div className="absolute inset-0 islamic-pattern-bg opacity-40 mix-blend-overlay pointer-events-none"></div>
                             
                             <div className="relative z-10 flex flex-col justify-between h-full gap-6">
                                 <div className="flex justify-between items-start">
@@ -321,12 +327,12 @@ const Prayer: React.FC = () => {
                                 </div>
                                 
                                 {/* Visual Progress Bar */}
-                                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/5 rounded-b-[23px] overflow-hidden backdrop-blur-sm">
+                                <div className="absolute bottom-0 left-0 right-0 h-2 bg-black/40 overflow-hidden backdrop-blur-sm z-20">
                                     <div 
-                                        className="h-full bg-gradient-to-r from-gold/60 via-gold to-gold-light relative transition-all duration-1000 ease-linear rounded-full shadow-[0_0_10px_rgba(212,175,55,0.5)]" 
+                                        className="h-full bg-gradient-to-r from-gold/40 via-gold to-gold-bright relative transition-all duration-1000 ease-linear shadow-[0_0_15px_rgba(212,175,55,0.8)]" 
                                         style={{ width: `${progress}%` }}
                                     >
-                                        <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-r from-transparent to-white/50 blur-[2px]"></div>
+                                        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/60 to-transparent blur-[1px]"></div>
                                     </div>
                                 </div>
                             </div>
@@ -356,7 +362,7 @@ const Prayer: React.FC = () => {
                             return (
                                 <div key={prayer} className={`
                                     flex flex-col p-4 rounded-xl border transition-all duration-500 overflow-hidden relative
-                                    ${isActive ? 'bg-gradient-to-br from-gold/15 to-gold/5 border-gold/60 shadow-[0_0_20px_rgba(212,175,55,0.2)] scale-[1.02]' : (isNext ? 'bg-gold/5 border-gold/30' : (isSunrise ? 'bg-transparent border-dashed border-white/10 opacity-70 scale-95' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05]'))}
+                                    ${isActive ? 'bg-gradient-to-br from-gold/20 to-gold/5 border-gold/70 border-r-[6px] shadow-[0_0_25px_rgba(212,175,55,0.15)] scale-[1.02]' : (isNext ? 'bg-gold/10 border-gold/40' : (isSunrise ? 'bg-transparent border-dashed border-white/10 opacity-70 scale-95' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.08]'))}
                                 `}>
                                     {isActive && <div className="absolute inset-0 bg-gold/5 animate-pulse-glow rounded-xl pointer-events-none"></div>}
                                     <div className="flex items-center justify-between relative z-10">
@@ -388,17 +394,19 @@ const Prayer: React.FC = () => {
                                         
                                         return (
                                             <div className="mt-4 pt-4 border-t border-white/10 flex flex-col gap-3 pl-[40px] animate-in slide-in-from-top-2 fade-in duration-500 relative z-10">
-                                                <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-gold/70 mb-1">Sunnah Checklist</h4>
+                                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-gold-bright mb-1 font-arabic">
+                                                    {(t as any)['sunnah_checklist'] || 'قائمة السنن والرواتب'}
+                                                </h4>
                                                 {visibleSunnahs.map(sunnah => (
                                                     <div key={sunnah.id} className="flex flex-col gap-1.5 group">
-                                                        <div className="flex items-center justify-between bg-black/20 p-2 rounded-lg border border-white/5 hover:border-gold/20 transition-all">
-                                                            <div className="flex items-center gap-3 flex-1 cursor-pointer" onClick={() => toggleSunnah(sunnah.id)}>
+                                                        <div className="flex items-center justify-between bg-black/30 p-2.5 rounded-xl border border-white/10 hover:border-gold/30 transition-all shadow-sm">
+                                                            <div className="flex items-center gap-3.5 flex-1 cursor-pointer" onClick={() => toggleSunnah(sunnah.id)}>
                                                                 <button 
-                                                                    className={`size-6 shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${sunnahStatus[sunnah.id] ? 'bg-gold border-gold shadow-[0_0_10px_rgba(212,175,55,0.4)]' : 'border-white/20 group-hover:border-gold/40'}`}
+                                                                    className={`size-7 shrink-0 rounded-md border-[2px] flex items-center justify-center transition-all duration-300 ${sunnahStatus[sunnah.id] ? 'bg-gold border-gold shadow-[0_0_12px_rgba(212,175,55,0.5)] scale-110' : 'border-gold/40 group-hover:border-gold/70 bg-white/5'}`}
                                                                 >
-                                                                    {sunnahStatus[sunnah.id] && <span className="material-symbols-outlined text-[14px] text-[#020402] font-bold animate-in zoom-in">check</span>}
+                                                                    {sunnahStatus[sunnah.id] && <span className="material-symbols-outlined text-[18px] text-[#020402] font-bold animate-in zoom-in">check</span>}
                                                                 </button>
-                                                                <span className={`text-xs transition-colors duration-300 ${sunnahStatus[sunnah.id] ? 'text-gold font-bold' : 'text-white/70 group-hover:text-white/90'}`}>
+                                                                <span className={`text-[13px] font-arabic transition-colors duration-300 ${sunnahStatus[sunnah.id] ? 'text-gold-bright font-bold' : 'text-white/80 group-hover:text-white'}`}>
                                                                     {(t as any)[sunnah.labelKey] || sunnah.labelKey}
                                                                 </span>
                                                             </div>
@@ -426,7 +434,7 @@ const Prayer: React.FC = () => {
                 </section>
 
                 {/* ANCIENT QIBLA COMPASS */}
-                <section className="px-5 mt-12 relative z-10">
+                <section className="px-5 mt-16 relative z-10">
                     <div className="relative p-6 rounded-3xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 shadow-2xl overflow-hidden group">
                         <div className="absolute inset-0 bg-gold/5 blur-3xl rounded-full opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity duration-1000"></div>
                         <div className="absolute inset-0 islamic-pattern-bg opacity-10 mix-blend-overlay pointer-events-none"></div>
