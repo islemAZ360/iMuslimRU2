@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import Onboarding from './pages/Onboarding';
 import Home from './pages/Home';
 import Prayer from './pages/Prayer';
@@ -67,21 +68,35 @@ const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
   
   return (
-    <div key={location.pathname} className="animate-in fade-in zoom-in-[0.98] duration-300 w-full flex-1 flex flex-col relative z-0">
-      <Routes location={location}>
-        <Route path="/" element={<Onboarding />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/prayer" element={<Prayer />} />
-        <Route path="/scan" element={<Scan />} />
-        <Route path="/health" element={<Health />} />
-        <Route path="/athkar" element={<Athkar />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/ramadan" element={<Ramadan />} />
-        <Route path="/stats" element={<Stats />} />
-        <Route path="/ai" element={<AiChat />} />
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageWrapper><Onboarding /></PageWrapper>} />
+        <Route path="/home" element={<PageWrapper><Home /></PageWrapper>} />
+        <Route path="/prayer" element={<PageWrapper><Prayer /></PageWrapper>} />
+        <Route path="/scan" element={<PageWrapper><Scan /></PageWrapper>} />
+        <Route path="/health" element={<PageWrapper><Health /></PageWrapper>} />
+        <Route path="/athkar" element={<PageWrapper><Athkar /></PageWrapper>} />
+        <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
+        <Route path="/ramadan" element={<PageWrapper><Ramadan /></PageWrapper>} />
+        <Route path="/stats" element={<PageWrapper><Stats /></PageWrapper>} />
+        <Route path="/ai" element={<PageWrapper><AiChat /></PageWrapper>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </div>
+    </AnimatePresence>
+  );
+};
+
+const PageWrapper: React.FC<{children: React.ReactNode}> = ({ children }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -15, scale: 0.98 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className="w-full flex-1 flex flex-col relative z-0"
+    >
+      {children}
+    </motion.div>
   );
 };
 

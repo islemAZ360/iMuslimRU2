@@ -11,7 +11,9 @@ const Home: React.FC = () => {
     const { location, healthStats } = useUser();
     const { t, language } = useLanguage();
     const navigate = useNavigate();
-    const today = new Date().toISOString().split('T')[0];
+    const todayDate = new Date();
+    const today = todayDate.toISOString().split('T')[0];
+    const isFriday = todayDate.getDay() === 5;
 
     const [isCopied, setIsCopied] = useState(false);
     const ayahText = `فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ\n\n"So remember Me; I will remember you. And be grateful to Me and do not deny Me."\n[Al-Baqarah 2:152]`;
@@ -197,8 +199,11 @@ const Home: React.FC = () => {
             </div>
 
             {/* Next Prayer Hero */}
-            <div className="relative w-full rounded-3xl bg-gradient-to-br from-gold/15 via-black/60 to-black p-[1px] shadow-[0_10px_40px_rgba(212,175,55,0.15)] mb-8 overflow-hidden animate-in zoom-in-95 duration-500 z-10">
-                <div className="bg-emerald-black/80 backdrop-blur-md rounded-3xl p-6 relative overflow-hidden border border-white/5 min-h-[200px] flex flex-col justify-between">
+            <div 
+                onClick={() => navigate('/prayer')}
+                className="relative w-full rounded-3xl bg-gradient-to-br from-gold/15 via-black/60 to-black p-[1px] shadow-[0_10px_40px_rgba(212,175,55,0.15)] mb-8 overflow-hidden animate-in zoom-in-95 duration-500 z-10 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all group"
+            >
+                <div className="bg-emerald-black/80 backdrop-blur-md rounded-3xl p-6 relative overflow-hidden border border-white/5 min-h-[200px] flex flex-col justify-between group-hover:bg-emerald-black/60 transition-colors">
                     <div className="absolute inset-0 islamic-pattern-bg opacity-30 mix-blend-overlay"></div>
                     <div className="flex justify-between items-start z-10">
                         <div>
@@ -248,6 +253,28 @@ const Home: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Jumu'ah Smart Banner */}
+            {isFriday && (
+                <div 
+                    onClick={() => navigate('/athkar')} 
+                    className="mb-8 relative rounded-2xl bg-gradient-to-r from-emerald-900/40 via-gold/10 to-emerald-900/40 border border-gold/30 p-4 overflow-hidden cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_15px_rgba(212,175,55,0.1)]"
+                >
+                    <div className="absolute inset-0 bg-gold/5 animate-pulse-glow pointer-events-none"></div>
+                    <div className="relative z-10 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="size-12 rounded-full bg-gold/20 border border-gold/40 flex items-center justify-center text-gold-bright shadow-[0_0_10px_rgba(212,175,55,0.2)]">
+                                <span className="material-symbols-outlined text-2xl">auto_awesome</span>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-white uppercase tracking-wider">{t('blessed_friday') || 'Blessed Friday'}</h3>
+                                <p className="text-[10px] text-gold-bright/80 font-bold tracking-widest uppercase mt-1">{t('read_kahf') || 'Read Surah Al-Kahf'}</p>
+                            </div>
+                        </div>
+                        <span className="material-symbols-outlined text-gold-bright/50">arrow_forward_ios</span>
+                    </div>
+                </div>
+            )}
 
             {/* Quick Actions Scrollable */}
             <div className="flex overflow-x-auto gap-4 mb-8 pb-4 scrollbar-hide px-2 snap-x">
@@ -358,29 +385,42 @@ const Home: React.FC = () => {
 
             {/* Trackers Section */}
             <div className="grid grid-cols-2 gap-3 mb-10 animate-in fade-in duration-500 delay-400">
-                {/* Athkar Tracker */}
-                <div onClick={() => navigate('/athkar')} className="bg-emerald-black/40 border border-white/10 rounded-2xl p-5 relative overflow-hidden cursor-pointer hover:bg-emerald-black/60 transition-all">
-                    <div className="flex justify-between items-center mb-4 relative z-10">
-                        <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.3em]">{t('faith_progress')}</span>
-                        <div className="size-9 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-gold-bright text-lg">hotel_class</span>
-                        </div>
-                    </div>
-                    <div className="relative z-10">
-                        <div>
-                            <div className="flex justify-between text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-[0.2em]">
-                                <span>{t('soul_level')}</span>
-                                <span className="text-gold-bright">{Math.min(Math.round((dailyTotal / 1000) * 100), 100)}%</span>
+                {/* Athkar Tracker (Faith Progress) */}
+                <div onClick={() => navigate('/athkar')} className="bg-emerald-black/40 border border-white/10 rounded-2xl p-5 relative overflow-hidden cursor-pointer hover:bg-emerald-black/60 hover:border-gold/20 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)] group">
+                    <div className="absolute inset-0 islamic-pattern-bg opacity-10 group-hover:opacity-20 transition-opacity"></div>
+                    <div className="flex flex-col items-center justify-center relative z-10 h-full">
+                        <div className="relative size-24 mb-3">
+                            {/* Background Circle */}
+                            <svg className="size-full transform -rotate-90" viewBox="0 0 36 36">
+                                <path
+                                    className="text-white/5"
+                                    strokeWidth="3"
+                                    stroke="currentColor"
+                                    fill="none"
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                />
+                                {/* Progress Circle */}
+                                <path
+                                    className="text-gold drop-shadow-[0_0_5px_rgba(212,175,55,0.8)] transition-all duration-1000 ease-out"
+                                    strokeDasharray={`${Math.min((dailyTotal / 1000) * 100, 100)}, 100`}
+                                    strokeWidth="3"
+                                    strokeLinecap="round"
+                                    stroke="currentColor"
+                                    fill="none"
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="material-symbols-outlined text-gold-bright text-xl mb-0.5">hotel_class</span>
+                                <span className="text-xs font-bold text-white tracking-wider">{Math.min(Math.round((dailyTotal / 1000) * 100), 100)}%</span>
                             </div>
-                            <div className="h-2 w-full bg-black/80 rounded-full overflow-hidden border border-white/10">
-                                <div className="h-full bg-gradient-to-r from-gold to-gold-bright rounded-full transition-all duration-700" style={{ width: `${Math.min((dailyTotal / 1000) * 100, 100)}%` }}></div>
-                            </div>
-                            {Object.values(stats).reduce((a, b) => a + b, 0) > 0 && (
-                                <p className="text-[9px] text-gray-500 mt-3 text-center uppercase tracking-widest">
-                                    {t('lifetime') || 'Lifetime'}: <span className="text-gold-bright font-bold">{Object.values(stats).reduce((a, b) => a + b, 0)}</span>
-                                </p>
-                            )}
                         </div>
+                        <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.2em]">{t('faith_progress')}</span>
+                        {Object.values(stats).reduce((a, b) => a + b, 0) > 0 && (
+                            <p className="text-[9px] text-gray-500 mt-1 text-center uppercase tracking-widest opacity-80">
+                                {t('lifetime') || 'Lifetime'}: <span className="text-white">{Object.values(stats).reduce((a, b) => a + b, 0)}</span>
+                            </p>
+                        )}
                     </div>
                 </div>
 
