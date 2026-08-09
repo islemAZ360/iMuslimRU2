@@ -234,3 +234,33 @@ export async function askHealthAI(question: string): Promise<string> {
     const data = await response.json();
     return data.choices[0]?.message?.content || 'Sorry, I could not respond at this time. Please try again.';
 }
+
+export async function evaluateExcuse(missedItems: string[], excuse: string, language: string): Promise<{ isValid: boolean, fatwa: string }> {
+    const prompt = `You are a wise, compassionate, yet firm Islamic scholar (Sheikh). 
+The user has missed the following obligations: ${missedItems.join(', ')}.
+Their excuse for missing them is: "${excuse}".
+Evaluate if this is a valid Shari'i excuse (e.g., severe illness, deep sleep without intent, forgetting unintentionally) or an invalid excuse (e.g., laziness, playing games, intentional delay).
+CRITICAL INSTRUCTION: You MUST start your response with EXACTLY the word [VALID] if the excuse is acceptable, or [INVALID] if it is unacceptable.
+After that word, provide a beautiful, wise, and impactful fatwa and advice in ${language}. Include the exact "Kaffarah" (Expiation) or Qada (make-up) they must do based on whether it was valid or invalid. Give actionable steps.`;
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+            model: OPENROUTER_MODEL,
+            messages: [
+                { role: 'system', content: getSystemInstructionWithProfile(SHEIKH_PERSONA) },
+                { role: 'user', content: prompt }
+            ],
+            temperature: 0.4
+        })
+    });
+    
+    const data = await response.json();
+    const result = data.choices[0]?.message?.content || '[INVALID] Sorry, I could not process this request.';
+    
+    const isValid = result.trim().startsWith('[VALID]');
+    const fatwa = result.replace(/^\[(VALID|INVALID)\]\s*/i, '').trim();
+    
+    return { isValid, fatwa };
+}

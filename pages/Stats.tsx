@@ -31,6 +31,40 @@ const Stats: React.FC = () => {
     const [failureDays, setFailureDays] = useState<{date: string, missed: string[]}[]>([]);
     const [selectedFailure, setSelectedFailure] = useState<{date: string, missed: string[]} | null>(null);
 
+    // Excuse System State
+    const [excuseInput, setExcuseInput] = useState('');
+    const [isSubmittingExcuse, setIsSubmittingExcuse] = useState(false);
+    const [excuseRecord, setExcuseRecord] = useState<{ excuse: string, fatwa: string, isValid: boolean } | null>(null);
+
+    useEffect(() => {
+        if (selectedFailure) {
+            setExcuseInput('');
+            const saved = localStorage.getItem(`excuse_tracker_${selectedFailure.date}`);
+            if (saved) {
+                setExcuseRecord(JSON.parse(saved));
+            } else {
+                setExcuseRecord(null);
+            }
+        }
+    }, [selectedFailure]);
+
+    const handleSubmitExcuse = async () => {
+        if (!excuseInput.trim() || !selectedFailure) return;
+        setIsSubmittingExcuse(true);
+        try {
+            const { evaluateExcuse } = await import('../services/geminiService');
+            const res = await evaluateExcuse(selectedFailure.missed, excuseInput, language);
+            const record = { excuse: excuseInput, fatwa: res.fatwa, isValid: res.isValid };
+            localStorage.setItem(`excuse_tracker_${selectedFailure.date}`, JSON.stringify(record));
+            setExcuseRecord(record);
+        } catch (e) {
+            console.error(e);
+            alert(language === 'ar' ? 'حدث خطأ. تأكد من اتصالك أو مفتاح API.' : 'Error submitting. Check connection or API key.');
+        } finally {
+            setIsSubmittingExcuse(false);
+        }
+    };
+
     useEffect(() => {
         let statsObj: any = {};
         // Load Dhikr Category Stats
@@ -657,50 +691,83 @@ const Stats: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="bg-emerald-950/30 border border-emerald-900/50 rounded-xl p-4">
-                                    <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-[14px]">healing</span>
-                                        {language === 'ar' ? 'خطة القضاء الذكية' : 'Smart Qada Plan'}
-                                    </h4>
-                                    <ul className="space-y-3">
-                                        <li className="flex gap-3 text-sm text-emerald-100/80 font-arabic">
-                                            <span className="text-emerald-500 mt-1">1.</span>
-                                            <span>
-                                                {language === 'ar' 
-                                                    ? 'قم بالوضوء الآن وانوِ قضاء هذه الصلوات المنسية (يجب قضاؤها بالترتيب).'
-                                                    : 'Perform Wudu now and intend to make up these missed prayers (in order).'}
-                                            </span>
-                                        </li>
-                                        <li className="flex gap-3 text-sm text-emerald-100/80 font-arabic">
-                                            <span className="text-emerald-500 mt-1">2.</span>
-                                            <span>
-                                                {language === 'ar'
-                                                    ? 'لتعويض النقص الروحي، صلِ ركعتي ضحى أو قيام ليل إضافية الليلة.'
-                                                    : 'To heal the spiritual wound, pray 2 extra Rakat of Dhuha or Qiyam tonight.'}
-                                            </span>
-                                        </li>
-                                        <li className="flex gap-3 text-sm text-emerald-100/80 font-arabic">
-                                            <span className="text-emerald-500 mt-1">3.</span>
-                                            <span>
-                                                {language === 'ar'
-                                                    ? `كفارة: استغفر الله ${(selectedFailure.missed.length * 33)} مرة الآن.`
-                                                    : `Expiation: Seek forgiveness ${(selectedFailure.missed.length * 33)} times now.`}
-                                            </span>
-                                        </li>
-                                    </ul>
-                                </div>
+                                {!excuseRecord ? (
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                        <h4 className="text-xs font-bold text-gold-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-[14px]">edit_document</span>
+                                            {language === 'ar' ? 'تقديم العذر للشيخ' : 'Submit Excuse to Sheikh'}
+                                        </h4>
+                                        <textarea 
+                                            value={excuseInput}
+                                            onChange={e => setExcuseInput(e.target.value)}
+                                            placeholder={language === 'ar' ? 'لماذا فاتتك هذه الطاعات؟ (مثلاً: نمت نوماً عميقاً بغير قصد...)' : 'Why did you miss them?'}
+                                            className="w-full h-24 bg-black/40 border border-white/10 rounded-lg p-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-gold-500/50 resize-none font-arabic mb-4"
+                                        />
+                                        <button 
+                                            onClick={handleSubmitExcuse}
+                                            disabled={!excuseInput.trim() || isSubmittingExcuse}
+                                            className="w-full py-3 rounded-lg bg-gradient-to-r from-gold-600 to-gold-500 text-black font-bold uppercase tracking-[0.1em] text-xs hover:from-gold-500 hover:to-gold-400 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            {isSubmittingExcuse ? (
+                                                <div className="size-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                                            ) : (
+                                                <>
+                                                    <span className="material-symbols-outlined text-[16px]">send</span>
+                                                    {language === 'ar' ? 'إرسال العذر للتقييم' : 'Submit for Evaluation'}
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {/* User's Excuse Bubble */}
+                                        <div className="flex justify-end">
+                                            <div className="bg-white/10 border border-white/20 rounded-2xl rounded-tr-sm p-4 max-w-[90%]">
+                                                <p className="text-xs text-white/50 mb-1">{language === 'ar' ? 'عذرك:' : 'Your Excuse:'}</p>
+                                                <p className="text-sm text-white font-arabic">{excuseRecord.excuse}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Sheikh's Fatwa Box */}
+                                        <div className={`border rounded-xl p-4 relative overflow-hidden ${excuseRecord.isValid ? 'bg-emerald-950/30 border-emerald-900/50' : 'bg-red-950/30 border-red-900/50'}`}>
+                                            {/* Stamp */}
+                                            <div className={`absolute -right-4 -top-4 opacity-10 rotate-12`}>
+                                                <span className="material-symbols-outlined text-[100px] text-white">gavel</span>
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-2 mb-3 relative z-10">
+                                                <div className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border ${excuseRecord.isValid ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30'}`}>
+                                                    {excuseRecord.isValid 
+                                                        ? (language === 'ar' ? '🟢 عذر شرعي مقبول' : '🟢 Valid Excuse')
+                                                        : (language === 'ar' ? '🔴 عذر غير مقبول' : '🔴 Invalid Excuse')}
+                                                </div>
+                                            </div>
+                                            
+                                            <h4 className="text-xs font-bold text-gold-400 uppercase tracking-widest mb-2 relative z-10 flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-[14px]">mosque</span>
+                                                {language === 'ar' ? 'رد الشيخ (الفتوى والكفارة)' : "Sheikh's Fatwa & Qada"}
+                                            </h4>
+                                            
+                                            <div className="text-sm text-gray-300 font-arabic leading-relaxed whitespace-pre-wrap relative z-10 overflow-y-auto max-h-60 pr-2 custom-scrollbar">
+                                                {excuseRecord.fatwa}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             
-                            <button 
-                                onClick={() => {
-                                    setSelectedFailure(null);
-                                    navigate('/athkar');
-                                }}
-                                className="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold uppercase tracking-[0.2em] text-xs hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2"
-                            >
-                                <span className="material-symbols-outlined text-lg">auto_fix_high</span>
-                                {language === 'ar' ? 'ابدأ بالقضاء والكفارة' : 'Start Expiation'}
-                            </button>
+                            {excuseRecord && (
+                                <button 
+                                    onClick={() => {
+                                        setSelectedFailure(null);
+                                        navigate('/athkar');
+                                    }}
+                                    className="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold uppercase tracking-[0.2em] text-xs hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined text-lg">auto_fix_high</span>
+                                    {language === 'ar' ? 'ابدأ بالقضاء والكفارة' : 'Start Expiation'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
