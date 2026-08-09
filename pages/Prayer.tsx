@@ -53,6 +53,16 @@ const Prayer: React.FC = () => {
         return holidayEn;
     };
 
+    // Spiritual AI Contexts
+    const spiritualInsights: Record<string, { ar: string, en: string, ru: string }> = {
+        Fajr: { ar: 'ركعتا الفجر خير من الدنيا وما فيها. وقت مشهود تشهده الملائكة.', en: 'The two Sunnah rak\'ahs of Fajr are better than the world and everything in it.', ru: 'Два ракаата сунны фаджра лучше, чем весь мир и все, что в нем.' },
+        Sunrise: { ar: 'صلاة الضحى.. صلاة الأوابين وصدقة عن كل مفصل في جسدك.', en: 'Duha time, the prayer of the oft-returning, charity for every joint.', ru: 'Время Духа, молитва часто кающихся, милостыня за каждый сустав.' },
+        Dhuhr: { ar: 'تفتح أبواب السماء في هذا الوقت، فاحرص على الدعاء والسنن.', en: 'The gates of heaven are opened at this time, be sure to supplicate.', ru: 'В это время открываются врата небес, обязательно делайте дуа.' },
+        Asr: { ar: 'حافظوا على الصلوات والصلاة الوسطى. من تركها حبط عمله.', en: 'Maintain with care the prayers and [in particular] the middle prayer.', ru: 'Строго соблюдайте молитвы и особенно среднюю молитву (Аср).' },
+        Maghrib: { ar: 'عند الإفطار دعوة لا ترد. وقت شكر لله على نعمة إتمام اليوم.', en: 'A time of gratitude as the day concludes. Prayers are answered.', ru: 'Время благодарности в конце дня. Молитвы принимаются.' },
+        Isha: { ar: 'من صلاها في جماعة فكأنما قام نصف الليل. ختام مسك ليومك.', en: 'Whoever prays Isha in congregation, it is as if he prayed half the night.', ru: 'Тот, кто совершил Иша в джамаате, словно молился половину ночи.' }
+    };
+
     useEffect(() => {
         const todayStr = new Date().toISOString().split('T')[0];
         const key = `prayer_tracker_${todayStr}`;
@@ -148,6 +158,9 @@ const Prayer: React.FC = () => {
             activePeriodName = prayers[currentIndex];
         }
     }
+
+    const isWuduTime = timeRemaining && timeRemaining.startsWith('00:') && parseInt(timeRemaining.split(':')[1] || '60') < 15;
+    const activeIdx = activePeriodName === 'Dhuha (Waiting)' ? 1 : prayers.indexOf(activePeriodName);
 
     // Logic for "Active Now" Badge: Don't show it if it's "Sunrise" or "Dhuha" effectively, or customize text
     // Actually, user wants "Sunrise" NOT to be the big active thing if it's misleading.
@@ -339,6 +352,24 @@ const Prayer: React.FC = () => {
                                     </div>
                                 </div>
 
+                                {/* Smart Wudu Reminder */}
+                                {isWuduTime && nextPrayer && (
+                                    <div className="bg-blue-500/20 border border-blue-400/40 rounded-xl p-3 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500 relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(59,130,246,0.2),_transparent)] opacity-50 animate-pulse"></div>
+                                        <div className="size-8 rounded-full bg-blue-500/30 flex items-center justify-center text-blue-300 relative z-10">
+                                            <span className="material-symbols-outlined text-[18px]">water_drop</span>
+                                        </div>
+                                        <div className="flex flex-col relative z-10">
+                                            <span className="text-[11px] font-bold text-white uppercase tracking-wider">
+                                                {lang === 'ar' ? 'حان وقت الوضوء' : 'Wudu Time'}
+                                            </span>
+                                            <span className="text-[9px] text-blue-200/80">
+                                                {lang === 'ar' ? 'استعد للصلاة القادمة' : 'Prepare for the upcoming prayer'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="mt-auto pt-3 border-t border-white/5 flex items-center justify-between pb-2">
                                     <div className="flex flex-col">
                                         <p className="text-[9px] text-white/40 uppercase tracking-widest mb-1">{t.currently}</p>
@@ -383,8 +414,8 @@ const Prayer: React.FC = () => {
                     </div>
 
                     <div className="relative pl-6">
-                        {/* Vertical Timeline Line */}
-                        <div className="absolute left-[34px] top-6 bottom-6 w-[2px] bg-gradient-to-b from-transparent via-white/10 to-transparent z-0"></div>
+                        {/* Vertical Timeline Line base (dimmed) */}
+                        <div className="absolute left-[34px] top-6 bottom-6 w-[2px] bg-white/5 z-0"></div>
 
                         <div className="flex flex-col gap-2.5 relative z-10">
                             {prayers.map((prayer, idx) => {
@@ -393,6 +424,9 @@ const Prayer: React.FC = () => {
                                 const isPrayed = prayedStatus[prayer];
                                 const showTracker = prayer !== 'Sunrise';
                                 const isSunrise = prayer === 'Sunrise';
+                                
+                                const isPast = idx < activeIdx;
+                                const isCurrent = idx === activeIdx;
 
                                 // Jumu'ah Logic
                                 const isFriday = new Date().getDay() === 5;
@@ -430,9 +464,13 @@ const Prayer: React.FC = () => {
                                             flex flex-col p-4 rounded-xl border transition-all duration-500 overflow-hidden relative ml-4
                                             ${isActive ? 'bg-gradient-to-br from-gold/20 to-gold/5 border-gold/70 border-r-[6px] shadow-[0_0_25px_rgba(212,175,55,0.15)] scale-[1.02]' : (isNext ? 'bg-gold/10 border-gold/40' : (isSunrise ? 'bg-transparent border-dashed border-white/10 opacity-70 scale-95' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.08]'))}
                                         `}>
+                                            {/* Path of Light: Active line segment */}
+                                            <div className={`absolute -top-6 bottom-1/2 -left-6 w-[2px] z-0 ${isPast || isCurrent ? 'bg-gradient-to-b from-gold/50 to-gold shadow-[0_0_10px_#D4AF37]' : 'bg-transparent'}`}></div>
+                                            <div className={`absolute top-1/2 -bottom-6 -left-6 w-[2px] z-0 ${isPast ? 'bg-gradient-to-b from-gold to-gold/50 shadow-[0_0_10px_#D4AF37]' : 'bg-transparent'}`}></div>
+
                                             {/* Timeline Node Connection */}
-                                            <div className={`absolute top-1/2 -left-4 w-4 h-[2px] -translate-y-1/2 ${isActive ? 'bg-gold shadow-[0_0_8px_#D4AF37]' : 'bg-white/10'}`}></div>
-                                            <div className={`absolute top-1/2 -left-6 size-4 -translate-y-1/2 rounded-full border-[3px] z-10 ${isActive ? 'bg-gold-bright border-gold-bright shadow-[0_0_12px_#D4AF37]' : (isPrayed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#020402] border-white/20')}`}></div>
+                                            <div className={`absolute top-1/2 -left-4 w-4 h-[2px] -translate-y-1/2 ${isActive ? 'bg-gold shadow-[0_0_8px_#D4AF37]' : (isPast ? 'bg-gold/50' : 'bg-white/10')}`}></div>
+                                            <div className={`absolute top-1/2 -left-6 size-4 -translate-y-1/2 rounded-full border-[3px] z-10 ${isActive ? 'bg-gold-bright border-gold-bright shadow-[0_0_12px_#D4AF37]' : (isPrayed ? 'bg-emerald-500 border-emerald-500' : (isPast ? 'bg-gold/50 border-gold' : 'bg-[#020402] border-white/20'))}`}></div>
 
                                             {isActive && <div className="absolute inset-0 bg-gold/5 animate-pulse-glow rounded-xl pointer-events-none"></div>}
                                             <div className="flex items-center justify-between relative z-10">
@@ -497,6 +535,16 @@ const Prayer: React.FC = () => {
                                             </div>
                                         );
                                     })()}
+                                    
+                                    {/* SPIRITUAL AI CONTEXT BUBBLE */}
+                                    {isActive && (spiritualInsights as any)[prayer] && (
+                                        <div className="mt-4 p-3 rounded-xl bg-gold/5 border border-gold/20 flex gap-3 animate-in fade-in slide-in-from-top-2 relative z-10">
+                                            <span className="material-symbols-outlined text-gold-bright text-[18px] shrink-0 mt-0.5">auto_awesome</span>
+                                            <p className="text-[11px] font-arabic leading-relaxed text-gold-100 italic">
+                                                {(spiritualInsights as any)[prayer][lang] || (spiritualInsights as any)[prayer].en}
+                                            </p>
+                                        </div>
+                                    )}
                                     
                                     {/* POST PRAYER SMART ACTION (Shows if recently prayed) */}
                                     {isPrayed && isActive && (
