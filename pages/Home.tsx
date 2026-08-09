@@ -13,6 +13,26 @@ const Home: React.FC = () => {
     const navigate = useNavigate();
     const today = new Date().toISOString().split('T')[0];
 
+    const [isCopied, setIsCopied] = useState(false);
+    const ayahText = `فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ\n\n"So remember Me; I will remember you. And be grateful to Me and do not deny Me."\n[Al-Baqarah 2:152]`;
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(ayahText);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    };
+
+    const handleShare = () => {
+        if (navigator.share) {
+            navigator.share({
+                title: t('daily_ayah') as string || 'Ayah of the Day',
+                text: ayahText,
+            }).catch(console.error);
+        } else {
+            handleCopy();
+        }
+    };
+
     // Dhikr category based on time
     const [activeCategory, setActiveCategory] = useState<string>('Istighfar');
 
@@ -280,11 +300,17 @@ const Home: React.FC = () => {
                                 Al-Baqarah 2:152
                             </div>
                             <div className="flex gap-3">
-                                <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-gold-bright hover:bg-white/10 transition-all">
+                                <button 
+                                    onClick={handleShare}
+                                    className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-gold-bright hover:bg-white/10 transition-all active:scale-95"
+                                >
                                     <span className="material-symbols-outlined text-lg">share</span>
                                 </button>
-                                <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-gold-bright hover:bg-white/10 transition-all">
-                                    <span className="material-symbols-outlined text-lg">content_copy</span>
+                                <button 
+                                    onClick={handleCopy}
+                                    className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-gold-bright hover:bg-white/10 transition-all active:scale-95"
+                                >
+                                    <span className="material-symbols-outlined text-lg">{isCopied ? 'check' : 'content_copy'}</span>
                                 </button>
                             </div>
                         </div>

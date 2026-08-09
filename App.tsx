@@ -31,19 +31,7 @@ const App: React.FC = () => {
     <Router>
       <div className="min-h-screen bg-desktop-pattern flex justify-center text-white font-sans selection:bg-gold selection:text-black">
         <div className="w-full max-w-md min-h-screen bg-black relative shadow-2xl border-x border-white/5 flex flex-col overflow-x-hidden">
-          <Routes>
-          <Route path="/" element={<Onboarding />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/prayer" element={<Prayer />} />
-          <Route path="/scan" element={<Scan />} />
-          <Route path="/health" element={<Health />} />
-          <Route path="/athkar" element={<Athkar />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/ramadan" element={<Ramadan />} />
-          <Route path="/stats" element={<Stats />} />
-          <Route path="/ai" element={<AiChat />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+          <AnimatedRoutes />
 
         {/* This component now listens to route changes properly */}
         <ConditionalNav
@@ -72,6 +60,28 @@ const ConditionalNav: React.FC<{ isMenuOpen: boolean, setIsMenuOpen: (v: boolean
         isMenuOpen={isMenuOpen}
       />
     </>
+  );
+};
+
+const AnimatedRoutes: React.FC = () => {
+  const location = useLocation();
+  
+  return (
+    <div key={location.pathname} className="animate-in fade-in zoom-in-[0.98] duration-300 w-full flex-1 flex flex-col relative z-0">
+      <Routes location={location}>
+        <Route path="/" element={<Onboarding />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/prayer" element={<Prayer />} />
+        <Route path="/scan" element={<Scan />} />
+        <Route path="/health" element={<Health />} />
+        <Route path="/athkar" element={<Athkar />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/ramadan" element={<Ramadan />} />
+        <Route path="/stats" element={<Stats />} />
+        <Route path="/ai" element={<AiChat />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </div>
   );
 };
 
