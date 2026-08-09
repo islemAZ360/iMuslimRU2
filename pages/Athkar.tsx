@@ -7,82 +7,98 @@ import { athkarData } from '../data/athkarData';
 const sunnahData = [
     {
         id: 'fajr_sunnah',
-        name: 'سنة الفجر',
-        desc: 'Fajr Sunnah',
+        nameAr: 'سنة الفجر',
+        nameEn: 'Fajr Sunnah',
         rakahs: 2,
         isRawatib: true,
-        virtue: 'Better than the world and all that is in it.',
-        timeHint: 'Before Fajr',
+        virtueAr: 'خير من الدنيا وما فيها.',
+        virtueEn: 'Better than the world and all that is in it.',
+        timeHintAr: 'قبل صلاة الفجر',
+        timeHintEn: 'Before Fajr',
         icon: 'wb_twilight'
     },
     {
         id: 'dhuhr_before',
-        name: 'سنة الظهر القبلية',
-        desc: 'Before Dhuhr',
+        nameAr: 'سنة الظهر القبلية',
+        nameEn: 'Before Dhuhr Sunnah',
         rakahs: 4,
         isRawatib: true,
-        virtue: 'Prevents the fire from touching the soul.',
-        timeHint: 'Before Dhuhr',
+        virtueAr: 'تفتح لها أبواب السماء.',
+        virtueEn: 'The gates of heaven open for it.',
+        timeHintAr: 'قبل صلاة الظهر',
+        timeHintEn: 'Before Dhuhr',
         icon: 'wb_sunny'
     },
     {
         id: 'dhuhr_after',
-        name: 'سنة الظهر البعدية',
-        desc: 'After Dhuhr',
+        nameAr: 'سنة الظهر البعدية',
+        nameEn: 'After Dhuhr Sunnah',
         rakahs: 2,
         isRawatib: true,
-        virtue: 'Completes the Rawatib reward.',
-        timeHint: 'After Dhuhr',
+        virtueAr: 'من حافظ عليها بني له بيت في الجنة.',
+        virtueEn: 'A house is built in Jannah for it.',
+        timeHintAr: 'بعد صلاة الظهر',
+        timeHintEn: 'After Dhuhr',
         icon: 'light_mode'
     },
     {
         id: 'duha_prayer',
-        name: 'صلاة الضحى',
-        desc: 'Duha Prayer',
+        nameAr: 'صلاة الضحى',
+        nameEn: 'Duha Prayer',
         rakahs: 2,
         isRawatib: false,
-        virtue: 'Charity for every joint in the body.',
-        timeHint: 'After Sunrise',
+        virtueAr: 'صدقة عن كل مفصل في جسدك.',
+        virtueEn: 'Charity for every joint in the body.',
+        timeHintAr: 'بعد شروق الشمس',
+        timeHintEn: 'After Sunrise',
         icon: 'sunny'
     },
     {
         id: 'maghrib_after',
-        name: 'سنة المغرب',
-        desc: 'After Maghrib',
+        nameAr: 'سنة المغرب',
+        nameEn: 'After Maghrib Sunnah',
         rakahs: 2,
         isRawatib: true,
-        virtue: 'Key to the Jannah goal.',
-        timeHint: 'After Maghrib',
+        virtueAr: 'ركعتان خفيفتان يسن فيهما قراءة الكافرون والإخلاص.',
+        virtueEn: 'Two light units of prayer.',
+        timeHintAr: 'بعد صلاة المغرب',
+        timeHintEn: 'After Maghrib',
         icon: 'wb_twilight'
     },
     {
         id: 'isha_after',
-        name: 'سنة العشاء',
-        desc: 'After Isha',
+        nameAr: 'سنة العشاء',
+        nameEn: 'After Isha Sunnah',
         rakahs: 2,
         isRawatib: true,
-        virtue: 'The final Rawatib of the day.',
-        timeHint: 'After Isha',
+        virtueAr: 'ختام السنن الراتبة في يومك.',
+        virtueEn: 'The final Rawatib of the day.',
+        timeHintAr: 'بعد صلاة العشاء',
+        timeHintEn: 'After Isha',
         icon: 'dark_mode'
     },
     {
         id: 'witr_prayer',
-        name: 'صلاة الوتر',
-        desc: 'Witr Prayer',
+        nameAr: 'صلاة الوتر',
+        nameEn: 'Witr Prayer',
         rakahs: 1,
         isRawatib: false,
-        virtue: 'Allah is One and loves the Witr.',
-        timeHint: 'After Isha until Fajr',
+        virtueAr: 'إن الله وتر يحب الوتر.',
+        virtueEn: 'Allah is One and loves the Witr.',
+        timeHintAr: 'بعد العشاء حتى الفجر',
+        timeHintEn: 'After Isha until Fajr',
         icon: 'star'
     },
     {
         id: 'tahajjud_prayer',
-        name: 'قيام الليل',
-        desc: 'Tahajjud',
+        nameAr: 'قيام الليل',
+        nameEn: 'Tahajjud',
         rakahs: 2,
         isRawatib: false,
-        virtue: 'The best prayer after the obligatory ones.',
-        timeHint: 'Last third of night',
+        virtueAr: 'أفضل الصلاة بعد الفريضة.',
+        virtueEn: 'The best prayer after the obligatory ones.',
+        timeHintAr: 'الثلث الأخير من الليل',
+        timeHintEn: 'Last third of night',
         icon: 'bedtime'
     }
 ];
@@ -104,6 +120,8 @@ const Athkar: React.FC = () => {
     const [activeCategory, setActiveCategory] = useState<string>('Istighfar');
     const [showSmartTip, setShowSmartTip] = useState(true);
     const [showResetModal, setShowResetModal] = useState(false);
+    
+    const counterRef = React.useRef<HTMLDivElement>(null);
 
     // Stats persistence logic
     const [stats, setStats] = useState<Record<string, number>>(() => {
@@ -271,7 +289,7 @@ const Athkar: React.FC = () => {
             </div>
 
             {/* Main Tasbih Card */}
-            <div className="w-full rounded-3xl bg-gradient-to-b from-emerald-950/90 to-black border border-gold/20 p-5 relative overflow-hidden mb-10">
+            <div ref={counterRef} className="w-full rounded-3xl bg-gradient-to-b from-emerald-950/90 to-black border border-gold/20 p-5 relative overflow-hidden mb-10">
                 <div className="relative z-10 flex flex-col items-center">
                     <div className="w-full flex justify-between items-center mb-6">
                         <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 border border-gold/20">
@@ -337,8 +355,8 @@ const Athkar: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <div className="w-1.5 h-9 bg-gold-bright rounded-full"></div>
                         <div>
-                            <h3 className="text-2xl font-arabic text-gold-bright">موسوعة الأذكار</h3>
-                            <p className="text-[11px] font-bold text-emerald-300 uppercase tracking-[0.4em]">Spiritual Encyclopedia</p>
+                            <h3 className="text-2xl font-arabic text-gold-bright">{language === 'ar' ? 'موسوعة الأذكار' : 'Athkar Encyclopedia'}</h3>
+                            <p className="text-[11px] font-bold text-emerald-300 uppercase tracking-[0.4em]">{language === 'ar' ? 'الموسوعة الروحية' : 'Spiritual Encyclopedia'}</p>
                         </div>
                     </div>
                 </div>
@@ -369,11 +387,11 @@ const Athkar: React.FC = () => {
                                     onClick={() => {
                                         setTarget(dhikr.count);
                                         setCount(0);
-                                        window.scrollTo({ top: 350, behavior: 'smooth' });
+                                        counterRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                     }}
                                     className="px-5 py-2.5 rounded-xl bg-gold-bright text-black text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-gold-light transition-all active:scale-95"
                                 >
-                                    Engage Ritual <span className="material-symbols-outlined text-sm">auto_fix_high</span>
+                                    {language === 'ar' ? 'ابدأ الذكر' : 'Engage Ritual'} <span className="material-symbols-outlined text-sm">auto_fix_high</span>
                                 </button>
                             </div>
                         </div>
@@ -387,15 +405,15 @@ const Athkar: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <div className="w-1.5 h-9 bg-emerald-500 rounded-full"></div>
                         <div>
-                            <h3 className="text-2xl font-arabic text-white">السنن والرواتب</h3>
-                            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.4em]">Prophetic Traditions</p>
+                            <h3 className="text-2xl font-arabic text-white">{language === 'ar' ? 'السنن والرواتب' : 'Sunnah Prayers'}</h3>
+                            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.4em]">{language === 'ar' ? 'السنن النبوية' : 'Prophetic Traditions'}</p>
                         </div>
                     </div>
                     {/* 12-Rak'ah Challenge Progress */}
                     <div className="flex flex-col items-end bg-black/40 p-3 rounded-2xl border border-gold/10">
                         <div className="flex items-center gap-2 mb-2">
                             <span className="material-symbols-outlined text-gold-bright text-sm">home_work</span>
-                            <span className="text-[9px] font-bold text-gold-bright uppercase tracking-widest">Jannah Palace</span>
+                            <span className="text-[9px] font-bold text-gold-bright uppercase tracking-widest">{language === 'ar' ? 'قصر في الجنة' : 'Jannah Palace'}</span>
                         </div>
                         <div className="flex gap-1.5">
                             {Array.from({ length: RAWATIB_GOAL }).map((_, i) => (
@@ -410,7 +428,7 @@ const Athkar: React.FC = () => {
 
                 <div className="grid grid-cols-1 gap-3">
                     {sunnahData.map((sunnah) => {
-                        const isHighlighted = (nextPrayer && sunnah.timeHint.includes(nextPrayer)) ||
+                        const isHighlighted = (nextPrayer && sunnah.timeHintEn.includes(nextPrayer)) ||
                             (nextPrayer === 'Fajr' && sunnah.id === 'tahajjud_prayer') ||
                             (nextPrayer === 'Dhuhr' && sunnah.id === 'duha_prayer');
 
@@ -434,11 +452,11 @@ const Athkar: React.FC = () => {
 
                                     <div className="flex-1">
                                         <div className="flex items-baseline gap-3 mb-1">
-                                            <h4 className="font-arabic text-xl text-white">{sunnah.name}</h4>
-                                            <span className="text-[10px] font-bold text-emerald-400/70 uppercase tracking-widest">{sunnah.rakahs} Rak'ahs</span>
+                                            <h4 className="font-arabic text-xl text-white">{language === 'ar' ? sunnah.nameAr : sunnah.nameEn}</h4>
+                                            <span className="text-[10px] font-bold text-emerald-400/70 uppercase tracking-widest">{sunnah.rakahs} {language === 'ar' ? 'ركعات' : "Rak'ahs"}</span>
                                         </div>
-                                        <p className="text-[10px] font-bold text-gold-bright/70 uppercase tracking-[0.25em] mb-1">{sunnah.desc} • <span className="text-white/60">{sunnah.timeHint}</span></p>
-                                        <p className="text-xs text-gray-500 italic font-serif leading-relaxed line-clamp-1">"{sunnah.virtue}"</p>
+                                        <p className="text-[10px] font-bold text-gold-bright/70 uppercase tracking-[0.25em] mb-1"><span className="text-white/60">{language === 'ar' ? sunnah.timeHintAr : sunnah.timeHintEn}</span></p>
+                                        <p className="text-xs text-gray-500 italic font-serif leading-relaxed line-clamp-1">"{language === 'ar' ? sunnah.virtueAr : sunnah.virtueEn}"</p>
                                     </div>
 
                                     <button
@@ -471,9 +489,9 @@ const Athkar: React.FC = () => {
                                 <span className="material-symbols-outlined text-red-400 text-3xl">restart_alt</span>
                             </div>
                             
-                            <h3 className="font-arabic text-2xl text-gold-bright mb-2">إعادة تعيين الجلسة</h3>
+                            <h3 className="font-arabic text-2xl text-gold-bright mb-2">{language === 'ar' ? 'إعادة تعيين الجلسة' : 'Reset Session'}</h3>
                             <p className="text-sm font-medium text-gray-300 mb-6">
-                                Are you sure you want to reset the session counter? This action cannot be undone.
+                                {language === 'ar' ? 'هل أنت متأكد أنك تريد إعادة تعيين عداد الجلسة؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure you want to reset the session counter? This action cannot be undone.'}
                             </p>
                             
                             <div className="flex w-full gap-3">
@@ -481,7 +499,7 @@ const Athkar: React.FC = () => {
                                     onClick={() => setShowResetModal(false)}
                                     className="flex-1 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-gray-400 uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all"
                                 >
-                                    Cancel
+                                    {language === 'ar' ? 'إلغاء' : 'Cancel'}
                                 </button>
                                 <button 
                                     onClick={() => {
@@ -490,7 +508,7 @@ const Athkar: React.FC = () => {
                                     }}
                                     className="flex-1 py-3.5 rounded-2xl bg-red-500/20 border border-red-500/30 text-xs font-bold text-red-400 uppercase tracking-widest hover:bg-red-500/30 hover:text-red-300 transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)]"
                                 >
-                                    Reset
+                                    {language === 'ar' ? 'إعادة التعيين' : 'Reset'}
                                 </button>
                             </div>
                         </div>
