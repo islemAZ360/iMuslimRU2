@@ -8,17 +8,19 @@ interface CompassProps {
 
 const Compass: React.FC<CompassProps> = ({ heading, qiblaDirection, distanceToKaaba }) => {
     // Determine the needle rotation. 
-    // IF the dial rotates by {-heading}, then North is at -heading.
-    // Qibla is at {qiblaDirection} relative to North.
-    // So Qibla relative to screen top is {qiblaDirection - heading}.
-    // We rotate the needle wrapper to this angle.
     const needleRotation = (qiblaDirection || 0) - heading;
+    
+    // Check if facing Qibla (within 5 degrees)
+    const normalizedRotation = ((needleRotation % 360) + 360) % 360;
+    const isFacingQibla = normalizedRotation < 5 || normalizedRotation > 355;
 
     return (
         <div className="relative flex flex-col items-center">
             {/* Outer Decorative Container */}
-            <div className="relative rounded-full p-2 bg-gradient-to-br from-[#8A6E24] via-[#D4AF37] to-[#5c4008] shadow-2xl">
-                <div className="bg-[#050301] p-1 rounded-full">
+            <div className={`relative rounded-full p-2 transition-colors duration-700 shadow-2xl ${isFacingQibla ? 'bg-gradient-to-br from-emerald-500 via-gold-bright to-emerald-700 shadow-[0_0_40px_rgba(16,185,129,0.5)]' : 'bg-gradient-to-br from-[#8A6E24] via-[#D4AF37] to-[#5c4008]'}`}>
+                <div className="bg-[#050301] p-1 rounded-full relative">
+                    {/* Qibla facing indicator pulse */}
+                    {isFacingQibla && <div className="absolute inset-0 bg-emerald-500/20 rounded-full animate-ping pointer-events-none"></div>}
 
                     {/* THE COMPASS */}
                     <div className="relative size-72 sm:size-80 flex items-center justify-center rounded-full ancient-compass-rim overflow-hidden">

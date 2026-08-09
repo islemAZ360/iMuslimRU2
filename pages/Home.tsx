@@ -193,8 +193,9 @@ const Home: React.FC = () => {
                         {smartContext.tip}
                     </p>
                 </div>
-                <div className="size-12 rounded-2xl bg-black/40 border border-gold/20 flex items-center justify-center text-gold-bright">
-                    <span className="material-symbols-outlined text-xl">mosque</span>
+                <div className="size-12 rounded-2xl bg-black/40 border border-gold/20 flex items-center justify-center text-gold-bright shadow-[0_0_15px_rgba(212,175,55,0.15)] animate-floating-orb relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gold/10 pointer-events-none group-hover:bg-gold/20 transition-colors"></div>
+                    <span className="material-symbols-outlined text-xl relative z-10">mosque</span>
                 </div>
             </div>
 

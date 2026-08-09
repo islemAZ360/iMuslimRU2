@@ -259,22 +259,39 @@ const Prayer: React.FC = () => {
                 <header className="flex items-center justify-between px-6 pt-10 pb-6 relative z-10">
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gold-light/80 mb-2">
-                            <span className="material-symbols-outlined text-sm text-gold">location_on</span>
+                            <span className="material-symbols-outlined text-sm text-gold animate-pulse">location_on</span>
                             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-gold">{location?.city || t.unknown_location || 'Unknown'}</span>
                         </div>
-                        <h1 className="text-3xl font-royal font-bold tracking-tight text-transparent bg-clip-text bg-gold-metallic">
+                        <h1 className="text-3xl font-royal font-bold tracking-tight text-transparent bg-clip-text bg-gold-metallic drop-shadow-md">
                             {hijriDate ? `${hijriDate.day} ${hijriDate.month.en}` : '...'}
                         </h1>
                         <p className="text-white/40 text-[10px] font-medium uppercase tracking-[0.2em] mt-1 pl-1">
                             {hijriDate?.year} AH • {new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}
                         </p>
                     </div>
-                    <button 
-                        onClick={() => navigate('/stats')}
-                        className="size-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gold-bright hover:bg-gold/10 hover:scale-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(212,175,55,0.1)]"
-                    >
-                        <span className="material-symbols-outlined text-xl">bar_chart</span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                        {/* Daily Progress */}
+                        {(() => {
+                            const obligatory = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+                            const completedCount = obligatory.filter(p => prayedStatus[p]).length;
+                            const strokeDasharray = `${(completedCount / 5) * 100}, 100`;
+                            return (
+                                <div className="flex flex-col items-center justify-center relative size-11 bg-white/5 border border-white/10 rounded-2xl shadow-[0_0_15px_rgba(212,175,55,0.05)]">
+                                    <svg className="absolute inset-0 size-full transform -rotate-90 p-1.5" viewBox="0 0 36 36">
+                                        <path className="text-white/10" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <path className="text-emerald-500 drop-shadow-[0_0_3px_rgba(16,185,129,0.8)] transition-all duration-1000 ease-out" strokeDasharray={strokeDasharray} strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    </svg>
+                                    <span className="text-[10px] font-bold text-gold-bright relative z-10">{completedCount}/5</span>
+                                </div>
+                            );
+                        })()}
+                        <button 
+                            onClick={() => navigate('/stats')}
+                            className="size-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gold-bright hover:bg-gold/10 hover:scale-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(212,175,55,0.1)]"
+                        >
+                            <span className="material-symbols-outlined text-xl">bar_chart</span>
+                        </button>
+                    </div>
                 </header>
 
                 {/* Background ambient lighting */}
