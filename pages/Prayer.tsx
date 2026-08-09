@@ -269,6 +269,12 @@ const Prayer: React.FC = () => {
                             {hijriDate?.year} AH • {new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}
                         </p>
                     </div>
+                    <button 
+                        onClick={() => navigate('/stats')}
+                        className="size-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gold-bright hover:bg-gold/10 hover:scale-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(212,175,55,0.1)]"
+                    >
+                        <span className="material-symbols-outlined text-xl">bar_chart</span>
+                    </button>
                 </header>
 
                 {/* Background ambient lighting */}
@@ -427,14 +433,66 @@ const Prayer: React.FC = () => {
                                             </div>
                                         );
                                     })()}
+                                    
+                                    {/* POST PRAYER SMART ACTION (Shows if recently prayed) */}
+                                    {isPrayed && isActive && (
+                                        <div 
+                                            onClick={() => navigate('/athkar')}
+                                            className="mt-4 p-3 rounded-xl bg-gradient-to-r from-emerald-500/10 via-gold/10 to-emerald-500/10 border border-gold/30 flex items-center justify-between cursor-pointer hover:bg-gold/20 hover:scale-[1.02] transition-all relative overflow-hidden group shadow-[0_0_15px_rgba(212,175,55,0.2)]"
+                                        >
+                                            <div className="absolute inset-0 bg-gold/5 animate-pulse-glow pointer-events-none"></div>
+                                            <div className="flex items-center gap-3 relative z-10">
+                                                <div className="size-8 rounded-lg bg-gold/20 flex items-center justify-center text-gold-bright">
+                                                    <span className="material-symbols-outlined text-[16px]">menu_book</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[11px] font-bold text-white uppercase tracking-wider">
+                                                        {(t as any)['post_prayer_athkar'] || 'أذكار ما بعد الصلاة'}
+                                                    </span>
+                                                    <span className="text-[9px] text-gold-bright/80 uppercase tracking-widest">
+                                                        {(t as any)['read_now'] || 'Read Now'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <span className="material-symbols-outlined text-gold/50 text-sm group-hover:text-gold-bright group-hover:translate-x-1 transition-transform">arrow_forward_ios</span>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
                     </div>
                 </section>
 
+                {/* SMART IFTAR / HEALTH BANNER (Shows during Asr) */}
+                {activePeriodName === 'Asr' && (
+                    <section className="px-5 mt-8 relative z-10 animate-in slide-in-from-bottom-4 duration-700 fade-in">
+                        <div 
+                            onClick={() => navigate('/health')}
+                            className="p-5 rounded-2xl bg-gradient-to-r from-emerald-950 via-emerald-900/60 to-emerald-950 border border-emerald-500/30 flex items-center justify-between cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.15)] overflow-hidden relative"
+                        >
+                            <div className="absolute inset-0 bg-emerald-500/5 animate-pulse-glow pointer-events-none"></div>
+                            <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
+                            
+                            <div className="flex items-center gap-4 relative z-10">
+                                <div className="size-12 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                                    <span className="material-symbols-outlined text-2xl">local_dining</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] mb-0.5">
+                                        {(t as any)['iftar_approaching'] || 'Iftar is Approaching'}
+                                    </span>
+                                    <span className="text-sm font-bold text-white tracking-wide">
+                                        {(t as any)['track_nutrition'] || 'Track your nutrition'}
+                                    </span>
+                                </div>
+                            </div>
+                            <span className="material-symbols-outlined text-emerald-500/50 relative z-10">arrow_forward_ios</span>
+                        </div>
+                    </section>
+                )}
+
                 {/* ANCIENT QIBLA COMPASS */}
-                <section className="px-5 mt-16 relative z-10">
+                <section className="px-5 mt-12 relative z-10">
                     <div className="relative p-6 rounded-3xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 shadow-2xl overflow-hidden group">
                         <div className="absolute inset-0 bg-gold/5 blur-3xl rounded-full opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity duration-1000"></div>
                         <div className="absolute inset-0 islamic-pattern-bg opacity-10 mix-blend-overlay pointer-events-none"></div>
