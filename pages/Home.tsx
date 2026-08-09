@@ -22,6 +22,20 @@ const Home: React.FC = () => {
         return saved ? JSON.parse(saved) : {};
     });
 
+    const [dailyTotal, setDailyTotal] = useState(() => {
+        const saved = localStorage.getItem(`dhikr_daily_${today}`);
+        return saved ? parseInt(saved, 10) : 0;
+    });
+
+    useEffect(() => {
+        const checkDhikr = () => {
+            const saved = localStorage.getItem(`dhikr_daily_${today}`);
+            if (saved) setDailyTotal(parseInt(saved, 10));
+        };
+        window.addEventListener('focus', checkDhikr);
+        return () => window.removeEventListener('focus', checkDhikr);
+    }, [today]);
+
     useEffect(() => {
         const hour = new Date().getHours();
         if (hour >= 4 && hour < 10) setActiveCategory('Morning');
@@ -238,7 +252,7 @@ const Home: React.FC = () => {
             {/* Trackers Section */}
             <div className="grid grid-cols-2 gap-3 mb-10 animate-in fade-in duration-500 delay-400">
                 {/* Athkar Tracker */}
-                <div className="bg-emerald-black/40 border border-white/10 rounded-2xl p-5 relative overflow-hidden">
+                <div onClick={() => navigate('/athkar')} className="bg-emerald-black/40 border border-white/10 rounded-2xl p-5 relative overflow-hidden cursor-pointer hover:bg-emerald-black/60 transition-all">
                     <div className="flex justify-between items-center mb-4 relative z-10">
                         <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.3em]">{t('faith_progress')}</span>
                         <div className="size-9 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
@@ -249,10 +263,10 @@ const Home: React.FC = () => {
                         <div>
                             <div className="flex justify-between text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-[0.2em]">
                                 <span>{t('soul_level')}</span>
-                                <span className="text-gold-bright">65%</span>
+                                <span className="text-gold-bright">{Math.min(Math.round((dailyTotal / 1000) * 100), 100)}%</span>
                             </div>
                             <div className="h-2 w-full bg-black/80 rounded-full overflow-hidden border border-white/10">
-                                <div className="h-full bg-gradient-to-r from-gold to-gold-bright rounded-full w-[65%]"></div>
+                                <div className="h-full bg-gradient-to-r from-gold to-gold-bright rounded-full transition-all duration-700" style={{ width: `${Math.min((dailyTotal / 1000) * 100, 100)}%` }}></div>
                             </div>
                         </div>
                     </div>

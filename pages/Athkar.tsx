@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { usePrayer } from '../context/PrayerContext';
+import { useNavigate } from 'react-router-dom';
 import { athkarData } from '../data/athkarData';
 
 const sunnahData = [
@@ -109,6 +110,7 @@ const RAWATIB_GOAL = 12;
 const Athkar: React.FC = () => {
     const { language, t } = useLanguage();
     const { nextPrayer, timings } = usePrayer();
+    const navigate = useNavigate();
     const today = new Date().toISOString().split('T')[0];
 
     // Tasbih State with Persistence
@@ -183,13 +185,19 @@ const Athkar: React.FC = () => {
 
     const handleCount = () => {
         if (count < target) {
-            setCount(c => c + 1);
+            const newCount = count + 1;
+            setCount(newCount);
             setDailyTotal(d => d + 1);
             setStats(prev => ({
                 ...prev,
                 [activeCategory]: (prev[activeCategory] || 0) + 1
             }));
-            try { if (navigator.vibrate) navigator.vibrate(50); } catch (e) { }
+            
+            if (newCount === target) {
+                try { if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]); } catch (e) { }
+            } else {
+                try { if (navigator.vibrate) navigator.vibrate(50); } catch (e) { }
+            }
         }
     };
 
@@ -219,8 +227,17 @@ const Athkar: React.FC = () => {
 
     const currentDhikr = athkarData[activeCategory as keyof typeof athkarData]?.[0] || { arabic: 'أَسْتَغْفِرُ ٱللَّٰهَ', translation: 'I seek forgiveness from Allah', count: 100, benefit: '' };
 
+    const bgMap: Record<string, string> = {
+        Morning: 'from-orange-950/40 via-black to-black',
+        Evening: 'from-indigo-950/40 via-black to-black',
+        Sleep: 'from-blue-950/40 via-black to-black',
+        Praise: 'from-red-950/40 via-black to-black',
+        default: 'from-emerald-950/20 via-black to-black'
+    };
+    const bgClass = bgMap[activeCategory] || bgMap.default;
+
     return (
-        <div className="pb-32 pt-8 px-4 flex flex-col items-center min-h-screen animate-in fade-in duration-700" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+        <div className={`pb-32 pt-8 px-4 flex flex-col items-center min-h-screen animate-in fade-in duration-700 bg-gradient-to-br ${bgClass}`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
 
             {/* Smart Recommendation Header */}
             {showSmartTip && (
@@ -335,8 +352,8 @@ const Athkar: React.FC = () => {
                             </defs>
                         </svg>
 
-                        <div className="size-48 rounded-full bg-[#030605] border border-gold/25 flex flex-col items-center justify-center relative z-10">
-                            <span className="text-6xl font-serif font-black text-white leading-none tracking-tighter">{count}</span>
+                        <div className={`size-48 rounded-full border border-gold/25 flex flex-col items-center justify-center relative z-10 transition-all duration-500 ${count === target ? 'bg-gold/20 shadow-[0_0_50px_rgba(212,175,55,0.4)] scale-105' : 'bg-[#030605]'}`}>
+                            <span className={`text-6xl font-serif font-black leading-none tracking-tighter transition-colors ${count === target ? 'text-gold-bright' : 'text-white'}`}>{count}</span>
                             <div className="h-0.5 w-16 bg-gradient-to-r from-transparent via-gold-bright/60 to-transparent my-3"></div>
                             <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.4em] opacity-80">Count</span>
                         </div>
@@ -379,20 +396,33 @@ const Athkar: React.FC = () => {
                                 )}
                             </div>
 
-                            <div className="flex justify-between items-center px-1">
+                            <div className="flex justify-between items-center px-1 mt-4">
                                 <div className="flex items-center gap-3">
-                                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-full border border-emerald-400/20 uppercase tracking-[0.2em]">Repeats: {dhikr.count}x</span>
+                                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-full border border-emerald-400/20 uppercase tracking-[0.2em]">{language === 'ar' ? 'التكرار' : 'Repeats'}: {dhikr.count}</span>
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        setTarget(dhikr.count);
-                                        setCount(0);
-                                        counterRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    }}
-                                    className="px-5 py-2.5 rounded-xl bg-gold-bright text-black text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-gold-light transition-all active:scale-95"
-                                >
-                                    {language === 'ar' ? 'ابدأ الذكر' : 'Engage Ritual'} <span className="material-symbols-outlined text-sm">auto_fix_high</span>
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => {
+                                            const prompt = language === 'ar' 
+                                                ? `اشرح لي فضل وأسرار هذا الذكر: "${dhikr.arabic}"`
+                                                : `Explain the virtues and secrets of this Dhikr: "${dhikr.arabic}"`;
+                                            navigate('/aichat', { state: { initialPrompt: prompt } });
+                                        }}
+                                        className="size-10 rounded-xl bg-gold/10 text-gold-bright border border-gold/30 flex items-center justify-center hover:bg-gold/20 transition-all"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">psychology</span>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setTarget(dhikr.count);
+                                            setCount(0);
+                                            counterRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        }}
+                                        className="px-5 py-2.5 rounded-xl bg-gold-bright text-black text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-gold-light transition-all active:scale-95"
+                                    >
+                                        {language === 'ar' ? 'ابدأ الذكر' : 'Engage Ritual'} <span className="material-symbols-outlined text-sm">auto_fix_high</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}

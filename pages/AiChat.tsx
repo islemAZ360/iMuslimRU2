@@ -61,12 +61,17 @@ const AiChat: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        const state = location.state as { conversationId?: string } | null;
+        const state = location.state as { conversationId?: string; initialPrompt?: string } | null;
         if (state?.conversationId) {
             setActiveId(state.conversationId);
             window.history.replaceState({}, document.title);
+        } else if (state?.initialPrompt) {
+            const conv = createConversation('Sheikh AI', 'Sheikh AI');
+            setActiveId(conv.id);
+            setInput(state.initialPrompt);
+            window.history.replaceState({}, document.title);
         }
-    }, [location.state?.conversationId]);
+    }, [location.state?.conversationId, location.state?.initialPrompt]);
 
     useEffect(() => {
         if (activeId) refreshActive(activeId);
