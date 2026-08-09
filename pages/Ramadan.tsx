@@ -173,8 +173,14 @@ const Ramadan: React.FC = () => {
         <div className="pb-52 pt-8 px-4 flex flex-col items-center min-h-screen relative" dir={language === 'ar' ? 'rtl' : 'ltr'}>
 
             {/* Decorative Fixed Background Elements */}
-            <div className="fixed inset-0 max-w-md mx-auto pointer-events-none z-0">
-                <div className="absolute top-0 inset-x-0 h-72 bg-gradient-to-b from-emerald-950/40 to-transparent"></div>
+            <div className="fixed inset-0 max-w-md mx-auto pointer-events-none z-0 overflow-hidden">
+                {fastingPhase === 'fasting' ? (
+                    <div className="absolute top-0 inset-x-0 h-full bg-gradient-to-b from-amber-900/20 via-transparent to-transparent transition-colors duration-1000"></div>
+                ) : (
+                    <div className="absolute top-0 inset-x-0 h-full bg-gradient-to-b from-indigo-950/40 via-purple-900/10 to-transparent transition-colors duration-1000">
+                        <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 15% 50%, white 1px, transparent 1px), radial-gradient(circle at 85% 30%, white 1px, transparent 1px), radial-gradient(circle at 50% 10%, white 1px, transparent 1px)' }}></div>
+                    </div>
+                )}
             </div>
 
             {/* Header */}
@@ -240,6 +246,114 @@ const Ramadan: React.FC = () => {
                             ></div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Daily Duas Card */}
+            <div className="w-full relative mb-6 z-10 animate-in slide-in-from-bottom-4 duration-700 delay-200">
+                <div className="glass-panel rounded-3xl p-5 border border-gold/20 relative">
+                    <div className="flex items-center gap-3 mb-3">
+                        <span className="material-symbols-outlined text-gold">menu_book</span>
+                        <h3 className="font-bold text-white font-serif text-sm">
+                            {language === 'ar' ? (fastingPhase === 'fasting' ? 'دعاء الإفطار' : 'دعاء نية الصيام') : (fastingPhase === 'fasting' ? 'Iftar Dua' : 'Fasting Intention')}
+                        </h3>
+                    </div>
+                    {fastingPhase === 'fasting' ? (
+                        <p className="text-xl font-arabic text-gold-light leading-loose text-center py-2">
+                            "ذَهَبَ الظَّمَأُ، وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللَّهُ"
+                        </p>
+                    ) : (
+                        <p className="text-xl font-arabic text-gold-light leading-loose text-center py-2">
+                            "وَبِصَوْمِ غَدٍ نَّوَيْتُ مِنْ شَهْرِ رَمَضَانَ"
+                        </p>
+                    )}
+                    <p className="text-[10px] text-center text-white/50 mt-2 italic px-4">
+                        {language === 'ar' 
+                            ? (fastingPhase === 'fasting' ? 'يقال عند الإفطار' : 'يقال في الليل قبل الفجر')
+                            : (fastingPhase === 'fasting' ? 'The thirst is gone, the veins are moistened, and the reward is confirmed, if Allah wills.' : 'I intend to keep the fast for tomorrow in the month of Ramadan.')}
+                    </p>
+                </div>
+            </div>
+
+            {/* Night Prayers (Taraweeh & Qiyam) */}
+            {timings && (
+                <div className="w-full relative mb-6 z-10 animate-in slide-in-from-bottom-4 duration-700 delay-300">
+                    <div className="glass-panel rounded-3xl p-5 border border-gold/20 flex divide-x divide-white/10" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                        <div className="flex-1 text-center px-2">
+                            <span className="material-symbols-outlined text-gold mb-1">mosque</span>
+                            <h4 className="font-bold text-white text-xs mb-1">{language === 'ar' ? 'صلاة التراويح' : 'Taraweeh'}</h4>
+                            <p className="text-xs text-gold-dim">{language === 'ar' ? 'بعد العشاء' : 'After Isha'}</p>
+                            <p className="text-lg font-serif font-bold text-white mt-1">{formatTime(timings.Isha)}</p>
+                        </div>
+                        <div className="flex-1 text-center px-2 border-l border-white/10">
+                            <span className="material-symbols-outlined text-gold mb-1">bedtime</span>
+                            <h4 className="font-bold text-white text-xs mb-1">{language === 'ar' ? 'قيام الليل' : 'Qiyam Al-Layl'}</h4>
+                            <p className="text-xs text-gold-dim">{language === 'ar' ? 'الثلث الأخير' : 'Last Third'}</p>
+                            <p className="text-lg font-serif font-bold text-white mt-1" dir="ltr">
+                                {(() => {
+                                    const [mH, mM] = timings.Maghrib.split(' ')[0].split(':').map(Number);
+                                    const [fH, fM] = timings.Fajr.split(' ')[0].split(':').map(Number);
+                                    let totalMins = ((fH < mH ? fH + 24 : fH) - mH) * 60 + (fM - mM);
+                                    let thirdMins = totalMins / 3;
+                                    let startH = Math.floor((fH < mH ? fH + 24 : fH) - (thirdMins / 60));
+                                    let startM = Math.floor(fM - (thirdMins % 60));
+                                    if (startM < 0) { startM += 60; startH -= 1; }
+                                    return formatTime(`${startH % 24}:${startM.toString().padStart(2, '0')}`);
+                                })()}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Quran Tracker */}
+            {hijriDate && hijriDate.month.en === 'Ramadan' && (
+                <div className="w-full relative mb-6 z-10 animate-in slide-in-from-bottom-4 duration-700 delay-[400ms]">
+                    <div className="glass-panel rounded-3xl p-5 border border-gold/20 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="size-12 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-gold text-2xl">auto_stories</span>
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-white text-sm mb-1">{language === 'ar' ? 'ورد القرآن اليومي' : 'Daily Quran Target'}</h3>
+                                <p className="text-xs text-gold-dim">{language === 'ar' ? `الجزء ${hijriDate.day}` : `Juz ${hijriDate.day}`}</p>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={(e) => {
+                                const btn = e.currentTarget;
+                                btn.classList.toggle('bg-gold');
+                                btn.classList.toggle('text-black');
+                                btn.classList.toggle('border-gold');
+                                btn.classList.toggle('text-gold/40');
+                            }}
+                            className="size-8 rounded-full border border-gold/40 flex items-center justify-center text-gold/40 transition-all duration-300"
+                        >
+                            <span className="material-symbols-outlined text-sm">check</span>
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Daily Sunnah */}
+            <div className="w-full relative mb-8 z-10 animate-in slide-in-from-bottom-4 duration-700 delay-[500ms]">
+                <div className="bg-gradient-to-r from-gold/10 to-transparent rounded-3xl p-5 border-l-4 border-gold relative overflow-hidden" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                    <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                        <span className="material-symbols-outlined text-6xl">favorite</span>
+                    </div>
+                    <h3 className="font-bold text-white text-sm mb-2 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-gold text-sm">lightbulb</span>
+                        {language === 'ar' ? 'سُنة وعمل اليوم' : 'Daily Sunnah'}
+                    </h3>
+                    <p className="text-sm text-gray-300 leading-relaxed relative z-10">
+                        {parseInt(hijriDate?.day || '1') % 4 === 0 
+                            ? (language === 'ar' ? 'تصدق ولو بالقليل، فالصدقة تطفئ غضب الرب.' : 'Give a small charity (Sadaqah).') :
+                         parseInt(hijriDate?.day || '1') % 4 === 1 
+                            ? (language === 'ar' ? 'أطعم صائماً عند الإفطار لتنال مثل أجره.' : 'Feed a fasting person at Iftar.') :
+                         parseInt(hijriDate?.day || '1') % 4 === 2
+                            ? (language === 'ar' ? 'صلة الرحم: اتصل بشخص من عائلتك للاطمئنان عليه.' : 'Call a family member to maintain kinship ties.') :
+                            (language === 'ar' ? 'أكثر من الاستغفار في وقت السحر (قبل الفجر).' : 'Seek forgiveness often during the last third of the night.')}
+                    </p>
                 </div>
             </div>
 
