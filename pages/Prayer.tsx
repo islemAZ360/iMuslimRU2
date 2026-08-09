@@ -322,7 +322,12 @@ const Prayer: React.FC = () => {
                                         <div className="flex flex-col">
                                             <span className="text-[10px] text-white/40 uppercase tracking-widest mb-1">{t.upcoming_prayer}</span>
                                             <h2 className="text-4xl font-royal text-white tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-[#fff8e7] to-[#eaddcf]">
-                                                {nextPrayer ? ((t as any)[`prayer_${nextPrayer.toLowerCase()}`] || nextPrayer) : '...'}
+                                                {(() => {
+                                                    if (!nextPrayer) return '...';
+                                                    const isFriday = new Date().getDay() === 5;
+                                                    if (isFriday && nextPrayer === 'Dhuhr') return (t as any)['prayer_jumuah'] || "Jumu'ah";
+                                                    return (t as any)[`prayer_${nextPrayer.toLowerCase()}`] || nextPrayer;
+                                                })()}
                                             </h2>
                                         </div>
                                         <div className="flex items-center gap-2 mt-2">
@@ -338,8 +343,12 @@ const Prayer: React.FC = () => {
                                     <div className="flex flex-col">
                                         <p className="text-[9px] text-white/40 uppercase tracking-widest mb-1">{t.currently}</p>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-base font-royal text-white/80">
-                                                {activePeriodName === 'Dhuha (Waiting)' ? t.waiting_interval : ((t as any)[`prayer_${activePeriodName.toLowerCase()}`] || activePeriodName)}
+                                            <span className="text-white text-sm font-bold">
+                                                {(() => {
+                                                    const isFriday = new Date().getDay() === 5;
+                                                    if (isFriday && activePeriodName === 'Dhuhr') return (t as any)['prayer_jumuah'] || "Jumu'ah";
+                                                    return activePeriodName === 'Dhuha (Waiting)' ? t.waiting_interval : ((t as any)[`prayer_${activePeriodName.toLowerCase()}`] || activePeriodName);
+                                                })()}
                                             </span>
                                         </div>
                                     </div>
@@ -373,42 +382,80 @@ const Prayer: React.FC = () => {
                         <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
                     </div>
 
-                    <div className="flex flex-col gap-2.5">
-                        {prayers.map((prayer, idx) => {
-                            const isNext = prayer === nextPrayer;
-                            const isActive = prayer === activePeriodName;
-                            const isPrayed = prayedStatus[prayer];
-                            const showTracker = prayer !== 'Sunrise';
+                    <div className="relative pl-6">
+                        {/* Vertical Timeline Line */}
+                        <div className="absolute left-[34px] top-6 bottom-6 w-[2px] bg-gradient-to-b from-transparent via-white/10 to-transparent z-0"></div>
 
-                            const isSunrise = prayer === 'Sunrise';
+                        <div className="flex flex-col gap-2.5 relative z-10">
+                            {prayers.map((prayer, idx) => {
+                                const isNext = prayer === nextPrayer;
+                                const isActive = prayer === activePeriodName;
+                                const isPrayed = prayedStatus[prayer];
+                                const showTracker = prayer !== 'Sunrise';
+                                const isSunrise = prayer === 'Sunrise';
 
-                            return (
-                                <div key={prayer} className={`
-                                    flex flex-col p-4 rounded-xl border transition-all duration-500 overflow-hidden relative
-                                    ${isActive ? 'bg-gradient-to-br from-gold/20 to-gold/5 border-gold/70 border-r-[6px] shadow-[0_0_25px_rgba(212,175,55,0.15)] scale-[1.02]' : (isNext ? 'bg-gold/10 border-gold/40' : (isSunrise ? 'bg-transparent border-dashed border-white/10 opacity-70 scale-95' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.08]'))}
-                                `}>
-                                    {isActive && <div className="absolute inset-0 bg-gold/5 animate-pulse-glow rounded-xl pointer-events-none"></div>}
-                                    <div className="flex items-center justify-between relative z-10">
-                                        <div className="flex items-center gap-4">
-                                            {showTracker && (
-                                                <button 
-                                                    onClick={() => togglePrayed(prayer)}
-                                                    className={`size-6 shrink-0 rounded-full border flex items-center justify-center transition-colors ${isPrayed ? 'bg-emerald-500 border-emerald-500' : 'border-white/20 hover:border-gold/50'}`}
-                                                >
-                                                    {isPrayed && <span className="material-symbols-outlined text-[14px] text-white">check</span>}
+                                // Jumu'ah Logic
+                                const isFriday = new Date().getDay() === 5;
+                                const isJumuah = isFriday && prayer === 'Dhuhr';
+                                const prayerNameKey = isJumuah ? 'prayer_jumuah' : `prayer_${prayer.toLowerCase()}`;
+                                const prayerLabel = (t as any)[prayerNameKey] || (isJumuah ? "Jumu'ah" : prayer);
+                                const prayerIcon = isJumuah ? 'diversity_3' : (prayer === 'Fajr' || prayer === 'Maghrib' ? 'wb_twilight' : (prayer === 'Isha' ? 'nights_stay' : 'wb_sunny'));
+
+                                return (
+                                    <React.Fragment key={prayer}>
+                                        {/* Tahajjud Widget (Shows before Fajr if it's Isha period) */}
+                                        {prayer === 'Fajr' && activePeriodName === 'Isha' && (
+                                            <div className="mb-4 mt-2 ml-4 p-4 rounded-xl border border-gold/30 bg-gradient-to-r from-[#020617] to-[#0a1128] flex items-center justify-between shadow-[0_0_20px_rgba(212,175,55,0.1)] relative overflow-hidden group">
+                                                <div className="absolute inset-0 islamic-pattern-bg opacity-20 pointer-events-none"></div>
+                                                <div className="flex items-center gap-4 relative z-10">
+                                                    <div className="size-10 rounded-full bg-gold/10 flex items-center justify-center text-gold-bright">
+                                                        <span className="material-symbols-outlined text-[22px]">nights_stay</span>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-bold text-white tracking-wide">
+                                                            {(t as any)['tahajjud_time'] || 'Tahajjud Time'}
+                                                        </span>
+                                                        <span className="text-[10px] text-white/60 mt-0.5 leading-tight max-w-[200px]">
+                                                            {(t as any)['tahajjud_desc'] || 'The last third of the night has entered. A time of mercy and accepted prayers.'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <button onClick={() => navigate('/athkar')} className="px-3 py-1.5 rounded-lg bg-gold/20 text-gold-bright text-[10px] font-bold uppercase tracking-widest hover:bg-gold/30 transition-colors z-10">
+                                                    {(t as any)['read_dua'] || 'Read Dua'}
                                                 </button>
-                                            )}
-                                            <div className="flex items-center gap-3">
-                                                <span className={`material-symbols-outlined text-xl ${isActive || isNext ? 'text-gold' : 'text-white/20'}`}>
-                                                    {prayer === 'Fajr' || prayer === 'Maghrib' ? 'wb_twilight' : (prayer === 'Isha' ? 'nights_stay' : 'wb_sunny')}
-                                                </span>
-                                                <span className={`font-medium tracking-wide text-sm ${isActive || isNext ? 'text-white' : 'text-white/60'}`}>
-                                                    {(t as any)[`prayer_${prayer.toLowerCase()}`] || prayer}
-                                                </span>
                                             </div>
-                                        </div>
-                                        <span className={`font-medium font-mono text-sm ${isActive || isNext ? 'text-gold' : 'text-white/40'}`} dangerouslySetInnerHTML={{ __html: timings ? formatTime(timings[prayer]) : '--:--' }}></span>
-                                    </div>
+                                        )}
+
+                                        <div className={`
+                                            flex flex-col p-4 rounded-xl border transition-all duration-500 overflow-hidden relative ml-4
+                                            ${isActive ? 'bg-gradient-to-br from-gold/20 to-gold/5 border-gold/70 border-r-[6px] shadow-[0_0_25px_rgba(212,175,55,0.15)] scale-[1.02]' : (isNext ? 'bg-gold/10 border-gold/40' : (isSunrise ? 'bg-transparent border-dashed border-white/10 opacity-70 scale-95' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.08]'))}
+                                        `}>
+                                            {/* Timeline Node Connection */}
+                                            <div className={`absolute top-1/2 -left-4 w-4 h-[2px] -translate-y-1/2 ${isActive ? 'bg-gold shadow-[0_0_8px_#D4AF37]' : 'bg-white/10'}`}></div>
+                                            <div className={`absolute top-1/2 -left-6 size-4 -translate-y-1/2 rounded-full border-[3px] z-10 ${isActive ? 'bg-gold-bright border-gold-bright shadow-[0_0_12px_#D4AF37]' : (isPrayed ? 'bg-emerald-500 border-emerald-500' : 'bg-[#020402] border-white/20')}`}></div>
+
+                                            {isActive && <div className="absolute inset-0 bg-gold/5 animate-pulse-glow rounded-xl pointer-events-none"></div>}
+                                            <div className="flex items-center justify-between relative z-10">
+                                                <div className="flex items-center gap-4">
+                                                    {showTracker && (
+                                                        <button 
+                                                            onClick={() => togglePrayed(prayer)}
+                                                            className={`size-6 shrink-0 rounded-full border flex items-center justify-center transition-colors ${isPrayed ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'border-white/20 hover:border-gold/50'}`}
+                                                        >
+                                                            {isPrayed && <span className="material-symbols-outlined text-[14px] text-white">check</span>}
+                                                        </button>
+                                                    )}
+                                                    <div className="flex items-center gap-3">
+                                                        <span className={`material-symbols-outlined text-xl ${isActive || isNext ? 'text-gold' : 'text-white/20'}`}>
+                                                            {prayerIcon}
+                                                        </span>
+                                                        <span className={`font-medium tracking-wide text-sm ${isActive || isNext ? 'text-white' : 'text-white/60'} ${isJumuah ? 'text-gold-bright' : ''}`}>
+                                                            {prayerLabel}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <span className={`font-medium font-mono text-sm ${isActive || isNext ? 'text-gold' : 'text-white/40'}`} dangerouslySetInnerHTML={{ __html: timings ? formatTime(timings[prayer as keyof typeof timings]) : '--:--' }}></span>
+                                            </div>
                                     
                                     {/* SUNNAH SUB-MENU */}
                                     {(() => {
@@ -475,10 +522,12 @@ const Prayer: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
-                            );
-                        })}
-                    </div>
-                </section>
+                            </React.Fragment>
+                        );
+                    })}
+                </div>
+            </div>
+        </section>
 
                 {/* SMART IFTAR / HEALTH BANNER (Shows during Asr) */}
                 {activePeriodName === 'Asr' && (

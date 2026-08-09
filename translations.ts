@@ -152,6 +152,7 @@ export const translations = {
         prayer_fajr: "Fajr",
         prayer_sunrise: "Sunrise",
         prayer_dhuhr: "Dhuhr",
+        prayer_jumuah: "Jumu'ah",
         prayer_asr: "Asr",
         prayer_maghrib: "Maghrib",
         prayer_isha: "Isha",
@@ -163,6 +164,9 @@ export const translations = {
         hijri_gregorian: "Hijri & Gregorian",
         religious_events: "Religious Events",
         no_events: "No major religious events this month.",
+        tahajjud_time: "Tahajjud Time",
+        tahajjud_desc: "The last third of the night has entered. A time of mercy and accepted prayers.",
+        read_dua: "Read Dua",
         
         // Sunnah
         sunnah_2_before: "2 Raka'at Before",
