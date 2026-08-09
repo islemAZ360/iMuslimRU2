@@ -18,8 +18,54 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
 
     if (!isOpen) return null;
 
-    // Filter days with holidays
-    const holidays = calendarData?.filter(d => d.date.hijri.holidays && d.date.hijri.holidays.length > 0) || [];
+    // Custom events injector
+    const getCustomEventsForDate = (monthNum: number, dayNum: number): string[] => {
+        const events = [];
+        if (monthNum === 9 && dayNum === 17) events.push('Battle of Badr');
+        if (monthNum === 9 && dayNum === 20) events.push('Conquest of Mecca');
+        if (monthNum === 9 && dayNum === 21) events.push('Martyrdom of Imam Ali');
+        if (monthNum === 9 && dayNum === 27) events.push('Expected Laylat al-Qadr');
+        if (monthNum === 8 && dayNum === 15) events.push('Mid-Sha\'ban');
+        if (monthNum === 10 && dayNum === 15) events.push('Battle of Uhud');
+        return events;
+    };
+
+    // Enhance calendar data with custom events
+    const enhancedCalendarData = React.useMemo(() => {
+        if (!calendarData) return null;
+        return calendarData.map(day => {
+            const hMonth = day.date.hijri.month.number;
+            const hDay = parseInt(day.date.hijri.day);
+            const customEvents = getCustomEventsForDate(hMonth, hDay);
+            
+            if (customEvents.length > 0) {
+                // Ensure holidays array exists
+                const existingHolidays = day.date.hijri.holidays || [];
+                // Only add if not already present (prevent duplicates)
+                const newHolidays = [...existingHolidays];
+                customEvents.forEach(evt => {
+                    if (!newHolidays.includes(evt)) {
+                        newHolidays.push(evt);
+                    }
+                });
+                
+                return {
+                    ...day,
+                    date: {
+                        ...day.date,
+                        hijri: {
+                            ...day.date.hijri,
+                            holidays: newHolidays
+                        }
+                    }
+                };
+            }
+            return day;
+        });
+    }, [calendarData]);
+
+    // Filter days with holidays using enhanced data
+    const holidays = enhancedCalendarData?.filter(d => d.date.hijri.holidays && d.date.hijri.holidays.length > 0) || [];
 
     // Weekdays
     const weekdays = language === 'ar'
@@ -180,7 +226,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
                         </div>
 
                         <div className="grid grid-cols-7 gap-2 mb-8">
-                            {calendarData ? calendarData.map((day, idx) => {
+                            {enhancedCalendarData ? enhancedCalendarData.map((day, idx) => {
                                 const date = new Date(parseInt(day.date.timestamp) * 1000);
                                 const isToday = isSameDate(date, today);
                                 const hasHoliday = day.date.hijri.holidays && day.date.hijri.holidays.length > 0;
