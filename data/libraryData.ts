@@ -634,5 +634,56 @@ export const libraryData: LibraryCategory[] = [
                 ]
             }
         ]
+    },
+    {
+        id: 'family-fiqh',
+        title: 'الأسرة والزواج',
+        icon: 'diversity_1',
+        topics: [
+            {
+                id: 'marriage',
+                title: 'الزواج وحقوق الزوجين',
+                icon: 'favorite_border',
+                subTopics: [
+                    {
+                        id: 'spouse-rights',
+                        title: 'حقوق الزوجين',
+                        blocks: [
+                            { type: 'quran', content: 'وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً' },
+                            { type: 'text', content: 'الزواج ميثاق غليظ، ومبني على المودة والرحمة. لكل من الزوجين حقوق وعليه واجبات:' },
+                            { type: 'highlight', content: 'من حقوق الزوجة:' },
+                            { type: 'step', content: 'المهر، والنفقة بالمعروف (الطعام والكسوة والمسكن).' },
+                            { type: 'step', content: 'حسن العشرة وعدم الإضرار بها.' },
+                            { type: 'highlight', content: 'من حقوق الزوج:' },
+                            { type: 'step', content: 'الطاعة في غير معصية الله.' },
+                            { type: 'step', content: 'حفظه في ماله وعرضه في غيابه.' }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        id: 'finance',
+        title: 'فقه المعاملات',
+        icon: 'account_balance',
+        topics: [
+            {
+                id: 'riba',
+                title: 'الربا والبيوع',
+                icon: 'money_off',
+                subTopics: [
+                    {
+                        id: 'riba-danger',
+                        title: 'خطر الربا وحرمته',
+                        blocks: [
+                            { type: 'quran', content: 'وَأَحَلَّ اللَّهُ الْبَيْعَ وَحَرَّمَ الرِّبَا' },
+                            { type: 'text', content: 'الربا من كبائر الذنوب، وهو إما زيادة مشروطة في القرض (ربا الديون)، أو التفاضل والتأخير في مبادلة الأصناف الربوية (ربا البيوع).' },
+                            { type: 'hadith', content: 'لعن رسول الله ﷺ آكل الربا، وموكله، وكاتبه، وشاهديه.' }
+                        ]
+                    }
+                ]
+            }
+        ]
     }
 ];

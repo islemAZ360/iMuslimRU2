@@ -34,6 +34,7 @@ export interface UserProfile {
     userId?: string;
     email?: string;
     avatar?: string; // Base64 string or URL
+    completedLibraryTopics?: string[]; // Array of completed subTopic IDs
 }
 
 export interface HealthStats {
@@ -83,7 +84,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
     const [profile, setProfile] = useState<UserProfile>(() => {
         const saved = localStorage.getItem('userProfile');
-        return saved ? JSON.parse(saved) : {};
+        return saved ? JSON.parse(saved) : { completedLibraryTopics: [] };
     });
     const [healthStats, setHealthStats] = useState<HealthStats>(() => {
         const saved = localStorage.getItem('userHealthStats');

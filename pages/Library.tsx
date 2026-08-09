@@ -4,7 +4,7 @@ import { useUser } from '../context/UserContext';
 import { libraryData, LibraryCategory, LibraryTopic, LibrarySubTopic, LibraryContent } from '../data/libraryData';
 
 const Library: React.FC = () => {
-    const { t } = useUser();
+    const { t, profile, updateProfile } = useUser();
     
     const [currentCategory, setCurrentCategory] = useState<LibraryCategory | null>(null);
     const [currentTopic, setCurrentTopic] = useState<LibraryTopic | null>(null);
@@ -22,6 +22,29 @@ const Library: React.FC = () => {
         } else if (searchQuery) {
             setSearchQuery('');
         }
+    };
+
+    // Progress Logic
+    const completedTopics = profile.completedLibraryTopics || [];
+    
+    const toggleCompleted = (subTopicId: string) => {
+        const isCompleted = completedTopics.includes(subTopicId);
+        const newCompleted = isCompleted 
+            ? completedTopics.filter(id => id !== subTopicId)
+            : [...completedTopics, subTopicId];
+        updateProfile({ completedLibraryTopics: newCompleted });
+    };
+
+    const getCategoryProgress = (category: LibraryCategory) => {
+        let total = 0;
+        let completed = 0;
+        category.topics.forEach(t => {
+            t.subTopics.forEach(s => {
+                total++;
+                if (completedTopics.includes(s.id)) completed++;
+            });
+        });
+        return { total, completed, percentage: total === 0 ? 0 : Math.round((completed / total) * 100) };
     };
 
     // Global Search Logic
@@ -161,21 +184,28 @@ const Library: React.FC = () => {
                                 <p className="text-gray-400 font-sans">لا توجد نتائج تطابق بحثك</p>
                             </div>
                         ) : (
-                            searchResults.map((res, index) => (
-                                <motion.button
-                                    variants={itemVariants}
-                                    key={res.subTopic.id + index}
-                                    onClick={() => setCurrentSubTopic(res.subTopic)}
-                                    className="glass-panel p-4 rounded-2xl border border-white/10 hover:border-gold/50 transition-all flex items-center gap-4 group text-right relative overflow-hidden"
-                                >
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gold/30 group-hover:bg-gold transition-colors"></div>
-                                    <div className="flex flex-col flex-1">
-                                        <span className="font-serif font-bold text-sm text-gray-200 group-hover:text-gold-light transition-colors">{res.subTopic.title}</span>
-                                        <span className="text-[10px] text-gray-400 mt-1">{res.category} • {res.topic}</span>
-                                    </div>
-                                    <span className="material-symbols-outlined text-gray-500 text-sm">menu_book</span>
-                                </motion.button>
-                            ))
+                            searchResults.map((res, index) => {
+                                const isCompleted = completedTopics.includes(res.subTopic.id);
+                                return (
+                                    <motion.button
+                                        variants={itemVariants}
+                                        key={res.subTopic.id + index}
+                                        onClick={() => setCurrentSubTopic(res.subTopic)}
+                                        className="glass-panel p-4 rounded-2xl border border-white/10 hover:border-gold/50 transition-all flex items-center gap-4 group text-right relative overflow-hidden"
+                                    >
+                                        <div className={`absolute left-0 top-0 bottom-0 w-1 transition-colors ${isCompleted ? 'bg-emerald-500' : 'bg-gold/30 group-hover:bg-gold'}`}></div>
+                                        <div className="flex flex-col flex-1">
+                                            <span className="font-serif font-bold text-sm text-gray-200 group-hover:text-gold-light transition-colors">{res.subTopic.title}</span>
+                                            <span className="text-[10px] text-gray-400 mt-1">{res.category} • {res.topic}</span>
+                                        </div>
+                                        {isCompleted ? (
+                                            <span className="material-symbols-outlined text-emerald-500 text-sm">check_circle</span>
+                                        ) : (
+                                            <span className="material-symbols-outlined text-gray-500 text-sm">menu_book</span>
+                                        )}
+                                    </motion.button>
+                                );
+                            })
                         )}
                     </motion.div>
                 )}
@@ -188,19 +218,32 @@ const Library: React.FC = () => {
                         variants={containerVariants}
                         className="grid grid-cols-2 gap-4"
                     >
-                        {libraryData.map(cat => (
-                            <motion.button
-                                variants={itemVariants}
-                                key={cat.id}
-                                onClick={() => setCurrentCategory(cat)}
-                                className="glass-panel p-5 rounded-3xl border border-white/10 hover:border-gold/50 transition-all flex flex-col items-center justify-center text-center gap-3 group h-32"
-                            >
-                                <div className="size-12 rounded-full bg-gold/10 flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-gold/20">
-                                    <span className="material-symbols-outlined text-gold text-2xl">{cat.icon}</span>
-                                </div>
-                                <span className="font-serif font-bold text-sm text-gray-200 group-hover:text-gold-light transition-colors">{cat.title}</span>
-                            </motion.button>
-                        ))}
+                        {libraryData.map(cat => {
+                            const progress = getCategoryProgress(cat);
+                            return (
+                                <motion.button
+                                    variants={itemVariants}
+                                    key={cat.id}
+                                    onClick={() => setCurrentCategory(cat)}
+                                    className="glass-panel p-5 rounded-3xl border border-white/10 hover:border-gold/50 transition-all flex flex-col items-center justify-center text-center gap-3 group h-36 relative overflow-hidden"
+                                >
+                                    <div className="size-12 rounded-full bg-gold/10 flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-gold/20">
+                                        <span className="material-symbols-outlined text-gold text-2xl">{cat.icon}</span>
+                                    </div>
+                                    <span className="font-serif font-bold text-sm text-gray-200 group-hover:text-gold-light transition-colors">{cat.title}</span>
+                                    
+                                    {/* Progress Bar */}
+                                    <div className="w-full mt-2">
+                                        <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                                            <div 
+                                                className="bg-gold h-full rounded-full transition-all duration-1000"
+                                                style={{ width: `${progress.percentage}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </motion.button>
+                            );
+                        })}
                     </motion.div>
                 )}
 
@@ -240,21 +283,28 @@ const Library: React.FC = () => {
                         variants={containerVariants}
                         className="flex flex-col gap-3"
                     >
-                        {currentTopic.subTopics.map((sub, index) => (
-                            <motion.button
-                                variants={itemVariants}
-                                key={sub.id}
-                                onClick={() => setCurrentSubTopic(sub)}
-                                className="glass-panel p-4 rounded-2xl border border-white/10 hover:border-gold/50 transition-all flex items-center gap-4 group text-right relative overflow-hidden"
-                            >
-                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gold/30 group-hover:bg-gold transition-colors"></div>
-                                <div className="size-8 rounded-full bg-black/30 border border-white/5 flex items-center justify-center shrink-0">
-                                    <span className="text-xs font-bold text-gold-dim">{index + 1}</span>
-                                </div>
-                                <span className="font-serif font-bold text-sm text-gray-200 flex-1 group-hover:text-gold-light transition-colors">{sub.title}</span>
-                                <span className="material-symbols-outlined text-gray-500 text-sm">menu_book</span>
-                            </motion.button>
-                        ))}
+                        {currentTopic.subTopics.map((sub, index) => {
+                            const isCompleted = completedTopics.includes(sub.id);
+                            return (
+                                <motion.button
+                                    variants={itemVariants}
+                                    key={sub.id}
+                                    onClick={() => setCurrentSubTopic(sub)}
+                                    className="glass-panel p-4 rounded-2xl border border-white/10 hover:border-gold/50 transition-all flex items-center gap-4 group text-right relative overflow-hidden"
+                                >
+                                    <div className={`absolute left-0 top-0 bottom-0 w-1 transition-colors ${isCompleted ? 'bg-emerald-500' : 'bg-gold/30 group-hover:bg-gold'}`}></div>
+                                    <div className={`size-8 rounded-full flex items-center justify-center shrink-0 border ${isCompleted ? 'bg-emerald-500/20 border-emerald-500/50' : 'bg-black/30 border-white/5'}`}>
+                                        <span className={`text-xs font-bold ${isCompleted ? 'text-emerald-400' : 'text-gold-dim'}`}>{index + 1}</span>
+                                    </div>
+                                    <span className="font-serif font-bold text-sm text-gray-200 flex-1 group-hover:text-gold-light transition-colors">{sub.title}</span>
+                                    {isCompleted ? (
+                                        <span className="material-symbols-outlined text-emerald-500 text-sm">check_circle</span>
+                                    ) : (
+                                        <span className="material-symbols-outlined text-gray-500 text-sm">menu_book</span>
+                                    )}
+                                </motion.button>
+                            );
+                        })}
                     </motion.div>
                 )}
 
@@ -278,6 +328,23 @@ const Library: React.FC = () => {
 
                             <div className="relative z-10">
                                 {currentSubTopic.blocks.map((block, i) => renderContentBlock(block, i))}
+                            </div>
+                            
+                            {/* Mark as Completed Button */}
+                            <div className="mt-8 pt-6 border-t border-white/5 flex justify-center">
+                                <button
+                                    onClick={() => toggleCompleted(currentSubTopic.id)}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${
+                                        completedTopics.includes(currentSubTopic.id)
+                                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                            : 'bg-gold/20 text-gold-light border border-gold/30 hover:bg-gold/30'
+                                    }`}
+                                >
+                                    <span className="material-symbols-outlined">
+                                        {completedTopics.includes(currentSubTopic.id) ? 'task_alt' : 'done'}
+                                    </span>
+                                    {completedTopics.includes(currentSubTopic.id) ? 'تمت القراءة' : 'تحديد كمقروء'}
+                                </button>
                             </div>
                         </div>
                     </motion.div>
