@@ -16,6 +16,7 @@ const Ramadan: React.FC = () => {
     const [fastingPhase, setFastingPhase] = useState<'fasting' | 'eating' | null>(null);
     const [formattedForecast, setFormattedForecast] = useState<any[]>([]);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const [displayTimings, setDisplayTimings] = useState<{fajr: string, maghrib: string} | null>(null);
 
     const isRamadanEnabled = settings.ramadanMode;
 
@@ -53,7 +54,26 @@ const Ramadan: React.FC = () => {
                 phase = 'eating'; // After Iftar
             }
 
+            let dFajr = timings.Fajr;
+            let dMaghrib = timings.Maghrib;
+
+            // If it's after Maghrib, we should pull tomorrow's accurate times from calendarData if available
+            if (now > maghribTime && calendarData) {
+                const todayStr = String(now.getDate()).padStart(2, '0');
+                const todayIdx = calendarData.findIndex(d => d.date.gregorian.day === todayStr);
+                if (todayIdx !== -1 && todayIdx + 1 < calendarData.length) {
+                    const nextDay = calendarData[todayIdx + 1];
+                    dFajr = nextDay.timings.Fajr;
+                    dMaghrib = nextDay.timings.Maghrib;
+                    
+                    // Update targetTime accurately to tomorrow's actual Fajr time
+                    const [nextH, nextM] = dFajr.split(' ')[0].split(':').map(Number);
+                    targetTime.setHours(nextH, nextM, 0, 0);
+                }
+            }
+
             setFastingPhase(phase);
+            setDisplayTimings({ fajr: dFajr, maghrib: dMaghrib });
 
             const diff = targetTime.getTime() - now.getTime();
             const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -66,20 +86,18 @@ const Ramadan: React.FC = () => {
         calculateTime();
         const interval = setInterval(calculateTime, 1000);
         return () => clearInterval(interval);
-    }, [timings]);
+    }, [timings, calendarData]);
 
     // Prepare Forecast Data
     useEffect(() => {
         if (calendarData) {
-            // Get next 7 days starting from today
-            // API calendarData is the whole month. We need to find today's index.
-            const todayDate = new Date().getDate(); // Simple check, might need robust matching
-            // Filter days >= today, take 7
-            // Note: calendarData index might not match day of month if hijri/gregorian mismatch, but usually data[day-1]
-
-            const todayIndex = todayDate - 1;
-            const next7Days = calendarData.slice(todayIndex, todayIndex + 7);
-            setFormattedForecast(next7Days);
+            const todayStr = String(new Date().getDate()).padStart(2, '0');
+            const todayIndex = calendarData.findIndex(d => d.date.gregorian.day === todayStr);
+            
+            if (todayIndex !== -1) {
+                const next7Days = calendarData.slice(todayIndex, todayIndex + 7);
+                setFormattedForecast(next7Days);
+            }
         }
     }, [calendarData]);
 
@@ -103,6 +121,13 @@ const Ramadan: React.FC = () => {
             return map[enDay] || enDay;
         }
         return enDay;
+    };
+
+    const formatHijriDate = (dayInfo: any) => {
+        if (language === 'ar') {
+            return `${dayInfo.date.hijri.day} ${dayInfo.date.hijri.month.ar} ${dayInfo.date.hijri.year}`;
+        }
+        return `${dayInfo.date.hijri.day} ${dayInfo.date.hijri.month.en} ${dayInfo.date.hijri.year}`;
     };
 
     // Progress Calculation
@@ -251,7 +276,7 @@ const Ramadan: React.FC = () => {
                                         {index === 0 ? t('today') : getWeekday(day.date.gregorian.weekday.en)} 
                                     </h4>
                                     <p className="text-[10px] font-bold text-gold-dim uppercase tracking-wide">
-                                        {language === 'ar' ? day.date.hijri.date : day.date.readable}
+                                        {formatHijriDate(day)}
                                     </p>
                                 </div>
                             </div>
@@ -278,7 +303,7 @@ const Ramadan: React.FC = () => {
             </div>
 
             {/* Sticky Brief Footer */}
-            {timings && (
+            {displayTimings && (
                 <div className="fixed bottom-[5.5rem] left-0 right-0 max-w-md mx-auto px-4 z-50">
                     <div className="bg-black/80 backdrop-blur-md border border-gold/30 rounded-2xl p-3 flex justify-between items-center shadow-lg">
                         <div className="flex items-center gap-3">
@@ -287,14 +312,14 @@ const Ramadan: React.FC = () => {
                             </div>
                             <div>
                                 <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{t('next_suhoor')}</p>
-                                <p className="font-serif font-bold text-white leading-none">{formatTime(timings.Fajr)}</p>
+                                <p className="font-serif font-bold text-white leading-none">{formatTime(displayTimings.fajr)}</p>
                             </div>
                         </div>
                         <div className="h-8 w-px bg-white/10"></div>
                         <div className="flex items-center gap-3 text-right">
                             <div>
                                 <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{t('next_iftar')}</p>
-                                <p className="font-serif font-bold text-gold leading-none">{formatTime(timings.Maghrib)}</p>
+                                <p className="font-serif font-bold text-gold leading-none">{formatTime(displayTimings.maghrib)}</p>
                             </div>
                             <div className="bg-gold/10 p-2 rounded-lg border border-gold/20">
                                 <span className="material-symbols-outlined text-gold">nights_stay</span>
