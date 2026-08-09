@@ -208,9 +208,15 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
                 <div className="relative transform overflow-hidden rounded-2xl bg-[#0a0a0a] border border-gold/30 p-6 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                     <div className="relative z-10">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-royal font-bold text-gold-metallic" id="modal-title">
-                                {t('calendar_title') || 'Islamic Calendar'}
-                            </h3>
+                            <div>
+                                <h3 className="text-xl font-royal font-bold text-gold-metallic" id="modal-title">
+                                    {enhancedCalendarData && enhancedCalendarData[15] ? (
+                                        language === 'ar' 
+                                            ? `${enhancedCalendarData[15].date.hijri.month.ar} ${enhancedCalendarData[15].date.hijri.year}`
+                                            : `${enhancedCalendarData[15].date.gregorian.month.en} ${enhancedCalendarData[15].date.gregorian.year} - ${enhancedCalendarData[15].date.hijri.month.en}`
+                                    ) : (t('calendar_title') || 'Islamic Calendar')}
+                                </h3>
+                            </div>
                             <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
                                 <span className="material-symbols-outlined">close</span>
                             </button>
@@ -226,27 +232,37 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
                         </div>
 
                         <div className="grid grid-cols-7 gap-2 mb-8">
-                            {enhancedCalendarData ? enhancedCalendarData.map((day, idx) => {
-                                const date = new Date(parseInt(day.date.timestamp) * 1000);
-                                const isToday = isSameDate(date, today);
-                                const hasHoliday = day.date.hijri.holidays && day.date.hijri.holidays.length > 0;
+                            {enhancedCalendarData ? (
+                                <>
+                                    {Array.from({ length: new Date(parseInt(enhancedCalendarData[0].date.timestamp) * 1000).getDay() }).map((_, idx) => (
+                                        <div key={`empty-${idx}`} className="aspect-square opacity-0"></div>
+                                    ))}
+                                    {enhancedCalendarData.map((day, idx) => {
+                                        const date = new Date(parseInt(day.date.timestamp) * 1000);
+                                        const isToday = isSameDate(date, today);
+                                        const hasHoliday = day.date.hijri.holidays && day.date.hijri.holidays.length > 0;
 
-                                return (
-                                    <div
-                                        key={idx}
-                                        className={`
-                                            aspect-square flex flex-col items-center justify-center rounded-lg border relative transition-all duration-200
-                                            ${isToday ? 'bg-gold/20 border-gold/60 text-white shadow-[0_0_10px_rgba(212,175,55,0.2)]' : 'bg-white/5 border-white/5 text-white/60 hover:bg-white/10'}
-                                            ${hasHoliday ? 'border-gold/40' : ''}
-                                        `}
-                                    >
-                                        <span className={`text-sm font-bold font-royal ${hasHoliday ? 'text-gold' : ''}`}>
-                                            {day.date.hijri.day}
-                                        </span>
-                                        {hasHoliday && <div className="absolute bottom-2 w-1 h-1 rounded-full bg-gold"></div>}
-                                    </div>
-                                );
-                            }) : <div className="col-span-7 text-center text-white/40 py-10">{t('loading')}</div>}
+                                        return (
+                                            <div
+                                                key={idx}
+                                                className={`
+                                                    aspect-square flex flex-col items-center justify-center rounded-lg border relative transition-all duration-200
+                                                    ${isToday ? 'bg-gold/20 border-gold/60 text-white shadow-[0_0_10px_rgba(212,175,55,0.2)]' : 'bg-white/5 border-white/5 text-white/60 hover:bg-white/10'}
+                                                    ${hasHoliday ? 'border-gold/40' : ''}
+                                                `}
+                                            >
+                                                <span className={`text-sm font-bold font-royal ${hasHoliday ? 'text-gold' : ''}`}>
+                                                    {day.date.gregorian.day}
+                                                </span>
+                                                <span className={`text-[8px] absolute top-1 right-1 opacity-50 font-bold ${hasHoliday ? 'text-gold' : ''}`}>
+                                                    {day.date.hijri.day}
+                                                </span>
+                                                {hasHoliday && <div className="absolute bottom-1 w-1 h-1 rounded-full bg-gold"></div>}
+                                            </div>
+                                        );
+                                    })}
+                                </>
+                            ) : <div className="col-span-7 text-center text-white/40 py-10">{t('loading')}</div>}
                         </div>
 
                         {/* Religious Occasions List */}
