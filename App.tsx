@@ -10,12 +10,15 @@ import Health from './pages/Health';
 import Athkar from './pages/Athkar';
 import Profile from './pages/Profile';
 import Ramadan from './pages/Ramadan';
+import Library from './pages/Library';
 import Stats from './pages/Stats';
 import AiChat from './pages/AiChat';
 import BottomNav from './components/BottomNav';
 import MenuOverlay from './components/MenuOverlay';
 import { useUser } from './context/UserContext';
 import { useLanguage } from './context/LanguageContext';
+import { auth } from './firebase';
+import { forceBackup } from './services/syncService';
 
 const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -27,6 +30,28 @@ const App: React.FC = () => {
           setLanguage(settings.language as any);
       }
   }, [settings.language, language, setLanguage]);
+
+  React.useEffect(() => {
+      const handleBeforeUnload = () => {
+          if (auth.currentUser) {
+              forceBackup(auth.currentUser.uid);
+          }
+      };
+      
+      const handleVisibilityChange = () => {
+          if (document.visibilityState === 'hidden' && auth.currentUser) {
+              forceBackup(auth.currentUser.uid);
+          }
+      };
+
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
+      return () => {
+          window.removeEventListener('beforeunload', handleBeforeUnload);
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
+  }, []);
 
   return (
     <Router>
@@ -78,6 +103,7 @@ const AnimatedRoutes: React.FC = () => {
         <Route path="/athkar" element={<PageWrapper><Athkar /></PageWrapper>} />
         <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
         <Route path="/ramadan" element={<PageWrapper><Ramadan /></PageWrapper>} />
+        <Route path="/library" element={<PageWrapper><Library /></PageWrapper>} />
         <Route path="/stats" element={<PageWrapper><Stats /></PageWrapper>} />
         <Route path="/ai" element={<PageWrapper><AiChat /></PageWrapper>} />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -42,6 +42,12 @@ const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, onClose }) => {
               <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">{t.ramadan}</span>
             </button>
 
+            {/* Link to Believer's Library */}
+            <button onClick={() => handleNav('/library')} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gold/10 transition-colors group border border-transparent hover:border-gold/20">
+              <span className="material-symbols-outlined text-gold group-hover:text-gold-light text-2xl transition-colors">local_library</span>
+              <span className="text-xs font-serif font-bold uppercase tracking-widest text-gold-dim group-hover:text-gold-light transition-colors">{t.library || 'المكتبة'}</span>
+            </button>
+
             {/* Link to Sheikh AI Chat */}
             <button onClick={() => handleNav('/ai')} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-gold/10 transition-colors group border border-transparent hover:border-gold/20">
               <span className="material-symbols-outlined text-gold group-hover:text-gold-light text-2xl transition-colors">auto_awesome</span>

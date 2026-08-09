@@ -28,17 +28,27 @@ const Stats: React.FC = () => {
 
     // Commitment Mode State
     const [commitmentDays, setCommitmentDays] = useState(0);
-    const [failureDays, setFailureDays] = useState<{date: string, missed: string[]}[]>([]);
-    const [selectedFailure, setSelectedFailure] = useState<{date: string, missed: string[]} | null>(null);
+    const [failureDays, setFailureDays] = useState<{date: string, missed: string[], late: string[]}[]>([]);
+    const [selectedFailure, setSelectedFailure] = useState<{date: string, missed: string[], late: string[]} | null>(null);
 
     // Excuse System State
     const [excuseInput, setExcuseInput] = useState('');
     const [isSubmittingExcuse, setIsSubmittingExcuse] = useState(false);
-    const [excuseRecord, setExcuseRecord] = useState<{ excuse: string, fatwa: string, isValid: boolean } | null>(null);
+    const [excuseRecord, setExcuseRecord] = useState<{ excuse?: string, fatwa?: string, isValid?: boolean, isRedeemed?: boolean, redemptionAction?: string, redemptionFatwa?: string } | null>(null);
+
+    // Redemption System State
+    const [redemptionInput, setRedemptionInput] = useState('');
+    const [isSubmittingRedemption, setIsSubmittingRedemption] = useState(false);
+
+    // AI Report State
+    const [aiReport, setAiReport] = useState<string | null>(null);
+    const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+    const [showAiReport, setShowAiReport] = useState(false);
 
     useEffect(() => {
         if (selectedFailure) {
             setExcuseInput('');
+            setRedemptionInput('');
             const saved = localStorage.getItem(`excuse_tracker_${selectedFailure.date}`);
             if (saved) {
                 setExcuseRecord(JSON.parse(saved));
@@ -53,8 +63,8 @@ const Stats: React.FC = () => {
         setIsSubmittingExcuse(true);
         try {
             const { evaluateExcuse } = await import('../services/geminiService');
-            const res = await evaluateExcuse(selectedFailure.missed, excuseInput, language);
-            const record = { excuse: excuseInput, fatwa: res.fatwa, isValid: res.isValid };
+            const res = await evaluateExcuse(selectedFailure.missed, selectedFailure.late, excuseInput, language);
+            const record = { ...(excuseRecord || {}), excuse: excuseInput, fatwa: res.fatwa, isValid: res.isValid };
             localStorage.setItem(`excuse_tracker_${selectedFailure.date}`, JSON.stringify(record));
             setExcuseRecord(record);
         } catch (e) {
@@ -62,6 +72,53 @@ const Stats: React.FC = () => {
             alert(language === 'ar' ? 'حدث خطأ. تأكد من اتصالك أو مفتاح API.' : 'Error submitting. Check connection or API key.');
         } finally {
             setIsSubmittingExcuse(false);
+        }
+    };
+
+    const handleRedemption = async () => {
+        if (!redemptionInput.trim() || !selectedFailure) return;
+        setIsSubmittingRedemption(true);
+        try {
+            const failureDetails = `Missed: ${selectedFailure.missed.join(', ')}. Late: ${selectedFailure.late.join(', ')}.`;
+            const { evaluateRedemption } = await import('../services/geminiService');
+            const res = await evaluateRedemption(failureDetails, redemptionInput, language);
+            const record = { 
+                ...(excuseRecord || {}), 
+                isRedeemed: res.isAccepted, 
+                redemptionAction: redemptionInput, 
+                redemptionFatwa: res.message 
+            };
+            localStorage.setItem(`excuse_tracker_${selectedFailure.date}`, JSON.stringify(record));
+            setExcuseRecord(record);
+        } catch (e) {
+            console.error(e);
+            alert(language === 'ar' ? 'حدث خطأ. تأكد من اتصالك أو مفتاح API.' : 'Error submitting. Check connection or API key.');
+        } finally {
+            setIsSubmittingRedemption(false);
+        }
+    };
+
+    const handleGenerateReport = async () => {
+        setIsGeneratingReport(true);
+        setShowAiReport(true);
+        try {
+            const summary = `
+            Commitment Days: ${commitmentDays}
+            Failure Days: ${failureDays.length}
+            Total Fard Prayers (7 days): ${totalFard}
+            Total Sunnah Prayers (7 days): ${totalSunnah}
+            Perfect Days: ${perfectDays}
+            Dhikr Stats: ${JSON.stringify(dhikrStats)}
+            Weekly Dhikr Trend: ${weeklyDhikrTrend.join(', ')}
+            `;
+            const { generateSpiritualReport } = await import('../services/geminiService');
+            const report = await generateSpiritualReport(summary, language);
+            setAiReport(report);
+        } catch (e) {
+            console.error(e);
+            setAiReport(language === 'ar' ? 'عذراً، تعذر إنشاء التقرير. يرجى التحقق من اتصالك.' : 'Sorry, failed to generate report. Please check your connection.');
+        } finally {
+            setIsGeneratingReport(false);
         }
     };
 
@@ -165,7 +222,7 @@ const Stats: React.FC = () => {
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // inclusive of today
             
             let cDays = 0;
-            const fDays: {date: string, missed: string[]}[] = [];
+            const fDays: {date: string, missed: string[], late: string[]}[] = [];
             
             for(let i=0; i < diffDays; i++) {
                 const d = new Date(start);
@@ -173,20 +230,21 @@ const Stats: React.FC = () => {
                 const dateStr = d.toISOString().split('T')[0];
                 
                 if (dateStr > today) break;
-
+                
+                const isToday = dateStr === today;
                 const savedPrayers = localStorage.getItem(`prayer_tracker_${dateStr}`);
                 if (savedPrayers && savedPrayers !== '[object Object]') {
                     const pObj = JSON.parse(savedPrayers);
                     const missed = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].filter(p => !pObj[p]);
-                    // If it's today and not all prayers have passed yet, we shouldn't necessarily penalize them for upcoming prayers.
-                    // For simplicity, we just check what's logged. If they haven't logged them all today, it might show as a failure until they do.
-                    if (missed.length === 0) {
+                    const late = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].filter(p => pObj[p] === 'late');
+                    
+                    if (missed.length === 0 && late.length === 0) {
                         cDays++;
-                    } else {
-                        fDays.push({date: dateStr, missed});
+                    } else if (!isToday) {
+                        fDays.push({date: dateStr, missed, late});
                     }
-                } else {
-                    fDays.push({date: dateStr, missed: ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']});
+                } else if (!isToday) {
+                    fDays.push({date: dateStr, missed: ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'], late: []});
                 }
             }
             setCommitmentDays(cDays);
@@ -290,6 +348,38 @@ const Stats: React.FC = () => {
                                 </div>
                             </div>
 
+                            {/* Milestones Journey Map */}
+                            <div className="mb-4 bg-white/5 border border-white/10 rounded-xl p-4">
+                                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 text-center">
+                                    {language === 'ar' ? 'رحلة الثبات (سر الأربعين)' : 'The Journey of Steadfastness'}
+                                </h4>
+                                <div className="flex items-center justify-between relative px-2">
+                                    <div className="absolute left-6 right-6 top-4 -translate-y-1/2 h-1 bg-white/10 rounded-full z-0"></div>
+                                    <div 
+                                        className="absolute left-6 top-4 -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-500 to-gold rounded-full z-0 transition-all duration-1000"
+                                        style={{ width: `calc(${Math.min((commitmentDays / 40) * 100, 100)}% - 3rem)` }}
+                                    ></div>
+                                    
+                                    {[
+                                        { day: 3, label: language === 'ar' ? 'بداية' : 'Start' },
+                                        { day: 7, label: language === 'ar' ? 'أسبوع' : 'Week' },
+                                        { day: 21, label: language === 'ar' ? 'عادة' : 'Habit' },
+                                        { day: 40, label: language === 'ar' ? 'سر' : 'Secret' }
+                                    ].map(ms => {
+                                        const isReached = commitmentDays >= ms.day;
+                                        return (
+                                            <div key={ms.day} className="flex flex-col items-center gap-2 relative z-10">
+                                                <div className={`size-8 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all ${isReached ? 'bg-gold text-black border-gold shadow-[0_0_10px_rgba(212,175,55,0.8)] scale-110' : 'bg-[#030101] text-gray-500 border-white/20'}`}>
+                                                    {ms.day}
+                                                </div>
+                                                <span className={`text-[8px] font-bold uppercase tracking-widest ${isReached ? 'text-gold' : 'text-gray-600'}`}>{ms.label}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+
                             {failureDays.length > 0 && (
                                 <div className="mt-4">
                                     <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-1 flex items-center gap-2">
@@ -297,20 +387,32 @@ const Stats: React.FC = () => {
                                         {language === 'ar' ? 'سجل التخلف (اضغط للتحليل)' : 'Failure Log (Tap to analyze)'}
                                     </h4>
                                     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2">
-                                        {failureDays.map(fd => (
-                                            <button 
-                                                key={fd.date}
-                                                onClick={() => setSelectedFailure(fd)}
-                                                className="shrink-0 bg-red-950/40 border border-red-500/20 hover:border-red-500/50 hover:bg-red-900/40 transition-colors rounded-lg px-3 py-2 flex flex-col items-center gap-1 min-w-[70px]"
-                                            >
-                                                <span className="text-[10px] font-bold text-red-300">{new Date(fd.date).getDate()} {new Date(fd.date).toLocaleString(language, {month: 'short'})}</span>
-                                                <div className="flex gap-0.5">
-                                                    {fd.missed.map((_, idx) => (
-                                                        <div key={idx} className="size-1.5 rounded-full bg-red-500"></div>
-                                                    ))}
-                                                </div>
-                                            </button>
-                                        ))}
+                                        {failureDays.map(fd => {
+                                            const saved = localStorage.getItem(`excuse_tracker_${fd.date}`);
+                                            const isRedeemed = saved ? JSON.parse(saved).isRedeemed : false;
+                                            
+                                            return (
+                                                <button 
+                                                    key={fd.date}
+                                                    onClick={() => setSelectedFailure(fd)}
+                                                    className={`shrink-0 border transition-colors rounded-lg px-3 py-2 flex flex-col items-center gap-1 min-w-[70px] ${
+                                                        isRedeemed 
+                                                            ? 'bg-gold/10 border-gold/40 hover:bg-gold/20' 
+                                                            : 'bg-red-950/40 border-red-500/20 hover:border-red-500/50 hover:bg-red-900/40'
+                                                    }`}
+                                                >
+                                                    {isRedeemed && <span className="absolute -top-1 -right-1 text-[8px]">✨</span>}
+                                                    <span className={`text-[10px] font-bold ${isRedeemed ? 'text-gold' : 'text-red-300'}`}>
+                                                        {new Date(fd.date).getDate()} {new Date(fd.date).toLocaleString(language, {month: 'short'})}
+                                                    </span>
+                                                    <div className="flex gap-0.5">
+                                                        {fd.missed.map((_, idx) => (
+                                                            <div key={idx} className={`size-1.5 rounded-full ${isRedeemed ? 'bg-gold' : 'bg-red-500'}`}></div>
+                                                        ))}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
@@ -675,20 +777,42 @@ const Stats: React.FC = () => {
                                 <div className="bg-red-950/30 border border-red-900/50 rounded-xl p-4">
                                     <h4 className="text-xs font-bold text-red-300 uppercase tracking-widest mb-3 flex items-center gap-2">
                                         <span className="material-symbols-outlined text-[14px]">error</span>
-                                        {language === 'ar' ? 'سبب التخلف' : 'Cause of Failure'}
+                                        {language === 'ar' ? 'تفاصيل التخلف' : 'Failure Details'}
                                     </h4>
-                                    <p className="text-sm text-red-100/80 mb-3 font-arabic">
-                                        {language === 'ar' 
-                                            ? `في هذا اليوم، تخلفت عن أداء ${selectedFailure.missed.length} صلوات مفروضة، وهي:`
-                                            : `On this day, you missed ${selectedFailure.missed.length} obligatory prayers:`}
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedFailure.missed.map(p => (
-                                            <span key={p} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-200 text-[10px] font-bold tracking-wider">
-                                                {t(p.toLowerCase()) || p}
-                                            </span>
-                                        ))}
-                                    </div>
+                                    
+                                    {selectedFailure.missed.length > 0 && (
+                                        <div className="mb-4">
+                                            <p className="text-sm text-red-100/80 mb-2 font-arabic">
+                                                {language === 'ar' 
+                                                    ? `تخلفت كلياً عن أداء ${selectedFailure.missed.length} صلوات، وهي:`
+                                                    : `Completely missed ${selectedFailure.missed.length} prayers:`}
+                                            </p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedFailure.missed.map(p => (
+                                                    <span key={p} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-200 text-[10px] font-bold tracking-wider">
+                                                        {t(p.toLowerCase()) || p}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {selectedFailure.late.length > 0 && (
+                                        <div>
+                                            <p className="text-sm text-amber-100/80 mb-2 font-arabic">
+                                                {language === 'ar' 
+                                                    ? `وقمت بأداء ${selectedFailure.late.length} صلوات قضاءً (متأخرة عن وقتها):`
+                                                    : `Prayed ${selectedFailure.late.length} prayers late (Qada):`}
+                                            </p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedFailure.late.map(p => (
+                                                    <span key={p} className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-200 text-[10px] font-bold tracking-wider">
+                                                        {t(p.toLowerCase()) || p}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {!excuseRecord ? (
@@ -752,6 +876,64 @@ const Stats: React.FC = () => {
                                                 {excuseRecord.fatwa}
                                             </div>
                                         </div>
+                                        {/* Redemption Flow (If Excuse was Invalid or they just want to redeem) */}
+                                        {!excuseRecord.isValid && excuseRecord.isRedeemed === undefined && (
+                                            <div className="bg-amber-950/20 border border-amber-500/20 rounded-xl p-4 mt-4">
+                                                <h4 className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                                    <span className="material-symbols-outlined text-[14px]">volunteer_activism</span>
+                                                    {language === 'ar' ? 'ماذا فعلت لتكفر عن ذلك؟' : 'How did you redeem yourself?'}
+                                                </h4>
+                                                <textarea 
+                                                    value={redemptionInput}
+                                                    onChange={e => setRedemptionInput(e.target.value)}
+                                                    placeholder={language === 'ar' ? 'اكتب ما فعلته (مثال: صمت يوماً، تصدقت، استغفرت 100 مرة...)' : 'What did you do? (e.g., fasted, gave charity...)'}
+                                                    className="w-full h-20 bg-black/40 border border-white/10 rounded-lg p-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-amber-500/50 resize-none font-arabic mb-3"
+                                                />
+                                                <button 
+                                                    onClick={handleRedemption}
+                                                    disabled={!redemptionInput.trim() || isSubmittingRedemption}
+                                                    className="w-full py-2.5 rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 text-black font-bold uppercase tracking-[0.1em] text-xs hover:from-amber-500 hover:to-amber-400 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    {isSubmittingRedemption ? (
+                                                        <div className="size-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                                                    ) : (
+                                                        <>
+                                                            <span className="material-symbols-outlined text-[16px]">send</span>
+                                                            {language === 'ar' ? 'تقييم الكفارة' : 'Evaluate Redemption'}
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {/* Redemption Result */}
+                                        {excuseRecord.isRedeemed !== undefined && (
+                                            <div className="space-y-4 mt-4 pt-4 border-t border-white/10">
+                                                <div className="flex justify-end">
+                                                    <div className="bg-white/10 border border-white/20 rounded-2xl rounded-tr-sm p-4 max-w-[90%]">
+                                                        <p className="text-xs text-white/50 mb-1">{language === 'ar' ? 'عملك المكفر:' : 'Your Redemption Action:'}</p>
+                                                        <p className="text-sm text-white font-arabic">{excuseRecord.redemptionAction}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className={`border rounded-xl p-4 relative overflow-hidden ${excuseRecord.isRedeemed ? 'bg-amber-950/30 border-amber-900/50' : 'bg-red-950/30 border-red-900/50'}`}>
+                                                    <div className="flex items-center gap-2 mb-3 relative z-10">
+                                                        <div className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border ${excuseRecord.isRedeemed ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30'}`}>
+                                                            {excuseRecord.isRedeemed 
+                                                                ? (language === 'ar' ? '✨ كفارة مقبولة إن شاء الله' : '✨ Accepted InshaAllah')
+                                                                : (language === 'ar' ? '⚠️ عمل غير كافٍ' : '⚠️ Insufficient Action')}
+                                                        </div>
+                                                    </div>
+                                                    <h4 className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2 relative z-10 flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-[14px]">local_florist</span>
+                                                        {language === 'ar' ? 'تعليق الشيخ' : "Sheikh's Comment"}
+                                                    </h4>
+                                                    <div className="text-sm text-gray-300 font-arabic leading-relaxed whitespace-pre-wrap relative z-10">
+                                                        {excuseRecord.redemptionFatwa}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -768,6 +950,53 @@ const Stats: React.FC = () => {
                                     {language === 'ar' ? 'ابدأ بالقضاء والكفارة' : 'Start Expiation'}
                                 </button>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* AI SPIRITUAL REPORT MODAL */}
+            {showAiReport && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                    <div className="bg-[#020402] border border-emerald-500/30 rounded-3xl w-full max-w-lg overflow-hidden relative shadow-[0_0_50px_rgba(16,185,129,0.15)] animate-in zoom-in-95 duration-300">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gold/10 rounded-full blur-[80px] pointer-events-none"></div>
+                        
+                        <div className="p-6 relative z-10 max-h-[80vh] flex flex-col">
+                            <div className="flex justify-between items-start mb-6 shrink-0">
+                                <div className="flex items-center gap-3">
+                                    <div className="size-12 rounded-full bg-emerald-900/40 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                                        <span className="material-symbols-outlined text-2xl">auto_awesome</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="font-arabic text-xl text-emerald-100">{language === 'ar' ? 'التقرير الروحي' : 'Spiritual Report'}</h3>
+                                        <p className="text-[10px] font-bold text-emerald-400/60 uppercase tracking-widest">{language === 'ar' ? 'تقييم أسبوعي' : 'Weekly Evaluation'}</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setShowAiReport(false)} className="text-white/40 hover:text-white transition-colors size-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10">
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                                {isGeneratingReport ? (
+                                    <div className="flex flex-col items-center justify-center h-48 space-y-4">
+                                        <div className="relative size-16 flex items-center justify-center">
+                                            <div className="absolute inset-0 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+                                            <span className="material-symbols-outlined text-emerald-500 animate-pulse">psychology</span>
+                                        </div>
+                                        <p className="text-emerald-400/80 font-arabic text-sm animate-pulse">
+                                            {language === 'ar' ? 'الشيخ يقوم بتحليل صحيفتك...' : 'Sheikh is analyzing your records...'}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shadow-inner">
+                                        <div className="text-sm text-gray-200 font-arabic leading-loose whitespace-pre-wrap">
+                                            {aiReport}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

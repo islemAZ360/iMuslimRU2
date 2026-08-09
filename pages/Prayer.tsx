@@ -22,7 +22,7 @@ const Prayer: React.FC = () => {
     const isRtl = lang === 'ar';
 
     // Daily Prayer Tracker
-    const [prayedStatus, setPrayedStatus] = useState<Record<string, boolean>>({});
+    const [prayedStatus, setPrayedStatus] = useState<Record<string, any>>({});
     
     // Simple Holiday Translator (Aladhan API sends them in English)
     const translateHoliday = (holidayEn: string) => {
@@ -74,7 +74,33 @@ const Prayer: React.FC = () => {
     const togglePrayed = (prayer: string) => {
         const todayStr = new Date().toISOString().split('T')[0];
         const key = `prayer_tracker_${todayStr}`;
-        const newStatus = { ...prayedStatus, [prayer]: !prayedStatus[prayer] };
+        
+        let newStatusVal: any = false;
+        
+        if (!prayedStatus[prayer]) {
+            // Determine active period dynamically
+            const prayersList = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+            let currentActiveName = '...';
+            if (nextPrayer) {
+                if (nextPrayer === 'Dhuhr') currentActiveName = 'Dhuha (Waiting)';
+                else if (nextPrayer === 'Sunrise') currentActiveName = 'Fajr';
+                else {
+                    const nextIndex = prayersList.indexOf(nextPrayer);
+                    currentActiveName = nextIndex > 0 ? prayersList[nextIndex - 1] : 'Isha';
+                }
+            }
+            const currentActiveIdx = currentActiveName === 'Dhuha (Waiting)' ? 1 : prayersList.indexOf(currentActiveName);
+            const toggledIdx = prayersList.indexOf(prayer);
+            
+            // If the current period is past the prayer's period, it's late.
+            if (currentActiveIdx > toggledIdx) {
+                newStatusVal = 'late';
+            } else {
+                newStatusVal = 'on-time';
+            }
+        }
+
+        const newStatus = { ...prayedStatus, [prayer]: newStatusVal };
         setPrayedStatus(newStatus);
         localStorage.setItem(key, JSON.stringify(newStatus));
     };
@@ -276,10 +302,10 @@ const Prayer: React.FC = () => {
                             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-gold">{location?.city || t.unknown_location || 'Unknown'}</span>
                         </div>
                         <h1 className="text-3xl font-royal font-bold tracking-tight text-transparent bg-clip-text bg-gold-metallic drop-shadow-md">
-                            {hijriDate ? `${hijriDate.day} ${hijriDate.month.en}` : '...'}
+                            {hijriDate ? `${hijriDate.day} ${lang === 'ar' ? hijriDate.month.ar : hijriDate.month.en}` : '...'}
                         </h1>
                         <p className="text-white/40 text-[10px] font-medium uppercase tracking-[0.2em] mt-1 pl-1">
-                            {hijriDate?.year} AH • {new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}
+                            {hijriDate?.year} {lang === 'ar' ? 'هـ' : 'AH'} • {new Date().toLocaleDateString(lang === 'ar' ? 'ar-SA' : (lang === 'ru' ? 'ru-RU' : 'en-US'), { weekday: 'long', day: 'numeric', month: 'long' })}
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -344,7 +370,7 @@ const Prayer: React.FC = () => {
                                             </h2>
                                         </div>
                                         <div className="flex items-center gap-2 mt-2">
-                                            <span className="text-gold/60 text-[10px] uppercase tracking-widest">Starts in</span>
+                                            <span className="text-gold/60 text-[10px] uppercase tracking-widest">{lang === 'ar' ? 'تبدأ بعد' : 'Starts in'}</span>
                                             <p className="text-gold text-sm font-medium tracking-wide font-mono">
                                                 {timeRemaining}
                                             </p>
@@ -384,7 +410,7 @@ const Prayer: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="size-11 border border-white/10 rounded-xl flex flex-col items-center justify-center bg-white/5">
-                                        <span className="text-[8px] text-white/40">Juz</span>
+                                        <span className="text-[8px] text-white/40">{lang === 'ar' ? 'الجزء' : 'Juz'}</span>
                                         <span className="text-sm font-bold text-gold">14</span>
                                     </div>
                                 </div>
@@ -421,7 +447,9 @@ const Prayer: React.FC = () => {
                             {prayers.map((prayer, idx) => {
                                 const isNext = prayer === nextPrayer;
                                 const isActive = prayer === activePeriodName;
-                                const isPrayed = prayedStatus[prayer];
+                                const prayedState = prayedStatus[prayer];
+                                const isPrayed = !!prayedState;
+                                const isLate = prayedState === 'late';
                                 const showTracker = prayer !== 'Sunrise';
                                 const isSunrise = prayer === 'Sunrise';
                                 
@@ -447,15 +475,15 @@ const Prayer: React.FC = () => {
                                                     </div>
                                                     <div className="flex flex-col">
                                                         <span className="text-sm font-bold text-white tracking-wide">
-                                                            {(t as any)['tahajjud_time'] || 'Tahajjud Time'}
+                                                            {(t as any)['tahajjud_time'] || (lang === 'ar' ? 'وقت التهجد' : 'Tahajjud Time')}
                                                         </span>
                                                         <span className="text-[10px] text-white/60 mt-0.5 leading-tight max-w-[200px]">
-                                                            {(t as any)['tahajjud_desc'] || 'The last third of the night has entered. A time of mercy and accepted prayers.'}
+                                                            {(t as any)['tahajjud_desc'] || (lang === 'ar' ? 'لقد دخل الثلث الأخير من الليل. وقت تتنزل فيه الرحمات وتستجاب فيه الدعوات.' : 'The last third of the night has entered. A time of mercy and accepted prayers.')}
                                                         </span>
                                                     </div>
                                                 </div>
                                                 <button onClick={() => navigate('/athkar')} className="px-3 py-1.5 rounded-lg bg-gold/20 text-gold-bright text-[10px] font-bold uppercase tracking-widest hover:bg-gold/30 transition-colors z-10">
-                                                    {(t as any)['read_dua'] || 'Read Dua'}
+                                                    {(t as any)['read_dua'] || (lang === 'ar' ? 'اقرأ الدعاء' : 'Read Dua')}
                                                 </button>
                                             </div>
                                         )}
@@ -476,12 +504,19 @@ const Prayer: React.FC = () => {
                                             <div className="flex items-center justify-between relative z-10">
                                                 <div className="flex items-center gap-4">
                                                     {showTracker && (
-                                                        <button 
-                                                            onClick={() => togglePrayed(prayer)}
-                                                            className={`size-6 shrink-0 rounded-full border flex items-center justify-center transition-colors ${isPrayed ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'border-white/20 hover:border-gold/50'}`}
-                                                        >
-                                                            {isPrayed && <span className="material-symbols-outlined text-[14px] text-white">check</span>}
-                                                        </button>
+                                                        <div className="flex items-center gap-2">
+                                                            <button 
+                                                                onClick={() => togglePrayed(prayer)}
+                                                                className={`size-6 shrink-0 rounded-full border flex items-center justify-center transition-colors ${isPrayed ? (isLate ? 'bg-amber-500 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-emerald-500 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]') : 'border-white/20 hover:border-gold/50'}`}
+                                                            >
+                                                                {isPrayed && <span className="material-symbols-outlined text-[14px] text-white">check</span>}
+                                                            </button>
+                                                            {isLate && (
+                                                                <span className="text-[9px] text-amber-500 font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 uppercase">
+                                                                    {lang === 'ar' ? 'قضاء' : 'Late'}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     )}
                                                     <div className="flex items-center gap-3">
                                                         <span className={`material-symbols-outlined text-xl ${isActive || isNext ? 'text-gold' : 'text-white/20'}`}>

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import { usePrayer } from '../context/PrayerContext';
 import { analyzeImage } from '../services/geminiService';
 import { translations } from '../translations';
 
@@ -27,13 +28,55 @@ interface AnalysisResult {
 const Health: React.FC = () => {
     const navigate = useNavigate();
     const { profile, settings, updateHealthStats, isLoading } = useUser();
+    const { timings } = usePrayer();
     const language = settings.language || 'en';
     const t = translations[language as keyof typeof translations] || translations.en;
 
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState<AnalysisResult | null>(null);
     const [lastImage, setLastImage] = useState<string | null>(null);
-    const [waterGlasses, setWaterGlasses] = useState(0);
+    const todayStr = new Date().toISOString().split('T')[0];
+    const [waterGlasses, setWaterGlasses] = useState<number>(() => parseInt(localStorage.getItem(`water_${todayStr}`) || '0', 10));
+    const [isZamzamMode, setIsZamzamMode] = useState(false);
+    const [zamzamDua, setZamzamDua] = useState('');
+    const [zamzamIntentions, setZamzamIntentions] = useState<string[]>(() => {
+        try { return JSON.parse(localStorage.getItem(`zamzam_intentions_${todayStr}`) || '[]'); } catch { return []; }
+    });
+    const [showWaterAction, setShowWaterAction] = useState(false);
+    const [isFasting, setIsFasting] = useState(false);
+
+    useEffect(() => {
+        if (!settings.ramadanMode || !timings) {
+            setIsFasting(false);
+            return;
+        }
+        
+        const checkFasting = () => {
+            const now = new Date();
+            const fajrTime = new Date();
+            const [fH, fM] = timings.Fajr.split(' ')[0].split(':').map(Number);
+            fajrTime.setHours(fH, fM, 0, 0);
+
+            const maghribTime = new Date();
+            const [mH, mM] = timings.Maghrib.split(' ')[0].split(':').map(Number);
+            maghribTime.setHours(mH, mM, 0, 0);
+
+            if (now >= fajrTime && now < maghribTime) {
+                setIsFasting(true);
+            } else {
+                setIsFasting(false);
+            }
+        };
+        
+        checkFasting();
+        const int = setInterval(checkFasting, 60000);
+        return () => clearInterval(int);
+    }, [settings.ramadanMode, timings]);
+
+    useEffect(() => {
+        localStorage.setItem(`water_${todayStr}`, waterGlasses.toString());
+        localStorage.setItem(`zamzam_intentions_${todayStr}`, JSON.stringify(zamzamIntentions));
+    }, [waterGlasses, zamzamIntentions, todayStr]);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -250,42 +293,165 @@ const Health: React.FC = () => {
                             </p>
                         </div>
 
-                        {/* Prophetic Water Tracker */}
-                        <div className="w-full max-w-sm mx-auto mt-4 mb-8">
-                            <div className="flex items-center justify-between mb-4 px-2">
-                                <div className="flex flex-col">
-                                    <h3 className="text-sm font-bold text-emerald-100 flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-blue-400">water_drop</span>
-                                        {language === 'ar' ? 'متتبع الماء النبوي' : 'Prophetic Water Tracker'}
-                                    </h3>
-                                    <p className="text-[10px] text-emerald-400/60 uppercase tracking-widest mt-1">
-                                        {language === 'ar' ? '8 أكواب يومياً' : '8 Glasses Daily'}
+                        {/* Prophetic Water Tracker 2.0 */}
+                        <div className="w-full max-w-sm mx-auto mt-4 mb-8 bg-white/5 border border-white/10 rounded-3xl p-6 relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none"></div>
+                            
+                            {isFasting ? (
+                                <div className="relative z-10 flex flex-col items-center justify-center h-64 text-center animate-in fade-in zoom-in-95 duration-500">
+                                    <div className="size-16 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mb-4">
+                                        <span className="material-symbols-outlined text-3xl text-gold">lock</span>
+                                    </div>
+                                    <h3 className="font-arabic text-2xl text-gold-light mb-3 tracking-wide">"الصوم جُنة"</h3>
+                                    <p className="text-xs text-white/50 max-w-[200px] leading-relaxed font-arabic">
+                                        {language === 'ar' 
+                                            ? 'متتبع الماء مغلق أثناء ساعات الصيام. تقبل الله طاعتك.' 
+                                            : 'Water tracker is locked during fasting hours. May Allah accept your fast.'}
                                     </p>
                                 </div>
-                                <div className="text-xs font-mono font-bold text-blue-300 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                                    {waterGlasses} / 8
-                                </div>
-                            </div>
-                            
-                            <div className="flex items-center justify-between gap-1">
-                                {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                                    <button
-                                        key={num}
-                                        onClick={() => setWaterGlasses(num === waterGlasses ? num - 1 : num)}
-                                        className={`size-10 rounded-xl border flex items-center justify-center transition-all duration-300 relative group overflow-hidden ${
-                                            num <= waterGlasses 
-                                                ? 'bg-blue-500/20 border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]' 
-                                                : 'bg-white/5 border-white/10 hover:border-white/20'
-                                        }`}
-                                    >
-                                        {num <= waterGlasses && <div className="absolute inset-0 bg-blue-400/20 animate-pulse pointer-events-none"></div>}
-                                        <div className={`w-full absolute bottom-0 bg-gradient-to-t from-blue-500/50 to-blue-400/20 transition-all duration-700 ease-out ${num <= waterGlasses ? 'h-full' : 'h-0'}`}></div>
-                                        <span className={`material-symbols-outlined text-[18px] relative z-10 transition-colors ${num <= waterGlasses ? 'text-blue-300' : 'text-white/20'}`}>
-                                            local_drink
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
+                            ) : (
+                                <>
+                                    <div className="flex items-center justify-between mb-8 relative z-10">
+                                        <div className="flex flex-col">
+                                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-blue-400">water_drop</span>
+                                                {language === 'ar' ? 'متتبع الماء النبوي' : 'Prophetic Water Tracker'}
+                                            </h3>
+                                            <p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">
+                                                {language === 'ar' ? 'السُّنة: الشرب بتمهل' : 'Sunnah: Drink Slowly'}
+                                            </p>
+                                        </div>
+                                        <div className="text-xs font-mono font-bold text-blue-300 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                                            {waterGlasses} / 8
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="relative flex justify-center items-center h-48 z-10">
+                                        {/* The Glass */}
+                                        <div 
+                                            onClick={() => setShowWaterAction(true)}
+                                            className={`relative w-24 h-40 rounded-b-[2rem] rounded-t-lg border-x-[3px] border-b-[3px] bg-white/[0.02] overflow-hidden cursor-pointer group shadow-[inset_0_-10px_20px_rgba(255,255,255,0.1)] transition-colors duration-700 ${
+                                                isZamzamMode ? 'border-gold/40 hover:border-gold/60 shadow-[0_0_30px_rgba(212,175,55,0.2)]' : 'border-white/20 hover:border-white/40'
+                                            }`}
+                                        >
+                                            {/* Liquid Fill */}
+                                            <div 
+                                                className={`absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                                                    isZamzamMode 
+                                                        ? 'bg-gradient-to-b from-white/90 via-gold/50 to-gold/80 shadow-[0_-5px_15px_rgba(212,175,55,0.5)]' 
+                                                        : 'bg-gradient-to-b from-blue-400/80 to-blue-600/80'
+                                                }`}
+                                                style={{ height: `${Math.min((waterGlasses / 8) * 100, 100)}%` }}
+                                            >
+                                                {/* Surface */}
+                                                <div className={`absolute top-0 left-0 right-0 h-1.5 ${isZamzamMode ? 'bg-white/80' : 'bg-blue-300/50'}`}></div>
+                                                
+                                                {/* Bubbles / Particles */}
+                                                <div className={`absolute bottom-2 left-4 size-1.5 rounded-full animate-bounce ${isZamzamMode ? 'bg-gold-light' : 'bg-white/40'}`}></div>
+                                                <div className={`absolute bottom-6 right-5 size-2 rounded-full animate-bounce ${isZamzamMode ? 'bg-white' : 'bg-white/30'}`} style={{ animationDelay: '0.2s' }}></div>
+                                                
+                                                {/* Zamzam Floating Intentions */}
+                                                {isZamzamMode && zamzamIntentions.map((intent, idx) => (
+                                                    <div 
+                                                        key={idx} 
+                                                        className="absolute w-max max-w-[80px] text-center text-[6px] font-bold text-black bg-white/70 px-1 py-0.5 rounded-full animate-float-slow backdrop-blur-sm shadow-sm truncate"
+                                                        style={{ 
+                                                            left: `${10 + (idx * 30) % 60}%`, 
+                                                            bottom: `${20 + (idx * 15) % 60}%`,
+                                                            animationDelay: `${idx * 0.5}s`
+                                                        }}
+                                                    >
+                                                        {intent}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            
+                                            {/* Glass reflection */}
+                                            <div className="absolute inset-y-0 left-2 w-2 bg-gradient-to-r from-white/20 to-transparent rounded-full"></div>
+                                            
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+                                                <span className="material-symbols-outlined text-white text-3xl">add</span>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Zamzam Toggle */}
+                                        <div className="absolute right-0 bottom-0 flex flex-col items-center gap-2">
+                                            <span className="text-[9px] font-bold text-gold/80 uppercase tracking-widest">{language === 'ar' ? 'ماء زمزم' : 'Zamzam'}</span>
+                                            <button 
+                                                onClick={() => setIsZamzamMode(!isZamzamMode)}
+                                                className={`w-10 h-6 rounded-full p-1 transition-colors relative ${isZamzamMode ? 'bg-gold' : 'bg-white/10'}`}
+                                            >
+                                                <div className={`w-4 h-4 rounded-full bg-white transition-transform ${isZamzamMode ? 'translate-x-4 shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'translate-x-0'}`}></div>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Water Action Popover */}
+                                    {showWaterAction && (
+                                        <div className="absolute inset-0 bg-[#020402]/95 backdrop-blur-md z-20 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in-95 duration-200">
+                                            <h4 className="text-sm font-bold text-white mb-4">
+                                                {isZamzamMode ? (language === 'ar' ? 'نية شرب زمزم' : 'Zamzam Intention') : (language === 'ar' ? 'آداب الشرب' : 'Drinking Sunnahs')}
+                                            </h4>
+                                            
+                                            {!isZamzamMode ? (
+                                                <div className="flex flex-col gap-3 text-xs text-white/70 mb-6 text-right w-full font-arabic" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                                                    <div className="flex items-center gap-3 bg-white/5 p-2 rounded-lg">
+                                                        <span className="material-symbols-outlined text-blue-400 text-[16px]">check_circle</span>
+                                                        <span>{language === 'ar' ? 'التسمية (بسم الله)' : 'Say Bismillah'}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 bg-white/5 p-2 rounded-lg">
+                                                        <span className="material-symbols-outlined text-blue-400 text-[16px]">check_circle</span>
+                                                        <span>{language === 'ar' ? 'الشرب جالساً' : 'Sit down while drinking'}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 bg-white/5 p-2 rounded-lg">
+                                                        <span className="material-symbols-outlined text-blue-400 text-[16px]">check_circle</span>
+                                                        <span>{language === 'ar' ? 'الشرب على 3 دفعات' : 'Drink in 3 breaths'}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 bg-white/5 p-2 rounded-lg">
+                                                        <span className="material-symbols-outlined text-blue-400 text-[16px]">check_circle</span>
+                                                        <span>{language === 'ar' ? 'الحمد لله بعد الانتهاء' : 'Say Alhamdulillah after'}</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="w-full mb-6">
+                                                    <p className="text-[10px] text-gold/70 mb-2 font-arabic">
+                                                        {language === 'ar' ? '"ماء زمزم لما شُرب له"' : '"Zamzam water is for what it is drunk for"'}
+                                                    </p>
+                                                    <input 
+                                                        type="text" 
+                                                        value={zamzamDua}
+                                                        onChange={(e) => setZamzamDua(e.target.value)}
+                                                        placeholder={language === 'ar' ? 'اكتب نيتك أو دعاءك هنا...' : 'Write your dua/intention...'}
+                                                        className="w-full bg-black/50 border border-gold/30 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-gold font-arabic"
+                                                    />
+                                                </div>
+                                            )}
+
+                                            <div className="flex w-full gap-3">
+                                                <button 
+                                                    onClick={() => setShowWaterAction(false)}
+                                                    className="flex-1 py-3 rounded-xl border border-white/10 text-white/50 text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-colors"
+                                                >
+                                                    {language === 'ar' ? 'إلغاء' : 'Cancel'}
+                                                </button>
+                                                <button 
+                                                    onClick={() => {
+                                                        setWaterGlasses(prev => prev + 1);
+                                                        setShowWaterAction(false);
+                                                        if (isZamzamMode && zamzamDua) {
+                                                            setZamzamIntentions(prev => [...prev, zamzamDua].slice(-5)); // keep max 5
+                                                            setZamzamDua('');
+                                                        }
+                                                    }}
+                                                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs font-bold uppercase tracking-widest hover:from-blue-500 hover:to-blue-400 transition-colors shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                                                >
+                                                    {language === 'ar' ? 'شربت' : 'I Drank'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
 
                         {/* Action Buttons */}

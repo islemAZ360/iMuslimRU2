@@ -2,7 +2,7 @@ import * as React from 'react';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { auth, db } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { queueBackup, restoreBackup } from '../services/syncService';
 
 // Types
 export interface UserLocation {
@@ -136,18 +136,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
-                    const userDoc = await getDoc(doc(db, 'users', user.uid));
-                    if (userDoc.exists()) {
-                        const data = userDoc.data();
-                        const loadedProfile = data.profile || {};
-                        if (!loadedProfile.email && user.email) {
-                            loadedProfile.email = user.email;
-                            // Update Firestore silently in the background
-                            setDoc(doc(db, 'users', user.uid), { profile: loadedProfile }, { merge: true });
-                        }
-                        setProfile(prev => ({ ...prev, ...loadedProfile }));
-                        if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
-                        if (data.healthStats) setHealthStats(prev => ({ ...prev, ...data.healthStats }));
+                    const restored = await restoreBackup(user.uid);
+                    if (restored) {
+                        // Re-initialize state from newly populated localStorage
+                        const savedProfile = localStorage.getItem('userProfile');
+                        if (savedProfile) setProfile(JSON.parse(savedProfile));
+                        
+                        const savedSettings = localStorage.getItem('userSettings');
+                        if (savedSettings) setSettings(JSON.parse(savedSettings));
+                        
+                        const savedStats = localStorage.getItem('userHealthStats');
+                        if (savedStats) setHealthStats(JSON.parse(savedStats));
                     }
                 } catch (error) {
                     console.error("Error fetching user data from Firestore", error);
@@ -164,23 +163,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     useEffect(() => {
         localStorage.setItem('userSettings', JSON.stringify(settings));
-        if (auth.currentUser) {
-            setDoc(doc(db, 'users', auth.currentUser.uid), { settings }, { merge: true }).catch(console.error);
-        }
+        if (auth.currentUser) queueBackup(auth.currentUser.uid);
     }, [settings]);
 
     useEffect(() => {
         localStorage.setItem('userProfile', JSON.stringify(profile));
-        if (auth.currentUser) {
-            setDoc(doc(db, 'users', auth.currentUser.uid), { profile }, { merge: true }).catch(console.error);
-        }
+        if (auth.currentUser) queueBackup(auth.currentUser.uid);
     }, [profile]);
 
     useEffect(() => {
         localStorage.setItem('userHealthStats', JSON.stringify(healthStats));
-        if (auth.currentUser) {
-            setDoc(doc(db, 'users', auth.currentUser.uid), { healthStats }, { merge: true }).catch(console.error);
-        }
+        if (auth.currentUser) queueBackup(auth.currentUser.uid);
     }, [healthStats]);
 
     useEffect(() => {

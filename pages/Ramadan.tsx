@@ -17,21 +17,40 @@ const Ramadan: React.FC = () => {
     const [formattedForecast, setFormattedForecast] = useState<any[]>([]);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [displayTimings, setDisplayTimings] = useState<{fajr: string, maghrib: string} | null>(null);
-    const [completedJuz, setCompletedJuz] = useState<number[]>([]);
+    
+    // Khatm Planner State
+    const [khatmTarget, setKhatmTarget] = useState<number>(() => parseInt(localStorage.getItem('khatm_target') || '1', 10));
+    const [dailyPagesRead, setDailyPagesRead] = useState<number>(() => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        return parseInt(localStorage.getItem(`daily_pages_read_${todayStr}`) || '0', 10);
+    });
+
+    // Hydration State from Health.tsx
+    const [waterGlasses, setWaterGlasses] = useState<number>(0);
+
+    // Sunnah Logging
+    const [sunnahLogged, setSunnahLogged] = useState<{iftar: boolean, suhoor: boolean}>(() => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        try { return JSON.parse(localStorage.getItem(`ramadan_sunnah_${todayStr}`) || '{"iftar":false,"suhoor":false}'); } catch { return {iftar: false, suhoor: false}; }
+    });
 
     useEffect(() => {
-        const savedJuz = localStorage.getItem('quran_tracker_ramadan');
-        if (savedJuz) {
-            try { setCompletedJuz(JSON.parse(savedJuz)); } catch (e) {}
-        }
-    }, []);
+        const todayStr = new Date().toISOString().split('T')[0];
+        setWaterGlasses(parseInt(localStorage.getItem(`water_${todayStr}`) || '0', 10));
+    }, [fastingPhase]); // Update water when phase changes
 
-    const toggleJuz = (juzNum: number) => {
-        setCompletedJuz(prev => {
-            const newJuz = prev.includes(juzNum) ? prev.filter(j => j !== juzNum) : [...prev, juzNum];
-            localStorage.setItem('quran_tracker_ramadan', JSON.stringify(newJuz));
-            return newJuz;
-        });
+    const updateKhatmProgress = (pages: number) => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const newTotal = dailyPagesRead + pages;
+        setDailyPagesRead(newTotal);
+        localStorage.setItem(`daily_pages_read_${todayStr}`, newTotal.toString());
+    };
+
+    const logSunnah = (type: 'iftar' | 'suhoor') => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const updated = { ...sunnahLogged, [type]: true };
+        setSunnahLogged(updated);
+        localStorage.setItem(`ramadan_sunnah_${todayStr}`, JSON.stringify(updated));
     };
 
     const isRamadanEnabled = settings.ramadanMode;
@@ -185,17 +204,31 @@ const Ramadan: React.FC = () => {
         );
     }
 
+    // Laylat al-Qadr Logic
+    const hijriDayNum = parseInt(hijriDate?.day || '1', 10);
+    const isLastTenNights = hijriDayNum >= 20;
+    const isOddNight = isLastTenNights && (hijriDayNum % 2 !== 0);
+
     return (
         <div className="pb-52 pt-8 px-4 flex flex-col items-center min-h-screen relative" dir={language === 'ar' ? 'rtl' : 'ltr'}>
 
             {/* Decorative Fixed Background Elements */}
             <div className="fixed inset-0 max-w-md mx-auto pointer-events-none z-0 overflow-hidden">
-                {fastingPhase === 'fasting' ? (
-                    <div className="absolute top-0 inset-x-0 h-full bg-gradient-to-b from-amber-900/20 via-transparent to-transparent transition-colors duration-1000"></div>
-                ) : (
-                    <div className="absolute top-0 inset-x-0 h-full bg-gradient-to-b from-indigo-950/40 via-purple-900/10 to-transparent transition-colors duration-1000">
-                        <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 15% 50%, white 1px, transparent 1px), radial-gradient(circle at 85% 30%, white 1px, transparent 1px), radial-gradient(circle at 50% 10%, white 1px, transparent 1px)' }}></div>
+                {isLastTenNights ? (
+                    <div className="absolute top-0 inset-x-0 h-full bg-slate-950 transition-colors duration-1000">
+                        {/* Ethereal Stars */}
+                        <div className="absolute inset-0 opacity-50" style={{ backgroundImage: 'radial-gradient(circle at 20% 30%, white 1.5px, transparent 1.5px), radial-gradient(circle at 80% 40%, white 1px, transparent 1px), radial-gradient(circle at 40% 70%, white 2px, transparent 2px), radial-gradient(circle at 70% 80%, white 1px, transparent 1px)' }}></div>
+                        <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/30 via-transparent to-transparent mix-blend-screen"></div>
+                        {isOddNight && <div className="absolute top-20 left-1/2 -translate-x-1/2 w-96 h-96 bg-gold/10 blur-[100px] rounded-full mix-blend-screen"></div>}
                     </div>
+                ) : (
+                    fastingPhase === 'fasting' ? (
+                        <div className="absolute top-0 inset-x-0 h-full bg-gradient-to-b from-amber-900/20 via-transparent to-transparent transition-colors duration-1000"></div>
+                    ) : (
+                        <div className="absolute top-0 inset-x-0 h-full bg-gradient-to-b from-indigo-950/40 via-purple-900/10 to-transparent transition-colors duration-1000">
+                            <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 15% 50%, white 1px, transparent 1px), radial-gradient(circle at 85% 30%, white 1px, transparent 1px), radial-gradient(circle at 50% 10%, white 1px, transparent 1px)' }}></div>
+                        </div>
+                    )
                 )}
             </div>
 
@@ -262,6 +295,29 @@ const Ramadan: React.FC = () => {
                             ></div>
                         </div>
                     </div>
+
+                    {/* Sunnah Logging Buttons (Appears near Maghrib/Fajr) */}
+                    {timeLeft && timeLeft.hours === 0 && timeLeft.minutes < 30 && (
+                        <div className="mt-6 flex justify-center animate-in zoom-in-95 duration-500">
+                            {fastingPhase === 'fasting' && !sunnahLogged.iftar ? (
+                                <button 
+                                    onClick={() => logSunnah('iftar')}
+                                    className="bg-emerald-900/40 hover:bg-emerald-800/60 border border-emerald-500/50 text-emerald-100 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                                >
+                                    <span className="material-symbols-outlined text-[16px] text-emerald-400">check_circle</span>
+                                    {language === 'ar' ? 'سنة تعجيل الفطر' : 'Sunnah: Hastened Iftar'}
+                                </button>
+                            ) : fastingPhase === 'eating' && !sunnahLogged.suhoor ? (
+                                <button 
+                                    onClick={() => logSunnah('suhoor')}
+                                    className="bg-blue-900/40 hover:bg-blue-800/60 border border-blue-500/50 text-blue-100 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                                >
+                                    <span className="material-symbols-outlined text-[16px] text-blue-400">check_circle</span>
+                                    {language === 'ar' ? 'سنة تأخير السحور' : 'Sunnah: Delayed Suhoor'}
+                                </button>
+                            ) : null}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -322,31 +378,97 @@ const Ramadan: React.FC = () => {
                 </div>
             )}
 
-            {/* Quran Tracker */}
-            {hijriDate && hijriDate.month.en === 'Ramadan' && (
-                <div className="w-full relative mb-6 z-10 animate-in slide-in-from-bottom-4 duration-700 delay-[400ms]">
-                    <div className="glass-panel rounded-3xl p-5 border border-gold/20 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="size-12 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
-                                <span className="material-symbols-outlined text-gold text-2xl">auto_stories</span>
+            {/* Khatm Al-Quran Smart Planner & Hydration Tracker (Grid) */}
+            <div className="w-full grid grid-cols-2 gap-4 relative mb-6 z-10 animate-in slide-in-from-bottom-4 duration-700 delay-[400ms]" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                
+                {/* Khatm Planner */}
+                {hijriDate && hijriDate.month.en === 'Ramadan' && (
+                    <div className="glass-panel rounded-3xl p-4 border border-gold/20 flex flex-col justify-between">
+                        <div className="flex items-start justify-between mb-2">
+                            <div className="size-8 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-gold text-lg">auto_stories</span>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-white text-sm mb-1">{language === 'ar' ? 'ورد القرآن اليومي' : 'Daily Quran Target'}</h3>
-                                <p className="text-xs text-gold-dim">{language === 'ar' ? `الجزء ${hijriDate.day}` : `Juz ${hijriDate.day}`}</p>
-                            </div>
+                            <select 
+                                value={khatmTarget}
+                                onChange={(e) => {
+                                    setKhatmTarget(Number(e.target.value));
+                                    localStorage.setItem('khatm_target', e.target.value);
+                                }}
+                                className="bg-transparent border-b border-gold/30 text-xs text-gold outline-none font-bold pb-0.5"
+                            >
+                                <option value={1} className="bg-black text-white">1 {language === 'ar' ? 'ختمة' : 'Khatm'}</option>
+                                <option value={2} className="bg-black text-white">2 {language === 'ar' ? 'ختمات' : 'Khatms'}</option>
+                                <option value={3} className="bg-black text-white">3 {language === 'ar' ? 'ختمات' : 'Khatms'}</option>
+                            </select>
                         </div>
-                        <button 
-                            onClick={() => {
-                                const jNum = parseInt(hijriDate.day);
-                                if (!isNaN(jNum)) toggleJuz(jNum);
-                            }}
-                            className={`size-8 rounded-full border flex items-center justify-center transition-all duration-300 ${completedJuz.includes(parseInt(hijriDate.day)) ? 'bg-gold text-black border-gold' : 'border-gold/40 text-gold/40 hover:bg-gold hover:text-black hover:border-gold'}`}
-                        >
-                            <span className="material-symbols-outlined text-sm">check</span>
-                        </button>
+                        <div>
+                            {(() => {
+                                const pagesPerDay = Math.ceil((604 * khatmTarget) / 30);
+                                const pagesPerPrayer = Math.ceil(pagesPerDay / 5);
+                                const progressPct = Math.min((dailyPagesRead / pagesPerDay) * 100, 100);
+                                
+                                return (
+                                    <>
+                                        <h3 className="font-bold text-white text-[11px] mb-1 leading-tight">
+                                            {language === 'ar' ? 'الورد اليومي للختمة' : 'Daily Khatm Target'}
+                                        </h3>
+                                        <p className="text-[9px] text-gold-dim mb-3">
+                                            {language === 'ar' ? `اقرأ ${pagesPerPrayer} صفحات بعد كل صلاة` : `Read ${pagesPerPrayer} pages after each prayer`}
+                                        </p>
+                                        
+                                        <div className="w-full bg-black/50 rounded-full h-1.5 mb-2 overflow-hidden">
+                                            <div className="bg-gold h-1.5 rounded-full" style={{ width: `${progressPct}%` }}></div>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[10px]">
+                                            <span className="text-white/50">{dailyPagesRead} / {pagesPerDay} {language === 'ar' ? 'صفحة' : 'pages'}</span>
+                                            <button 
+                                                onClick={() => updateKhatmProgress(pagesPerPrayer)}
+                                                disabled={dailyPagesRead >= pagesPerDay}
+                                                className="px-2 py-0.5 bg-gold/20 text-gold rounded-full hover:bg-gold/40 disabled:opacity-30 disabled:cursor-not-allowed font-bold"
+                                            >
+                                                +{pagesPerPrayer}
+                                            </button>
+                                        </div>
+                                    </>
+                                );
+                            })()}
+                        </div>
+                    </div>
+                )}
+
+                {/* Smart Hydration Box */}
+                <div className={`glass-panel rounded-3xl p-4 border flex flex-col justify-between relative overflow-hidden ${fastingPhase === 'fasting' ? 'border-red-900/30' : 'border-blue-900/30'}`}>
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none"></div>
+                    <div className="flex items-start justify-between mb-2 relative z-10">
+                        <div className={`size-8 rounded-full flex items-center justify-center border ${fastingPhase === 'fasting' ? 'bg-red-900/20 border-red-500/20' : 'bg-blue-900/20 border-blue-500/20'}`}>
+                            <span className={`material-symbols-outlined text-lg ${fastingPhase === 'fasting' ? 'text-red-400' : 'text-blue-400'}`}>
+                                {fastingPhase === 'fasting' ? 'water_drop' : 'local_drink'}
+                            </span>
+                        </div>
+                        <span className="text-[10px] font-bold text-white/50">{waterGlasses}/8</span>
+                    </div>
+                    
+                    <div className="relative z-10">
+                        <h3 className="font-bold text-white text-[11px] mb-1 leading-tight">
+                            {language === 'ar' ? 'معدل الترطيب' : 'Hydration Tracker'}
+                        </h3>
+                        {fastingPhase === 'fasting' ? (
+                            <p className="text-[9px] text-red-300/80 leading-relaxed">
+                                {language === 'ar' ? 'الصوم جُنة. ممنوع الشرب الآن.' : 'Fasting is a shield. Drinking is paused.'}
+                            </p>
+                        ) : (
+                            <div className="mt-2">
+                                <p className="text-[9px] text-blue-200/80 leading-relaxed mb-2">
+                                    {language === 'ar' ? 'تأكد من شرب 8 أكواب قبل أذان الفجر.' : 'Ensure you drink 8 glasses before Fajr.'}
+                                </p>
+                                <div className="w-full bg-black/50 rounded-full h-1.5 overflow-hidden">
+                                    <div className="bg-blue-400 h-1.5 rounded-full transition-all" style={{ width: `${Math.min((waterGlasses / 8) * 100, 100)}%` }}></div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
-            )}
+            </div>
 
             {/* Daily Sunnah */}
             <div className="w-full relative mb-8 z-10 animate-in slide-in-from-bottom-4 duration-700 delay-[500ms]">
