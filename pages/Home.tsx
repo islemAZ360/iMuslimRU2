@@ -14,6 +14,7 @@ const Home: React.FC = () => {
     const todayDate = new Date();
     const today = todayDate.toISOString().split('T')[0];
     const isFriday = todayDate.getDay() === 5;
+    const isUrgent = timeRemaining && timeRemaining.startsWith('00:') && parseInt(timeRemaining.split(':')[1] || '60') < 15;
 
     const [isCopied, setIsCopied] = useState(false);
     const ayahText = `فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ\n\n"So remember Me; I will remember you. And be grateful to Me and do not deny Me."\n[Al-Baqarah 2:152]`;
@@ -57,6 +58,24 @@ const Home: React.FC = () => {
         window.addEventListener('focus', checkDhikr);
         return () => window.removeEventListener('focus', checkDhikr);
     }, [today]);
+
+    const handleQuickTasbih = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setDailyTotal(prev => prev + 1);
+        
+        const saved = localStorage.getItem(`dhikr_daily_${today}`);
+        const current = saved ? parseInt(saved, 10) : 0;
+        localStorage.setItem(`dhikr_daily_${today}`, (current + 1).toString());
+        
+        const currentStats = { ...stats };
+        currentStats['quick_tasbih'] = (currentStats['quick_tasbih'] || 0) + 1;
+        setStats(currentStats);
+        localStorage.setItem('dhikr_stats', JSON.stringify(currentStats));
+        
+        if (navigator.vibrate) {
+            navigator.vibrate(20);
+        }
+    };
 
     // Calculate dynamic progress to next prayer
     const getProgress = () => {
@@ -202,10 +221,10 @@ const Home: React.FC = () => {
             {/* Next Prayer Hero */}
             <div 
                 onClick={() => navigate('/prayer')}
-                className="relative w-full rounded-3xl bg-gradient-to-br from-gold/15 via-black/60 to-black p-[1px] shadow-[0_10px_40px_rgba(212,175,55,0.15)] mb-8 overflow-hidden animate-in zoom-in-95 duration-500 z-10 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all group"
+                className={`relative w-full rounded-3xl bg-gradient-to-br from-gold/15 via-black/60 to-black p-[1px] shadow-[0_10px_40px_rgba(212,175,55,0.15)] mb-8 overflow-hidden animate-in zoom-in-95 duration-500 z-10 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all group ${isUrgent ? 'animate-pulse-glow border border-red-500/30 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : ''}`}
             >
-                <div className="bg-emerald-black/80 backdrop-blur-md rounded-3xl p-6 relative overflow-hidden border border-white/5 min-h-[200px] flex flex-col justify-between group-hover:bg-emerald-black/60 transition-colors">
-                    <div className="absolute inset-0 islamic-pattern-bg opacity-30 mix-blend-overlay"></div>
+                <div className="bg-emerald-black/80 backdrop-blur-md rounded-3xl p-6 relative overflow-hidden min-h-[200px] flex flex-col justify-between group-hover:bg-emerald-black/60 transition-colors">
+                    <div className={`absolute inset-0 islamic-pattern-bg opacity-30 mix-blend-overlay ${isUrgent ? 'animate-pulse' : ''}`}></div>
                     <div className="flex justify-between items-start z-10">
                         <div>
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold-bright text-[10px] font-bold uppercase tracking-[0.2em] mb-3">
@@ -418,10 +437,19 @@ const Home: React.FC = () => {
                         </div>
                         <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.2em]">{t('faith_progress')}</span>
                         {Object.values(stats).reduce((a, b) => a + b, 0) > 0 && (
-                            <p className="text-[9px] text-gray-500 mt-1 text-center uppercase tracking-widest opacity-80">
+                            <p className="text-[9px] text-gray-500 mt-1 text-center uppercase tracking-widest opacity-80 mb-3">
                                 {t('lifetime') || 'Lifetime'}: <span className="text-white">{Object.values(stats).reduce((a, b) => a + b, 0)}</span>
                             </p>
                         )}
+                        
+                        <button 
+                            onClick={handleQuickTasbih}
+                            className="mt-auto px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-500/20 active:scale-90 transition-all flex items-center gap-1 shadow-[0_0_15px_rgba(16,185,129,0.15)] relative overflow-hidden group/btn"
+                        >
+                            <div className="absolute inset-0 bg-emerald-400/20 opacity-0 group-active/btn:opacity-100 transition-opacity"></div>
+                            <span className="material-symbols-outlined text-[14px]">touch_app</span>
+                            Quick Tasbih
+                        </button>
                     </div>
                 </div>
 

@@ -305,63 +305,67 @@ const Athkar: React.FC = () => {
                 </div>
             </div>
 
-            {/* Main Tasbih Card */}
-            <div ref={counterRef} className="w-full rounded-3xl bg-gradient-to-b from-emerald-950/90 to-black border border-gold/20 p-5 relative overflow-hidden mb-10">
+            {/* Smart Digital Misbaha */}
+            <div ref={counterRef} className="w-full rounded-[2rem] bg-gradient-to-br from-black/80 via-emerald-950/40 to-[#020504] backdrop-blur-2xl border border-white/10 p-8 relative overflow-hidden mb-12 shadow-[0_20px_50px_rgba(0,0,0,0.5)] group/misbaha">
+                <div className="absolute inset-0 bg-gold/5 opacity-30 pointer-events-none mix-blend-overlay"></div>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-gold-bright/30 to-transparent"></div>
+                
                 <div className="relative z-10 flex flex-col items-center">
-                    <div className="w-full flex justify-between items-center mb-6">
-                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 border border-gold/20">
-                            <div className="size-2 rounded-full bg-gold"></div>
-                            <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.3em]">{t(activeCategory.toLowerCase()) || activeCategory} {t('ritual')}</span>
+                    <div className="w-full flex justify-between items-center mb-8">
+                        <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                            <div className="size-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse"></div>
+                            <span className="text-[10px] font-bold text-white uppercase tracking-[0.3em]">{t(activeCategory.toLowerCase()) || activeCategory}</span>
                         </div>
-                        <button onClick={() => setTarget(target === 33 ? 100 : 33)} className="px-4 py-2 rounded-full bg-white/5 border border-white/20 text-[10px] font-bold text-white uppercase tracking-[0.3em] hover:bg-white/10 hover:border-gold/40 transition-all">
+                        <button onClick={() => setTarget(target === 33 ? 100 : 33)} className="px-4 py-2 rounded-2xl bg-gold/10 border border-gold/20 text-[10px] font-bold text-gold-bright uppercase tracking-[0.3em] hover:bg-gold/20 hover:scale-105 transition-all shadow-[0_0_15px_rgba(212,175,55,0.1)]">
                             {t('goal')}: {target}
                         </button>
                     </div>
 
-                    <div className="min-h-[120px] flex flex-col items-center justify-center text-center max-w-[320px]">
-                        <h3 className="font-arabic text-3xl text-gold-bright mb-4 leading-relaxed">
+                    <div className="min-h-[140px] flex flex-col items-center justify-center text-center max-w-[320px] mb-4">
+                        <h3 className="font-arabic text-3xl sm:text-4xl text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400 mb-4 leading-relaxed drop-shadow-md">
                             {currentDhikr.arabic}
                         </h3>
-                        <p className="text-sm font-serif italic text-gray-400 mb-2 leading-relaxed opacity-80">
+                        <p className="text-sm font-serif italic text-gold-bright/80 leading-relaxed drop-shadow-sm">
                             "{currentDhikr.translation}"
                         </p>
                     </div>
 
-                    {/* Counter Circle */}
-                    <div onClick={handleCount} className="relative size-64 flex items-center justify-center my-8 cursor-pointer active:scale-95 transition-all select-none tap-highlight-transparent group/counter">
-                        <div className="absolute inset-0 rounded-full border-[8px] border-[#1a1508] bg-gradient-to-br from-gold/10 to-transparent"></div>
+                    {/* Glassmorphism Counter Circle */}
+                    <div onClick={handleCount} className="relative size-72 flex items-center justify-center my-6 cursor-pointer active:scale-95 transition-all duration-300 select-none tap-highlight-transparent group/counter">
+                        <div className="absolute inset-0 rounded-full border-[2px] border-white/5 bg-gradient-to-br from-white/5 to-transparent backdrop-blur-md shadow-inner"></div>
 
-                        <svg className="absolute inset-0 size-full -rotate-90 p-3">
-                            <circle cx="50%" cy="50%" r="90" stroke="#0a0a0a" strokeWidth="8" fill="transparent" />
+                        <svg className="absolute inset-0 size-full -rotate-90 p-4 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                            <circle cx="50%" cy="50%" r="100" stroke="rgba(255,255,255,0.05)" strokeWidth="6" fill="transparent" />
                             <circle
-                                cx="50%" cy="50%" r="90"
-                                stroke="url(#goldGradient)"
-                                strokeWidth="8"
+                                cx="50%" cy="50%" r="100"
+                                stroke="url(#emeraldGradient)"
+                                strokeWidth="6"
                                 fill="transparent"
-                                strokeDasharray={2 * Math.PI * 90}
-                                strokeDashoffset={(2 * Math.PI * 90) - (count / target) * (2 * Math.PI * 90)}
+                                strokeDasharray={2 * Math.PI * 100}
+                                strokeDashoffset={(2 * Math.PI * 100) - (count / target) * (2 * Math.PI * 100)}
                                 strokeLinecap="round"
                                 className="transition-all duration-500 ease-out"
                             />
                             <defs>
-                                <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#D4AF37" />
-                                    <stop offset="50%" stopColor="#F9E496" />
-                                    <stop offset="100%" stopColor="#AA771C" />
+                                <linearGradient id="emeraldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stopColor="#34d399" />
+                                    <stop offset="50%" stopColor="#10b981" />
+                                    <stop offset="100%" stopColor="#059669" />
                                 </linearGradient>
                             </defs>
                         </svg>
 
-                        <div className={`size-48 rounded-full border border-gold/25 flex flex-col items-center justify-center relative z-10 transition-all duration-500 ${count === target ? 'bg-gold/20 shadow-[0_0_50px_rgba(212,175,55,0.4)] scale-105' : 'bg-[#030605]'}`}>
-                            <span className={`text-6xl font-serif font-black leading-none tracking-tighter transition-colors ${count === target ? 'text-gold-bright' : 'text-white'}`}>{count}</span>
-                            <div className="h-0.5 w-16 bg-gradient-to-r from-transparent via-gold-bright/60 to-transparent my-3"></div>
-                            <span className="text-[10px] font-bold text-gold-bright uppercase tracking-[0.4em] opacity-80">Count</span>
+                        {/* Center Display */}
+                        <div className={`size-52 rounded-full flex flex-col items-center justify-center relative z-10 transition-all duration-500 ${count === target ? 'bg-emerald-500/20 shadow-[0_0_50px_rgba(52,211,153,0.4)] scale-110 border border-emerald-400/50' : 'bg-transparent'}`}>
+                            <span className={`text-7xl font-serif font-black leading-none tracking-tighter transition-colors ${count === target ? 'text-emerald-400' : 'text-white'} drop-shadow-lg`}>{count}</span>
+                            <div className="h-[1px] w-20 bg-gradient-to-r from-transparent via-white/20 to-transparent my-4"></div>
+                            <span className={`text-[10px] font-bold uppercase tracking-[0.4em] ${count === target ? 'text-emerald-400' : 'text-gray-500'}`}>Tap to count</span>
                         </div>
                     </div>
 
-                    <button onClick={handleReset} className="flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-white/5 border border-white/10 text-[11px] font-bold uppercase tracking-[0.3em] text-gray-500 hover:text-gold-bright hover:border-gold-bright/50 hover:bg-gold/5 transition-all active:scale-90">
+                    <button onClick={handleReset} className="mt-2 flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-white hover:bg-white/10 transition-all active:scale-90">
                         <span className="material-symbols-outlined text-sm">restart_alt</span>
-                        Reset Session
+                        {language === 'ar' ? 'إعادة تعيين الجلسة' : 'Reset Session'}
                     </button>
                 </div>
             </div>
