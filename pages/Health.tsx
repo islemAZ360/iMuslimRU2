@@ -33,6 +33,7 @@ const Health: React.FC = () => {
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState<AnalysisResult | null>(null);
     const [lastImage, setLastImage] = useState<string | null>(null);
+    const [waterGlasses, setWaterGlasses] = useState(0);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -247,6 +248,44 @@ const Health: React.FC = () => {
                             <p className="text-xs text-white/30 max-w-[200px] mx-auto leading-relaxed">
                                 {t.biometric_intelligence || 'AI-powered nutritional & prophetic analysis engine'}
                             </p>
+                        </div>
+
+                        {/* Prophetic Water Tracker */}
+                        <div className="w-full max-w-sm mx-auto mt-4 mb-8">
+                            <div className="flex items-center justify-between mb-4 px-2">
+                                <div className="flex flex-col">
+                                    <h3 className="text-sm font-bold text-emerald-100 flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-blue-400">water_drop</span>
+                                        {language === 'ar' ? 'متتبع الماء النبوي' : 'Prophetic Water Tracker'}
+                                    </h3>
+                                    <p className="text-[10px] text-emerald-400/60 uppercase tracking-widest mt-1">
+                                        {language === 'ar' ? '8 أكواب يومياً' : '8 Glasses Daily'}
+                                    </p>
+                                </div>
+                                <div className="text-xs font-mono font-bold text-blue-300 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                                    {waterGlasses} / 8
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center justify-between gap-1">
+                                {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                                    <button
+                                        key={num}
+                                        onClick={() => setWaterGlasses(num === waterGlasses ? num - 1 : num)}
+                                        className={`size-10 rounded-xl border flex items-center justify-center transition-all duration-300 relative group overflow-hidden ${
+                                            num <= waterGlasses 
+                                                ? 'bg-blue-500/20 border-blue-400/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]' 
+                                                : 'bg-white/5 border-white/10 hover:border-white/20'
+                                        }`}
+                                    >
+                                        {num <= waterGlasses && <div className="absolute inset-0 bg-blue-400/20 animate-pulse pointer-events-none"></div>}
+                                        <div className={`w-full absolute bottom-0 bg-gradient-to-t from-blue-500/50 to-blue-400/20 transition-all duration-700 ease-out ${num <= waterGlasses ? 'h-full' : 'h-0'}`}></div>
+                                        <span className={`material-symbols-outlined text-[18px] relative z-10 transition-colors ${num <= waterGlasses ? 'text-blue-300' : 'text-white/20'}`}>
+                                            local_drink
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Action Buttons */}

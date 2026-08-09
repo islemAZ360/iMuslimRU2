@@ -197,7 +197,7 @@ const AiChat: React.FC = () => {
     // ---------------- CONVERSATION LIST VIEW ----------------
     if (!active) {
         return (
-            <div className="pb-32 pt-6 px-4 min-h-screen flex flex-col max-w-lg mx-auto w-full animate-in fade-in duration-500">
+            <div className="pb-32 pt-6 px-4 min-h-screen flex flex-col max-w-lg mx-auto w-full animate-in fade-in duration-500 bg-gradient-to-br from-[#0a1128] via-[#101b3b] to-[#020402]">
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h1 className="text-3xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold-bright via-white to-gold-bright">{t.sheikh_ai}</h1>
@@ -321,7 +321,7 @@ const AiChat: React.FC = () => {
 
     // ---------------- CHAT VIEW ----------------
     return (
-        <div className="h-screen flex flex-col max-w-lg mx-auto w-full relative animate-in fade-in duration-300" dir="ltr">
+        <div className="h-screen flex flex-col max-w-lg mx-auto w-full relative animate-in fade-in duration-300 bg-gradient-to-br from-[#0a1128] via-[#101b3b] to-[#020402]" dir="ltr">
             {/* Header */}
             <div className="pt-10 pb-3 px-4 flex items-center gap-3 border-b border-white/10 bg-black/60 backdrop-blur-md sticky top-0 z-20">
                 <button
@@ -351,7 +351,7 @@ const AiChat: React.FC = () => {
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
                 {active.messages.length === 0 && (
                     <div className="flex flex-col items-center py-8 text-center animate-in zoom-in-95 duration-500">
-                        <div className={`size-16 rounded-2xl ${active.persona?.includes('Doctor AI') ? 'bg-emerald-900/20 border-emerald-500/30' : 'bg-gold/10 border-gold/30'} border flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(212,175,55,0.15)]`}>
+                        <div className={`size-16 rounded-2xl ${active.persona?.includes('Doctor AI') ? 'bg-emerald-900/20 border-emerald-500/30' : 'bg-gold/10 border-gold/30'} border flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(212,175,55,0.15)] animate-floating-orb`}>
                             <span className={`material-symbols-outlined ${active.persona?.includes('Doctor AI') ? 'text-emerald-400' : 'text-gold-300'} text-3xl`}>
                                 {active.persona?.includes('Doctor AI') ? 'medical_services' : 'auto_awesome'}
                             </span>
@@ -388,9 +388,9 @@ const AiChat: React.FC = () => {
 
                 {active.messages.map(m => (
                     <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] px-4 py-3 rounded-2xl border ${m.role === 'user'
-                            ? 'bg-gold/15 border-gold/30 rounded-br-md'
-                            : 'bg-emerald-950/40 border-white/10 rounded-bl-md'}`}>
+                        <div className={`max-w-[85%] px-4 py-3 rounded-2xl border backdrop-blur-md shadow-lg ${m.role === 'user'
+                            ? 'bg-gold/15 border-gold/30 rounded-br-md shadow-[0_4px_15px_rgba(212,175,55,0.1)]'
+                            : 'bg-[#0f172a]/80 border-white/10 rounded-bl-md shadow-[0_4px_15px_rgba(0,0,0,0.2)]'}`}>
                             {m.image && (
                                 <img src={m.image} alt="Attached" className="rounded-xl max-h-56 w-auto mb-2 border border-white/10" />
                             )}
@@ -439,10 +439,11 @@ const AiChat: React.FC = () => {
                 )}
 
                 <div ref={messagesEndRef} />
+                <div ref={messagesEndRef} />
             </div>
 
             {/* Input bar */}
-            <div className="px-4 pb-28 pt-2 bg-gradient-to-t from-black via-black/95 to-transparent">
+            <div className="px-4 pb-28 pt-4 bg-gradient-to-t from-[#020402] via-[#020402]/95 to-transparent backdrop-blur-sm">
                 {attachedImage && (
                     <div className="flex items-center gap-3 mb-2">
                         <img src={attachedImage} alt="Attachment" className="h-14 rounded-xl border border-gold/30" />
