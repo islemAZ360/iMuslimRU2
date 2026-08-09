@@ -8,7 +8,8 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
-  const { updateProfile, setLocation, t } = useUser();
+  const { updateProfile, setLocation, t, settings } = useUser();
+  const language = settings?.language || 'en';
   const [authMode, setAuthMode] = useState<'initial' | 'email_signup' | 'email_login' | 'health_profile'>('initial');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,7 +22,8 @@ const Onboarding: React.FC = () => {
     height: '',
     weight: '',
     allergies: '',
-    diseases: ''
+    diseases: '',
+    medications: ''
   });
 
   React.useEffect(() => {
@@ -123,6 +125,7 @@ const Onboarding: React.FC = () => {
         weight: parseFloat(formData.weight),
         allergies: formData.allergies.split(',').map(s => s.trim()).filter(s => s),
         diseases: formData.diseases.split(',').map(s => s.trim()).filter(s => s),
+        medications: formData.medications.split(',').map(s => s.trim()).filter(s => s),
         name: auth.currentUser?.displayName || email.split('@')[0] || 'User'
       };
 
@@ -151,7 +154,7 @@ const Onboarding: React.FC = () => {
 
         {/* Logo Area */}
         <div className="flex flex-col items-center mb-4">
-          <div className="size-20 mb-4 rounded-full bg-gradient-to-br from-gold-light via-gold to-gold-dark p-[2px] shadow-gold-glow">
+          <div className="size-20 mb-4 rounded-full bg-gradient-to-br from-gold-light via-gold to-gold-dark p-[2px] shadow-[0_0_20px_rgba(212,175,55,0.4)] animate-pulse">
             <div className="w-full h-full bg-emerald-black rounded-full flex items-center justify-center">
               <span className="material-symbols-outlined text-4xl text-gold-light">mosque</span>
             </div>
@@ -186,7 +189,7 @@ const Onboarding: React.FC = () => {
                   className="w-full py-4 rounded-xl glass-panel flex items-center justify-center gap-3 hover:bg-emerald-900/40 transition-all border border-gold/20 group disabled:opacity-50"
                 >
                   <span className="font-bold text-sm tracking-wide text-white group-hover:text-gold-light transition-colors">
-                    {loading ? 'Connecting...' : t('sign_up_google')}
+                    {loading ? (language === 'ar' ? 'جاري الاتصال...' : 'Connecting...') : t('sign_up_google')}
                   </span>
                 </button>
                 <button
@@ -201,7 +204,7 @@ const Onboarding: React.FC = () => {
                   onClick={() => setAuthMode('email_login')}
                   className="w-full py-2 text-xs text-gray-400 hover:text-gold transition-colors underline"
                 >
-                  Already have an account? Sign In
+                  {language === 'ar' ? 'هل لديك حساب؟ تسجيل الدخول' : 'Already have an account? Sign In'}
                 </button>
 
                 {/* Guest Login */}
@@ -210,7 +213,7 @@ const Onboarding: React.FC = () => {
                   className="w-full py-3 rounded-xl border border-white/10 flex items-center justify-center gap-2 hover:bg-white/5 transition-all group mt-2"
                 >
                   <span className="material-symbols-outlined text-gray-400 group-hover:text-white transition-colors text-lg">person_off</span>
-                  <span className="text-xs text-gray-400 font-bold tracking-widest uppercase group-hover:text-white transition-colors">Continue as Guest</span>
+                  <span className="text-xs text-gray-400 font-bold tracking-widest uppercase group-hover:text-white transition-colors">{t('continue_guest')}</span>
                 </button>
               </>
             )}
@@ -221,7 +224,7 @@ const Onboarding: React.FC = () => {
         {(authMode === 'email_signup' || authMode === 'email_login') && (
           <form onSubmit={handleEmailAuth} className="w-full space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-gold/80 uppercase tracking-widest pl-1">Email</label>
+              <label className="text-[10px] font-bold text-gold/80 uppercase tracking-widest pl-1">{t('email') || (language === 'ar' ? 'البريد الإلكتروني' : 'Email')}</label>
               <input
                 type="email"
                 value={email}
@@ -232,7 +235,7 @@ const Onboarding: React.FC = () => {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-gold/80 uppercase tracking-widest pl-1">Password</label>
+              <label className="text-[10px] font-bold text-gold/80 uppercase tracking-widest pl-1">{language === 'ar' ? 'كلمة المرور' : 'Password'}</label>
               <input
                 type="password"
                 value={password}
@@ -246,9 +249,10 @@ const Onboarding: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 rounded-xl diamond-btn bg-gold text-emerald-black font-serif font-bold tracking-widest text-sm hover:shadow-gold-glow transition-all active:scale-[0.98] mt-4"
+              className="w-full py-4 rounded-xl diamond-btn bg-gold text-emerald-black font-serif font-bold tracking-widest text-sm hover:shadow-gold-glow transition-all active:scale-[0.98] mt-4 flex items-center justify-center gap-2"
             >
-              {loading ? 'Processing...' : (authMode === 'email_signup' ? 'Sign Up' : 'Sign In')}
+              {loading && <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>}
+              {loading ? (language === 'ar' ? 'جاري المعالجة...' : 'Processing...') : (authMode === 'email_signup' ? (language === 'ar' ? 'إنشاء حساب' : 'Sign Up') : (language === 'ar' ? 'تسجيل الدخول' : 'Sign In'))}
             </button>
 
             <button
@@ -256,7 +260,7 @@ const Onboarding: React.FC = () => {
               onClick={() => setAuthMode('initial')}
               className="w-full py-2 text-xs text-gray-400 hover:text-white transition-colors"
             >
-              Back to options
+              {language === 'ar' ? 'الرجوع للخيارات' : 'Back to options'}
             </button>
           </form>
         )}
@@ -318,11 +322,11 @@ const Onboarding: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gold/80 uppercase tracking-widest pl-1">{t('allergies')} (Optional)</label>
+                <label className="text-[10px] font-bold text-gold/80 uppercase tracking-widest pl-1">{t('allergies_optional') || 'Allergies (Optional)'}</label>
                 <div className="relative group">
                   <input
                     type="text"
-                    placeholder="e.g. Peanuts, Gluten (comma separated)"
+                    placeholder={t('allergies_placeholder') || 'e.g. Peanuts, Gluten (comma separated)'}
                     value={formData.allergies}
                     onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
                     className="w-full bg-emerald-black/80 border border-gold/20 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-gold/50 transition-colors"
@@ -331,13 +335,26 @@ const Onboarding: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gold/80 uppercase tracking-widest pl-1">{t('medical_conditions')} (Optional)</label>
+                <label className="text-[10px] font-bold text-gold/80 uppercase tracking-widest pl-1">{t('diseases_optional') || 'Chronic Diseases (Optional)'}</label>
                 <div className="relative group">
                   <input
                     type="text"
-                    placeholder="e.g. Diabetes, Hypertension (comma separated)"
+                    placeholder={t('diseases_placeholder') || 'e.g. Diabetes, Hypertension (comma separated)'}
                     value={formData.diseases}
                     onChange={(e) => setFormData({ ...formData, diseases: e.target.value })}
+                    className="w-full bg-emerald-black/80 border border-gold/20 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-gold/50 transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gold/80 uppercase tracking-widest pl-1">{t('medications_optional') || 'Medications & Reasons (Optional)'}</label>
+                <div className="relative group">
+                  <input
+                    type="text"
+                    placeholder={t('medications_placeholder') || 'e.g. Insulin for Diabetes'}
+                    value={formData.medications}
+                    onChange={(e) => setFormData({ ...formData, medications: e.target.value })}
                     className="w-full bg-emerald-black/80 border border-gold/20 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-gold/50 transition-colors"
                   />
                 </div>
