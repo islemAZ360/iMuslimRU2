@@ -224,7 +224,20 @@ export const translations = {
         spiritual_journey: "Spiritual Journey",
         ritual: "Ritual",
         goal: "Goal",
-        track_prophetic: "Track your prophetic habits"
+        track_prophetic: "Track your prophetic habits",
+        
+        // AI Chat
+        ai_companion: "Islamic AI Companion",
+        enter_api_key_prompt: "Enter Gemini API Key to start (Free from aistudio.google.com)",
+        save_btn: "Save",
+        no_conversations: "No conversations yet",
+        no_conversations_desc: "Scan a product or start chatting with Sheikh AI",
+        empty_conversation: "Empty conversation",
+        you: "You: ",
+        offline_warning: "⚠️ No internet connection. Sheikh AI needs internet to work.",
+        thinking: "Thinking...",
+        scan_product_action: "Scan a Product",
+        view_health_action: "View Health Data"
     },
     ar: {
         greeting_morning: "صباح الخير",
@@ -451,7 +464,20 @@ export const translations = {
         spiritual_journey: "رحلة روحية",
         ritual: "ورد",
         goal: "هدف",
-        track_prophetic: "تتبع عاداتك النبوية"
+        track_prophetic: "تتبع عاداتك النبوية",
+        
+        // AI Chat
+        ai_companion: "رفيقك الإسلامي الذكي",
+        enter_api_key_prompt: "أدخل مفتاح Gemini API للبدء (مجاني من aistudio.google.com)",
+        save_btn: "حفظ",
+        no_conversations: "لا توجد محادثات بعد",
+        no_conversations_desc: "قم بمسح منتج أو ابدأ الدردشة مع الشيخ الذكي",
+        empty_conversation: "محادثة فارغة",
+        you: "أنت: ",
+        offline_warning: "⚠️ لا يوجد اتصال بالانترنت. يحتاج الذكاء الاصطناعي إلى انترنت للعمل.",
+        thinking: "يفكر...",
+        scan_product_action: "مسح منتج غذائي",
+        view_health_action: "عرض بياناتي الصحية"
     },
     ru: {
         greeting_morning: "Доброе утро",
@@ -678,6 +704,19 @@ export const translations = {
         spiritual_journey: "Духовное путешествие",
         ritual: "Ритуал",
         goal: "Цель",
-        track_prophetic: "Отслеживайте привычки"
+        track_prophetic: "Отслеживайте привычки",
+        
+        // AI Chat
+        ai_companion: "Исламский ИИ-помощник",
+        enter_api_key_prompt: "Введите ключ Gemini API (бесплатно на aistudio.google.com)",
+        save_btn: "Сохранить",
+        no_conversations: "Пока нет бесед",
+        no_conversations_desc: "Отсканируйте продукт или начните чат с Шейхом ИИ",
+        empty_conversation: "Пустая беседа",
+        you: "Вы: ",
+        offline_warning: "⚠️ Нет интернета. ИИ нужен интернет для работы.",
+        thinking: "Думает...",
+        scan_product_action: "Сканировать продукт",
+        view_health_action: "Данные здоровья"
     }
 };
