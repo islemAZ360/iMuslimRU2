@@ -17,6 +17,22 @@ const Ramadan: React.FC = () => {
     const [formattedForecast, setFormattedForecast] = useState<any[]>([]);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [displayTimings, setDisplayTimings] = useState<{fajr: string, maghrib: string} | null>(null);
+    const [completedJuz, setCompletedJuz] = useState<number[]>([]);
+
+    useEffect(() => {
+        const savedJuz = localStorage.getItem('quran_tracker_ramadan');
+        if (savedJuz) {
+            try { setCompletedJuz(JSON.parse(savedJuz)); } catch (e) {}
+        }
+    }, []);
+
+    const toggleJuz = (juzNum: number) => {
+        setCompletedJuz(prev => {
+            const newJuz = prev.includes(juzNum) ? prev.filter(j => j !== juzNum) : [...prev, juzNum];
+            localStorage.setItem('quran_tracker_ramadan', JSON.stringify(newJuz));
+            return newJuz;
+        });
+    };
 
     const isRamadanEnabled = settings.ramadanMode;
 
@@ -320,14 +336,11 @@ const Ramadan: React.FC = () => {
                             </div>
                         </div>
                         <button 
-                            onClick={(e) => {
-                                const btn = e.currentTarget;
-                                btn.classList.toggle('bg-gold');
-                                btn.classList.toggle('text-black');
-                                btn.classList.toggle('border-gold');
-                                btn.classList.toggle('text-gold/40');
+                            onClick={() => {
+                                const jNum = parseInt(hijriDate.day);
+                                if (!isNaN(jNum)) toggleJuz(jNum);
                             }}
-                            className="size-8 rounded-full border border-gold/40 flex items-center justify-center text-gold/40 transition-all duration-300"
+                            className={`size-8 rounded-full border flex items-center justify-center transition-all duration-300 ${completedJuz.includes(parseInt(hijriDate.day)) ? 'bg-gold text-black border-gold' : 'border-gold/40 text-gold/40 hover:bg-gold hover:text-black hover:border-gold'}`}
                         >
                             <span className="material-symbols-outlined text-sm">check</span>
                         </button>

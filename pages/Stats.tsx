@@ -15,13 +15,22 @@ const Stats: React.FC = () => {
     const [perfectDays, setPerfectDays] = useState(0);
     const [totalFard, setTotalFard] = useState(0);
     const [totalSunnah, setTotalSunnah] = useState(0);
+    
+    // Ramadan State
+    const [quranProgress, setQuranProgress] = useState(0);
 
     const [insight, setInsight] = useState('');
 
     useEffect(() => {
+        let statsObj: any = {};
         // Load Dhikr Category Stats
-        const savedStats = localStorage.getItem('dhikr_stats');
-        if (savedStats) setDhikrStats(JSON.parse(savedStats));
+        try {
+            const savedStats = localStorage.getItem('dhikr_stats');
+            if (savedStats && savedStats !== '[object Object]') {
+                statsObj = JSON.parse(savedStats);
+                setDhikrStats(statsObj);
+            }
+        } catch (e) { console.error('Error parsing dhikr_stats', e); }
 
         const dTrend = [];
         const pTrend = [];
@@ -36,26 +45,30 @@ const Stats: React.FC = () => {
             
             // Dhikr
             const dCount = parseInt(localStorage.getItem(`dhikr_daily_${dateStr}`) || '0', 10);
-            dTrend.push(dCount);
+            dTrend.push(isNaN(dCount) ? 0 : dCount);
 
             // Prayer
-            const savedPrayers = localStorage.getItem(`prayer_tracker_${dateStr}`);
-            let fardCount = 0;
-            if (savedPrayers) {
-                const pObj = JSON.parse(savedPrayers);
-                const count = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].filter(p => pObj[p]).length;
-                fardCount = count;
-                tFard += count;
-                if (count === 5) pDays++;
-            }
-            pTrend.push(fardCount);
+            try {
+                const savedPrayers = localStorage.getItem(`prayer_tracker_${dateStr}`);
+                let fardCount = 0;
+                if (savedPrayers && savedPrayers !== '[object Object]') {
+                    const pObj = JSON.parse(savedPrayers);
+                    const count = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].filter(p => pObj[p]).length;
+                    fardCount = count;
+                    tFard += count;
+                    if (count === 5) pDays++;
+                }
+                pTrend.push(fardCount);
+            } catch (e) { pTrend.push(0); }
 
             // Sunnah
-            const savedSunnah = localStorage.getItem(`sunnah_tracker_${dateStr}`);
-            if (savedSunnah) {
-                const sObj = JSON.parse(savedSunnah);
-                tSunnah += Object.values(sObj).filter(Boolean).length;
-            }
+            try {
+                const savedSunnah = localStorage.getItem(`sunnah_tracker_${dateStr}`);
+                if (savedSunnah && savedSunnah !== '[object Object]') {
+                    const sObj = JSON.parse(savedSunnah);
+                    tSunnah += Object.values(sObj).filter(Boolean).length;
+                }
+            } catch (e) {}
         }
         
         setWeeklyDhikrTrend(dTrend);
@@ -64,11 +77,26 @@ const Stats: React.FC = () => {
         setTotalFard(tFard);
         setTotalSunnah(tSunnah);
 
+        // Load Ramadan Quran Tracker
+        let quranJuzCount = 0;
+        try {
+            const savedJuz = localStorage.getItem('quran_tracker_ramadan');
+            if (savedJuz && savedJuz !== '[object Object]') {
+                const juzArr = JSON.parse(savedJuz);
+                quranJuzCount = Array.isArray(juzArr) ? juzArr.length : 0;
+                setQuranProgress(quranJuzCount);
+            }
+        } catch (e) { console.error(e); }
+
         // Generate Smart Insight
-        const totalD = Object.values(JSON.parse(savedStats || '{}')).reduce((a: number, b: number) => a + b, 0) as number;
+        const totalD = Object.values(statsObj).reduce((a: any, b: any) => (Number(a) || 0) + (Number(b) || 0), 0) as number;
         
-        if (pDays === 7) {
+        if (quranJuzCount > 0 && pDays === 7) {
+            setInsight(language === 'ar' ? "أنت تجمع بين نور القرآن وكمال الصلاة، استمر في هذا العطاء الروحي الرائع!" : (language === 'ru' ? "Вы сочетаете свет Корана и идеальные молитвы, так держать!" : "You combine the light of Quran and perfect prayers, keep it up!"));
+        } else if (pDays === 7) {
             setInsight(language === 'ar' ? "أسبوع مثالي في الصلاة! تقبل الله طاعتك." : (language === 'ru' ? "Идеальная неделя молитв! Пусть Аллах примет." : "A perfect week of prayers! May Allah accept."));
+        } else if (quranJuzCount > 0 && dTrend[6] > 100) {
+            setInsight(language === 'ar' ? "قراءة القرآن وكثرة الذكر تجلي القلب، يومك مليء بالبركات!" : (language === 'ru' ? "Чтение Корана и частый зикр очищают сердце!" : "Quran and Dhikr purify the heart, your day is full of blessings!"));
         } else if (pTrend[6] === 5) {
             setInsight(language === 'ar' ? "ما شاء الله، أتممت صلواتك الخمس اليوم، حافظ عليها!" : (language === 'ru' ? "МашаАллах, вы завершили 5 молитв сегодня!" : "MashaAllah, you completed all 5 prayers today!"));
         } else if (tSunnah > 10) {
@@ -85,16 +113,17 @@ const Stats: React.FC = () => {
     const totalDhikr = Object.values(dhikrStats).reduce((sum, val) => sum + val, 0);
     const mostActiveCategory = Object.entries(dhikrStats).sort((a, b) => b[1] - a[1])[0]?.[0] || 'None';
 
+    const quranPercentage = Math.min(100, Math.round((quranProgress / 30) * 100));
 
     return (
         <div className="pb-32 pt-8 px-4 flex flex-col items-center min-h-screen animate-in fade-in duration-500" dir={language === 'ar' ? 'rtl' : 'ltr'}>
 
             {/* Header */}
             <div className="text-center mb-8 relative w-full">
-                <h1 className="font-arabic text-3xl text-gold-gradient mb-2">{t('statistics')}</h1>
+                <h1 className="font-arabic text-3xl text-gold-gradient mb-2">{t('statistics') || 'الإحصائيات'}</h1>
                 <div className="flex items-center justify-center gap-2 mb-4">
                     <div className="h-px w-8 bg-gold/30"></div>
-                    <p className="text-[10px] font-bold text-emerald-light uppercase tracking-[0.2em]">{t('prayer_analytics')}</p>
+                    <p className="text-[10px] font-bold text-emerald-light uppercase tracking-[0.2em]">{t('prayer_analytics') || 'التحليلات الروحية'}</p>
                     <div className="h-px w-8 bg-gold/30"></div>
                 </div>
             </div>
@@ -105,43 +134,67 @@ const Stats: React.FC = () => {
                     <div className="bg-emerald-900/40 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-4">
                         <span className="material-symbols-outlined text-emerald-400 text-3xl">psychology</span>
                         <div>
-                            <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-1">{t('ai_spiritual_insight') || 'AI Spiritual Insight'}</p>
+                            <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-1">{t('ai_spiritual_insight') || (language === 'ar' ? 'رؤية ذكية' : 'AI Insight')}</p>
                             <p className="text-sm font-serif text-white italic">"{insight}"</p>
                         </div>
                     </div>
                 </div>
             )}
 
+            {/* Ramadan & Quran Summary Cards */}
+            <div className="w-full mb-6">
+                <div className="bg-gradient-to-br from-amber-900/40 to-black border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
+                    <div className="flex justify-between items-end mb-3">
+                        <div>
+                            <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">{language === 'ar' ? 'ختم القرآن - رمضان' : 'Ramadan Quran Tracker'}</p>
+                            <h2 className="text-2xl font-serif font-bold text-white mb-1">
+                                {quranProgress} <span className="text-sm text-gold/60">{language === 'ar' ? 'جزء' : 'Juz'}</span>
+                            </h2>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-2xl font-bold text-gold-light">{quranPercentage}%</span>
+                        </div>
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="h-2 bg-black/50 rounded-full overflow-hidden border border-white/5">
+                        <div
+                            className="h-full bg-gradient-to-r from-gold-dark via-gold to-gold-light transition-all duration-1000"
+                            style={{ width: `${quranPercentage}%` }}
+                        ></div>
+                    </div>
+                </div>
+            </div>
+
             {/* Prayer Summary Cards */}
             <div className="grid grid-cols-3 gap-3 w-full mb-6">
                 <div className="bg-gradient-to-br from-gold/20 to-black border border-gold/30 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden">
                     <h2 className="text-2xl font-serif font-bold text-white mb-1">{perfectDays}</h2>
-                    <p className="text-[8px] font-bold text-gold uppercase tracking-widest text-center">{t('perfect_days') || 'Perfect Days'}</p>
+                    <p className="text-[8px] font-bold text-gold uppercase tracking-widest text-center">{t('perfect_days') || (language === 'ar' ? 'أيام مثالية' : 'Perfect Days')}</p>
                 </div>
                 <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-emerald-500/30 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden">
                     <h2 className="text-2xl font-serif font-bold text-white mb-1">{totalFard}</h2>
-                    <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest text-center">{t('fard_prayers') || 'Fard Logged'}</p>
+                    <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest text-center">{t('fard_prayers') || (language === 'ar' ? 'صلوات الفريضة' : 'Fard Logged')}</p>
                 </div>
                 <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-emerald-500/30 rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden">
                     <h2 className="text-2xl font-serif font-bold text-white mb-1">{totalSunnah}</h2>
-                    <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest text-center">{t('sunnah_prayers') || 'Sunnah Logged'}</p>
+                    <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest text-center">{t('sunnah_prayers') || (language === 'ar' ? 'السنن الرواتب' : 'Sunnah Logged')}</p>
                 </div>
             </div>
 
             {/* Dhikr Summary Cards */}
             <div className="grid grid-cols-2 gap-3 w-full mb-6">
                 <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
-                    <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">{t('total_dhikr') || 'Total Dhikr'}</p>
+                    <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">{t('total_dhikr') || (language === 'ar' ? 'مجموع الأذكار' : 'Total Dhikr')}</p>
                     <h2 className="text-3xl font-serif font-bold text-white mb-1">{totalDhikr.toLocaleString()}</h2>
                     <div className="flex items-center gap-1 text-[8px] text-emerald-400 font-bold uppercase">
                         <span className="material-symbols-outlined text-[10px]">trending_up</span>
-                        {t('lifetime') || 'Lifetime'}
+                        {t('lifetime') || (language === 'ar' ? 'طوال الوقت' : 'Lifetime')}
                     </div>
                 </div>
                 <div className="bg-gradient-to-br from-emerald-900/40 to-black border border-gold/30 rounded-2xl p-5 relative overflow-hidden">
-                    <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">{t('most_active') || 'Most Active'}</p>
+                    <p className="text-[9px] font-bold text-gold/60 uppercase tracking-widest mb-1">{t('most_active') || (language === 'ar' ? 'الذكر الأكثر' : 'Most Active')}</p>
                     <h2 className="text-2xl font-serif font-bold text-white mb-1 truncate">{t(mostActiveCategory.toLowerCase()) || mostActiveCategory}</h2>
-                    <div className="text-[8px] text-gold/80 font-bold uppercase">{t('main_focus') || 'Main Focus'}</div>
+                    <div className="text-[8px] text-gold/80 font-bold uppercase">{t('main_focus') || (language === 'ar' ? 'التركيز الأساسي' : 'Main Focus')}</div>
                 </div>
             </div>
 
