@@ -174,7 +174,7 @@ const Scan: React.FC = () => {
         try {
             const { createScanConversation } = await import('../services/aiChatService');
             const conv = await createScanConversation(lastImage, result);
-            navigate('/ai', { state: { conversationId: conv.id } });
+            navigate('/aichat', { state: { conversationId: conv.id } });
         } catch (error) {
             console.error('Failed to create Sheikh AI conversation:', error);
         }
@@ -194,11 +194,11 @@ const Scan: React.FC = () => {
                 <div className="flex items-center gap-3 mb-2">
                     <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-gold-400/50"></div>
                     <h1 className="text-2xl font-royal font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-b from-[#F3EACB] via-[#D4AF37] to-[#B48E26]">
-                        HALAL SCANNER
+                        {settings.language === 'ar' ? 'الماسح الذكي' : 'HALAL SCANNER'}
                     </h1>
                     <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-gold-400/50"></div>
                 </div>
-                <p className="text-[10px] uppercase tracking-[0.4em] text-emerald-400/80 font-medium">AI Scanner Hub</p>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-emerald-400/80 font-medium">{settings.language === 'ar' ? 'مركز التحليل الشامل' : 'AI Scanner Hub'}</p>
 
                 {/* Back Button (Interactive) */}
                 <button
@@ -295,6 +295,11 @@ const Scan: React.FC = () => {
                     {scanning && (
                         <div className="absolute inset-16 overflow-hidden rounded-full">
                             <div className="w-full h-1.5 bg-gradient-to-r from-transparent via-gold-300 to-transparent absolute top-0 animate-[scan_1.5s_ease-in-out_infinite]"></div>
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <span className="text-gold-bright text-[10px] font-bold uppercase tracking-widest animate-pulse bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm border border-gold/20 shadow-[0_0_15px_rgba(212,175,55,0.2)]">
+                                    {settings.language === 'ar' ? 'جاري التحليل...' : 'Analyzing...'}
+                                </span>
+                            </div>
                         </div>
                     )}
 
@@ -306,9 +311,10 @@ const Scan: React.FC = () => {
                 <div className="mt-10 flex justify-center">
                     <button
                         onClick={handleScanClick}
-                        className="relative group px-8 py-3 bg-gradient-to-r from-[#B48E26] via-[#D4AF37] to-[#B48E26] text-black font-royal font-bold tracking-[0.15em] text-sm rounded-full shadow-md transition-all active:scale-95"
+                        disabled={scanning}
+                        className={`relative group px-8 py-3 bg-gradient-to-r from-[#B48E26] via-[#D4AF37] to-[#B48E26] text-black font-royal font-bold tracking-[0.15em] text-sm rounded-full shadow-md transition-all ${scanning ? 'opacity-50' : 'active:scale-95'}`}
                     >
-                        <span className="relative z-10">ALIGN CODE</span>
+                        <span className="relative z-10">{scanning ? (settings.language === 'ar' ? 'يرجى الانتظار' : 'SCANNING...') : (settings.language === 'ar' ? 'امسح المنتج' : 'ALIGN CODE')}</span>
                     </button>
                 </div>
             </div>
@@ -320,7 +326,7 @@ const Scan: React.FC = () => {
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-b from-[#053B30] to-[#01201A] border border-gold-500/20 flex items-center justify-center shadow-md transition-all group-active:scale-95">
                         <span className="material-symbols-outlined text-gold-200/80 text-xl">image</span>
                     </div>
-                    <span className="text-[10px] font-bold text-gold-500/70 tracking-widest uppercase">UPLOAD</span>
+                    <span className="text-[10px] font-bold text-gold-500/70 tracking-widest uppercase">{settings.language === 'ar' ? 'رفع صورة' : 'UPLOAD'}</span>
                 </div>
 
                 {/* History Button */}
@@ -328,7 +334,7 @@ const Scan: React.FC = () => {
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-b from-[#053B30] to-[#01201A] border border-gold-500/20 flex items-center justify-center shadow-md transition-all group-active:scale-95">
                         <span className="material-symbols-outlined text-gold-200/80 text-xl">history</span>
                     </div>
-                    <span className="text-[10px] font-bold text-gold-500/70 tracking-widest uppercase">HISTORY</span>
+                    <span className="text-[10px] font-bold text-gold-500/70 tracking-widest uppercase">{settings.language === 'ar' ? 'السجل' : 'HISTORY'}</span>
                 </div>
             </div>
 
@@ -340,8 +346,8 @@ const Scan: React.FC = () => {
                 <div className={`absolute bottom-0 left-0 w-full h-[85vh] bg-[#011c16] rounded-t-[40px] border-t border-gold-500/30 shadow-[0_-10px_60px_rgba(0,0,0,1)] transition-transform duration-500 cubic-bezier(0.2, 1, 0.3, 1) ${showHistory ? 'translate-y-0' : 'translate-y-full'}`} onClick={(e) => e.stopPropagation()}>
                     <div className="w-12 h-1 bg-gold-900/50 rounded-full mx-auto mt-4 mb-8"></div>
                     <div className="px-8 flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-royal font-bold text-gold-100">Scan History</h2>
-                        <button onClick={() => setShowHistory(false)} className="text-gold-500/60 hover:text-gold-300 text-xs font-bold uppercase tracking-widest">Close</button>
+                        <h2 className="text-2xl font-royal font-bold text-gold-100">{settings.language === 'ar' ? 'سجل العمليات' : 'Scan History'}</h2>
+                        <button onClick={() => setShowHistory(false)} className="text-gold-500/60 hover:text-gold-300 text-xs font-bold uppercase tracking-widest">{settings.language === 'ar' ? 'إغلاق' : 'Close'}</button>
                     </div>
                     {/* History List */}
                     <div className="px-6 overflow-y-auto h-[calc(85vh-120px)] pb-10 space-y-3">
@@ -355,11 +361,11 @@ const Scan: React.FC = () => {
                                         <h3 className="text-gold-100/90 font-bold text-sm mb-0.5">{item.name}</h3>
                                         <p className="text-[10px] text-white/40 uppercase tracking-wide">{item.origin || 'Unknown'}</p>
                                     </div>
-                                    <span className={`text-[9px] font-bold px-2 py-1 rounded border ${item.status === 'Haram' ? 'border-red-500/30 text-red-400' : 'border-orange-500/30 text-orange-400'}`}>{item.status}</span>
+                                    <span className={`text-[9px] font-bold px-2 py-1 rounded border ${item.status === 'Boycott' ? 'border-red-600 bg-red-950 text-red-500' : item.status === 'Haram' ? 'border-red-500/30 text-red-400' : 'border-orange-500/30 text-orange-400'}`}>{item.status}</span>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-20 text-white/20">No history found.</div>
+                            <div className="text-center py-20 text-white/20">{settings.language === 'ar' ? 'لا يوجد سجل.' : 'No history found.'}</div>
                         )}
                     </div>
                 </div>
@@ -374,15 +380,15 @@ const Scan: React.FC = () => {
                         <div className="flex justify-between items-start mb-5">
                             <div>
                                 <h2 className="text-2xl font-royal font-bold text-gold-100 leading-tight mb-1">
-                                    {result?.name || 'Unknown Item'}
+                                    {result?.name || (settings.language === 'ar' ? 'منتج غير معروف' : 'Unknown Item')}
                                 </h2>
                                 <div className="flex items-center gap-2">
                                     <div className="h-[1px] w-5 bg-gold-500/50"></div>
-                                    <span className="text-xs font-bold text-gold-500/70 uppercase tracking-widest">{result?.category || 'Product'}</span>
+                                    <span className="text-xs font-bold text-gold-500/70 uppercase tracking-widest">{result?.category || (settings.language === 'ar' ? 'منتج' : 'Product')}</span>
                                 </div>
                             </div>
                             {/* Status Stamp */}
-                            <div className={`px-3 py-1.5 border-2 rounded-lg ${result?.status === 'Haram' ? 'border-red-500/60 bg-red-900/10 text-red-500' :
+                            <div className={`px-3 py-1.5 border-2 rounded-lg ${result?.status === 'Boycott' ? 'border-red-600 bg-red-950 text-red-500 shadow-[0_0_15px_rgba(220,38,38,0.3)]' : result?.status === 'Haram' ? 'border-red-500/60 bg-red-900/10 text-red-500' :
                                 result?.status === 'Halal' ? 'border-emerald-500/60 bg-emerald-900/10 text-emerald-500' :
                                     'border-orange-500/60 bg-orange-900/10 text-orange-500'
                                 }`}>
@@ -404,6 +410,21 @@ const Scan: React.FC = () => {
                                     {result.ingredients.map((ing: string, i: number) => (
                                         <span key={i} className="px-2 py-1 bg-red-900/20 border border-red-500/20 rounded text-[10px] text-red-300 font-bold uppercase">{ing}</span>
                                     ))}
+                                </div>
+                            )}
+                            
+                            {/* Alternatives Box */}
+                            {result?.alternatives?.length > 0 && (
+                                <div className="mt-4 pt-4 border-t border-white/10">
+                                    <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                        <span className="material-symbols-outlined text-xs">verified</span>
+                                        {settings.language === 'ar' ? 'البدائل الآمنة' : 'Safe Alternatives'}
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {result.alternatives.map((alt: string, i: number) => (
+                                            <span key={i} className="px-2.5 py-1.5 bg-emerald-900/20 border border-emerald-500/20 rounded-lg text-[11px] text-emerald-100 font-medium">{alt}</span>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
