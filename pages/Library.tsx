@@ -9,6 +9,7 @@ const Library: React.FC = () => {
     const [currentCategory, setCurrentCategory] = useState<LibraryCategory | null>(null);
     const [currentTopic, setCurrentTopic] = useState<LibraryTopic | null>(null);
     const [currentSubTopic, setCurrentSubTopic] = useState<LibrarySubTopic | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Navigation Helpers
     const goBack = () => {
@@ -18,7 +19,46 @@ const Library: React.FC = () => {
             setCurrentTopic(null);
         } else if (currentCategory) {
             setCurrentCategory(null);
+        } else if (searchQuery) {
+            setSearchQuery('');
         }
+    };
+
+    // Global Search Logic
+    const getSearchResults = () => {
+        if (!searchQuery.trim()) return [];
+        const results: { category: string; topic: string; subTopic: LibrarySubTopic }[] = [];
+        const query = searchQuery.toLowerCase();
+
+        libraryData.forEach(cat => {
+            cat.topics.forEach(top => {
+                top.subTopics.forEach(sub => {
+                    if (
+                        sub.title.includes(query) ||
+                        sub.blocks.some(b => b.content.includes(query)) ||
+                        top.title.includes(query)
+                    ) {
+                        results.push({ category: cat.title, topic: top.title, subTopic: sub });
+                    }
+                });
+            });
+        });
+        return results;
+    };
+
+    const searchResults = getSearchResults();
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        show: { opacity: 1, y: 0 }
     };
 
     const renderContentBlock = (block: LibraryContent, index: number) => {
@@ -60,8 +100,9 @@ const Library: React.FC = () => {
     return (
         <div className="flex-1 flex flex-col pt-12 pb-24 px-6 relative max-w-md w-full mx-auto">
             
-            <div className="flex items-center gap-3 mb-8 relative z-10">
-                {(currentCategory || currentTopic || currentSubTopic) ? (
+            {/* Header / Breadcrumbs */}
+            <div className="flex items-center gap-3 mb-6 relative z-10">
+                {(currentCategory || currentTopic || currentSubTopic || searchQuery) ? (
                     <button 
                         onClick={goBack}
                         className="size-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors backdrop-blur-md"
@@ -80,25 +121,76 @@ const Library: React.FC = () => {
                         {currentSubTopic ? currentSubTopic.title : currentTopic ? currentTopic.title : currentCategory ? currentCategory.title : 'مكتبة المؤمن'}
                     </h1>
                     <div className="flex items-center gap-1 text-[10px] text-gold-dim uppercase tracking-widest mt-1">
+                        {searchQuery && !currentSubTopic ? <span>نتائج البحث</span> : null}
                         {currentCategory && <span>{currentCategory.title}</span>}
                         {currentTopic && <><span className="material-symbols-outlined text-[10px]">chevron_right</span><span>{currentTopic.title}</span></>}
                     </div>
                 </div>
             </div>
 
+            {/* Search Bar (Only visible at root level) */}
+            {!currentCategory && !currentTopic && !currentSubTopic && (
+                <div className="relative mb-8 z-10">
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <span className="material-symbols-outlined text-gold/50">search</span>
+                    </div>
+                    <input 
+                        type="text" 
+                        placeholder="ابحث في المكتبة (فقه، عقيدة، قصص...)" 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pr-12 pl-4 text-right text-white placeholder-gray-500 focus:outline-none focus:border-gold/50 transition-colors"
+                        dir="rtl"
+                    />
+                </div>
+            )}
+
             <AnimatePresence mode="wait">
                 
+                {/* Search Results View */}
+                {searchQuery && !currentSubTopic && (
+                    <motion.div 
+                        key="search-results"
+                        initial="hidden" animate="show" exit="hidden"
+                        variants={containerVariants}
+                        className="flex flex-col gap-3"
+                    >
+                        {searchResults.length === 0 ? (
+                            <div className="text-center py-10">
+                                <span className="material-symbols-outlined text-4xl text-gray-600 mb-2">search_off</span>
+                                <p className="text-gray-400 font-sans">لا توجد نتائج تطابق بحثك</p>
+                            </div>
+                        ) : (
+                            searchResults.map((res, index) => (
+                                <motion.button
+                                    variants={itemVariants}
+                                    key={res.subTopic.id + index}
+                                    onClick={() => setCurrentSubTopic(res.subTopic)}
+                                    className="glass-panel p-4 rounded-2xl border border-white/10 hover:border-gold/50 transition-all flex items-center gap-4 group text-right relative overflow-hidden"
+                                >
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gold/30 group-hover:bg-gold transition-colors"></div>
+                                    <div className="flex flex-col flex-1">
+                                        <span className="font-serif font-bold text-sm text-gray-200 group-hover:text-gold-light transition-colors">{res.subTopic.title}</span>
+                                        <span className="text-[10px] text-gray-400 mt-1">{res.category} • {res.topic}</span>
+                                    </div>
+                                    <span className="material-symbols-outlined text-gray-500 text-sm">menu_book</span>
+                                </motion.button>
+                            ))
+                        )}
+                    </motion.div>
+                )}
+
                 {/* Level 1: Categories */}
-                {!currentCategory && (
+                {!currentCategory && !searchQuery && (
                     <motion.div 
                         key="categories"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
+                        initial="hidden" animate="show" exit="hidden"
+                        variants={containerVariants}
                         className="grid grid-cols-2 gap-4"
                     >
                         {libraryData.map(cat => (
-                            <button
+                            <motion.button
+                                variants={itemVariants}
                                 key={cat.id}
                                 onClick={() => setCurrentCategory(cat)}
                                 className="glass-panel p-5 rounded-3xl border border-white/10 hover:border-gold/50 transition-all flex flex-col items-center justify-center text-center gap-3 group h-32"
@@ -107,7 +199,7 @@ const Library: React.FC = () => {
                                     <span className="material-symbols-outlined text-gold text-2xl">{cat.icon}</span>
                                 </div>
                                 <span className="font-serif font-bold text-sm text-gray-200 group-hover:text-gold-light transition-colors">{cat.title}</span>
-                            </button>
+                            </motion.button>
                         ))}
                     </motion.div>
                 )}
@@ -116,13 +208,13 @@ const Library: React.FC = () => {
                 {currentCategory && !currentTopic && (
                     <motion.div 
                         key="topics"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
+                        initial="hidden" animate="show" exit="hidden"
+                        variants={containerVariants}
                         className="flex flex-col gap-3"
                     >
                         {currentCategory.topics.map(topic => (
-                            <button
+                            <motion.button
+                                variants={itemVariants}
                                 key={topic.id}
                                 onClick={() => setCurrentTopic(topic)}
                                 className="glass-panel p-4 rounded-2xl border border-white/10 hover:border-gold/50 transition-all flex items-center gap-4 group text-right"
@@ -135,7 +227,7 @@ const Library: React.FC = () => {
                                     <span className="text-[10px] text-gray-400 mt-1">{topic.subTopics.length} فصول</span>
                                 </div>
                                 <span className="material-symbols-outlined text-gold/50 group-hover:text-gold transition-colors">chevron_left</span>
-                            </button>
+                            </motion.button>
                         ))}
                     </motion.div>
                 )}
@@ -144,13 +236,13 @@ const Library: React.FC = () => {
                 {currentTopic && !currentSubTopic && (
                     <motion.div 
                         key="subtopics"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
+                        initial="hidden" animate="show" exit="hidden"
+                        variants={containerVariants}
                         className="flex flex-col gap-3"
                     >
                         {currentTopic.subTopics.map((sub, index) => (
-                            <button
+                            <motion.button
+                                variants={itemVariants}
                                 key={sub.id}
                                 onClick={() => setCurrentSubTopic(sub)}
                                 className="glass-panel p-4 rounded-2xl border border-white/10 hover:border-gold/50 transition-all flex items-center gap-4 group text-right relative overflow-hidden"
@@ -161,7 +253,7 @@ const Library: React.FC = () => {
                                 </div>
                                 <span className="font-serif font-bold text-sm text-gray-200 flex-1 group-hover:text-gold-light transition-colors">{sub.title}</span>
                                 <span className="material-symbols-outlined text-gray-500 text-sm">menu_book</span>
-                            </button>
+                            </motion.button>
                         ))}
                     </motion.div>
                 )}
