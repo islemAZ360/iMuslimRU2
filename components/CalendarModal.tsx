@@ -16,8 +16,6 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
     const isSameDate = (d1: Date, d2: Date) => d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear();
     const today = new Date();
 
-    if (!isOpen) return null;
-
     // Custom events injector
     const getCustomEventsForDate = (monthNum: number, dayNum: number): string[] => {
         const events = [];
@@ -193,6 +191,8 @@ const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, calendar
 
         return info;
     };
+
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-[100] max-w-md mx-auto overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" dir={language === 'ar' ? 'rtl' : 'ltr'}>
