@@ -9,7 +9,7 @@ import { signOut } from 'firebase/auth';
 
 const Profile: React.FC = () => {
     const { settings, updateSettings, profile, updateProfile, t, location: userLocation } = useUser();
-    const { setLanguage } = useLanguage();
+    const { language, setLanguage } = useLanguage();
     const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
     const navigate = useNavigate();
 
@@ -381,6 +381,37 @@ const Profile: React.FC = () => {
                                     className={`relative w-14 h-8 rounded-full transition-colors border ${settings.ramadanMode ? 'bg-gold/20 border-gold' : 'bg-black/40 border-white/10'}`}
                                 >
                                     <div className={`absolute top-1/2 -translate-y-1/2 size-6 rounded-full transition-all duration-300 ${settings.ramadanMode ? 'left-[calc(100%-1.75rem)] bg-gold' : 'left-1 bg-gray-500'}`}></div>
+                                </button>
+                            </div>
+
+                            {/* Commitment Mode Toggle */}
+                            <div className="bg-gradient-to-r from-red-900/40 to-black border border-red-500/30 rounded-2xl p-4 flex items-center justify-between mt-3">
+                                <div className="flex items-center gap-4">
+                                    <div className={`size-12 rounded-full border flex items-center justify-center transition-colors ${settings.commitmentMode ? 'bg-red-500/20 border-red-500 text-red-500' : 'bg-white/5 border-white/10 text-gray-500'}`}>
+                                        <span className="material-symbols-outlined text-2xl">local_police</span>
+                                    </div>
+                                    <div>
+                                        <h3 className={`text-sm font-bold uppercase tracking-wider ${settings.commitmentMode ? 'text-red-400' : 'text-gray-300'}`}>
+                                            {language === 'ar' ? 'وضع الالتزام' : 'Commitment Mode'}
+                                        </h3>
+                                        <p className="text-[10px] text-gray-500 font-medium">
+                                            {language === 'ar' ? 'يحاسبك النظام بصرامة من يوم التفعيل' : 'Strict tracking from activation date'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        const isTurningOn = !settings.commitmentMode;
+                                        updateSettings({
+                                            commitmentMode: isTurningOn,
+                                            commitmentStartDate: isTurningOn && !settings.commitmentStartDate 
+                                                ? new Date().toISOString().split('T')[0] 
+                                                : settings.commitmentStartDate
+                                        });
+                                    }}
+                                    className={`relative w-14 h-8 rounded-full transition-colors border ${settings.commitmentMode ? 'bg-red-500/20 border-red-500' : 'bg-black/40 border-white/10'}`}
+                                >
+                                    <div className={`absolute top-1/2 -translate-y-1/2 size-6 rounded-full transition-all duration-300 ${settings.commitmentMode ? 'left-[calc(100%-1.75rem)] bg-red-500' : 'left-1 bg-gray-500'}`}></div>
                                 </button>
                             </div>
 

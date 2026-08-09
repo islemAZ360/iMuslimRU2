@@ -17,6 +17,8 @@ export interface UserSettings {
     method: number; // Calculation method ID (e.g., 2 for ISNA, 3 for MWL)
     language: 'en' | 'ar' | 'ru';
     ramadanMode: boolean;
+    commitmentMode: boolean;
+    commitmentStartDate: string | null;
 }
 
 export interface UserProfile {
@@ -75,6 +77,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             method: 3, // Muslim World League as default
             language: 'en',
             ramadanMode: false,
+            commitmentMode: false,
+            commitmentStartDate: null,
         };
     });
     const [profile, setProfile] = useState<UserProfile>(() => {

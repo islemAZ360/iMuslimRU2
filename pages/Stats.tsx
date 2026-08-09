@@ -2,11 +2,13 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { useUser } from '../context/UserContext';
 import { DhikrStats } from '../types';
 
 const Stats: React.FC = () => {
     const navigate = useNavigate();
     const { t, language } = useLanguage();
+    const { settings } = useUser();
     const today = new Date().toISOString().split('T')[0];
 
     // Stats State
@@ -23,6 +25,11 @@ const Stats: React.FC = () => {
 
     const [insight, setInsight] = useState('');
     const [displayedInsight, setDisplayedInsight] = useState('');
+
+    // Commitment Mode State
+    const [commitmentDays, setCommitmentDays] = useState(0);
+    const [failureDays, setFailureDays] = useState<{date: string, missed: string[]}[]>([]);
+    const [selectedFailure, setSelectedFailure] = useState<{date: string, missed: string[]} | null>(null);
 
     useEffect(() => {
         let statsObj: any = {};
@@ -111,7 +118,48 @@ const Stats: React.FC = () => {
         } else {
             setInsight(language === 'ar' ? "ثابر على الطاعة، فالقليل الدائم خير." : (language === 'ru' ? "Продолжайте, постоянство любимо Аллахом." : "Keep consistency, small consistent deeds are beloved."));
         }
-    }, [today, language]);
+
+        // Commitment Engine
+        if (settings.commitmentMode && settings.commitmentStartDate) {
+            const start = new Date(settings.commitmentStartDate);
+            const end = new Date(today);
+            // Ignore time for accurate day difference
+            start.setHours(0,0,0,0);
+            end.setHours(0,0,0,0);
+            
+            const diffTime = Math.abs(end.getTime() - start.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // inclusive of today
+            
+            let cDays = 0;
+            const fDays: {date: string, missed: string[]}[] = [];
+            
+            for(let i=0; i < diffDays; i++) {
+                const d = new Date(start);
+                d.setDate(d.getDate() + i);
+                const dateStr = d.toISOString().split('T')[0];
+                
+                if (dateStr > today) break;
+
+                const savedPrayers = localStorage.getItem(`prayer_tracker_${dateStr}`);
+                if (savedPrayers && savedPrayers !== '[object Object]') {
+                    const pObj = JSON.parse(savedPrayers);
+                    const missed = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].filter(p => !pObj[p]);
+                    // If it's today and not all prayers have passed yet, we shouldn't necessarily penalize them for upcoming prayers.
+                    // For simplicity, we just check what's logged. If they haven't logged them all today, it might show as a failure until they do.
+                    if (missed.length === 0) {
+                        cDays++;
+                    } else {
+                        fDays.push({date: dateStr, missed});
+                    }
+                } else {
+                    fDays.push({date: dateStr, missed: ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']});
+                }
+            }
+            setCommitmentDays(cDays);
+            setFailureDays(fDays.reverse());
+        }
+
+    }, [today, language, settings.commitmentMode, settings.commitmentStartDate]);
 
     useEffect(() => {
         if (insight) {
@@ -183,6 +231,59 @@ const Stats: React.FC = () => {
                     <div className="h-px w-8 bg-gold/30"></div>
                 </div>
             </div>
+
+            {/* COMMITMENT MODE SECTION */}
+            {settings.commitmentMode && (
+                <div className="w-full mb-6 animate-in slide-in-from-bottom-4 duration-700">
+                    <div className="relative p-[1px] rounded-2xl bg-gradient-to-b from-red-500/50 via-red-500/10 to-transparent overflow-hidden">
+                        <div className="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
+                        <div className="relative rounded-[15px] bg-[#030101] p-5">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="size-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-lg">local_police</span>
+                                </div>
+                                <h3 className="font-arabic text-xl text-red-400">{language === 'ar' ? 'عهد الالتزام' : 'Commitment Engine'}</h3>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-3 text-center">
+                                    <span className="text-2xl font-serif font-bold text-emerald-400 block mb-1">{commitmentDays}</span>
+                                    <span className="text-[9px] font-bold text-emerald-500/80 uppercase tracking-widest">{language === 'ar' ? 'أيام الالتزام' : 'Commitment Days'}</span>
+                                </div>
+                                <div className="bg-red-950/30 border border-red-500/30 rounded-xl p-3 text-center">
+                                    <span className="text-2xl font-serif font-bold text-red-400 block mb-1">{failureDays.length}</span>
+                                    <span className="text-[9px] font-bold text-red-500/80 uppercase tracking-widest">{language === 'ar' ? 'أيام التخلف' : 'Failure Days'}</span>
+                                </div>
+                            </div>
+
+                            {failureDays.length > 0 && (
+                                <div className="mt-4">
+                                    <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-1 flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-xs">history</span>
+                                        {language === 'ar' ? 'سجل التخلف (اضغط للتحليل)' : 'Failure Log (Tap to analyze)'}
+                                    </h4>
+                                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-2 px-2">
+                                        {failureDays.map(fd => (
+                                            <button 
+                                                key={fd.date}
+                                                onClick={() => setSelectedFailure(fd)}
+                                                className="shrink-0 bg-red-950/40 border border-red-500/20 hover:border-red-500/50 hover:bg-red-900/40 transition-colors rounded-lg px-3 py-2 flex flex-col items-center gap-1 min-w-[70px]"
+                                            >
+                                                <span className="text-[10px] font-bold text-red-300">{new Date(fd.date).getDate()} {new Date(fd.date).toLocaleString(language, {month: 'short'})}</span>
+                                                <div className="flex gap-0.5">
+                                                    {fd.missed.map((_, idx) => (
+                                                        <div key={idx} className="size-1.5 rounded-full bg-red-500"></div>
+                                                    ))}
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* SPIRITUAL RANK WIDGET */}
             <div className="w-full mb-6">
@@ -513,6 +614,97 @@ const Stats: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* FAILURE ANALYSIS MODAL (Genius Qada Plan) */}
+            {selectedFailure && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                    <div className="bg-[#050A08] border border-red-500/30 rounded-3xl w-full max-w-sm overflow-hidden relative shadow-[0_0_50px_rgba(239,68,68,0.15)] animate-in zoom-in-95 duration-300">
+                        <div className="absolute top-0 right-0 w-48 h-48 bg-red-500/10 rounded-full blur-[60px] pointer-events-none"></div>
+                        
+                        <div className="p-6 relative z-10">
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="size-10 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center border border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+                                        <span className="material-symbols-outlined">gavel</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="font-arabic text-xl text-red-400">{language === 'ar' ? 'تحليل التخلف' : 'Failure Analysis'}</h3>
+                                        <p className="text-[10px] font-bold text-red-200/50 uppercase tracking-widest">{selectedFailure.date}</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setSelectedFailure(null)} className="text-white/40 hover:text-white transition-colors">
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="bg-red-950/30 border border-red-900/50 rounded-xl p-4">
+                                    <h4 className="text-xs font-bold text-red-300 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-[14px]">error</span>
+                                        {language === 'ar' ? 'سبب التخلف' : 'Cause of Failure'}
+                                    </h4>
+                                    <p className="text-sm text-red-100/80 mb-3 font-arabic">
+                                        {language === 'ar' 
+                                            ? `في هذا اليوم، تخلفت عن أداء ${selectedFailure.missed.length} صلوات مفروضة، وهي:`
+                                            : `On this day, you missed ${selectedFailure.missed.length} obligatory prayers:`}
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedFailure.missed.map(p => (
+                                            <span key={p} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-200 text-[10px] font-bold tracking-wider">
+                                                {t(p.toLowerCase()) || p}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="bg-emerald-950/30 border border-emerald-900/50 rounded-xl p-4">
+                                    <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-[14px]">healing</span>
+                                        {language === 'ar' ? 'خطة القضاء الذكية' : 'Smart Qada Plan'}
+                                    </h4>
+                                    <ul className="space-y-3">
+                                        <li className="flex gap-3 text-sm text-emerald-100/80 font-arabic">
+                                            <span className="text-emerald-500 mt-1">1.</span>
+                                            <span>
+                                                {language === 'ar' 
+                                                    ? 'قم بالوضوء الآن وانوِ قضاء هذه الصلوات المنسية (يجب قضاؤها بالترتيب).'
+                                                    : 'Perform Wudu now and intend to make up these missed prayers (in order).'}
+                                            </span>
+                                        </li>
+                                        <li className="flex gap-3 text-sm text-emerald-100/80 font-arabic">
+                                            <span className="text-emerald-500 mt-1">2.</span>
+                                            <span>
+                                                {language === 'ar'
+                                                    ? 'لتعويض النقص الروحي، صلِ ركعتي ضحى أو قيام ليل إضافية الليلة.'
+                                                    : 'To heal the spiritual wound, pray 2 extra Rakat of Dhuha or Qiyam tonight.'}
+                                            </span>
+                                        </li>
+                                        <li className="flex gap-3 text-sm text-emerald-100/80 font-arabic">
+                                            <span className="text-emerald-500 mt-1">3.</span>
+                                            <span>
+                                                {language === 'ar'
+                                                    ? `كفارة: استغفر الله ${(selectedFailure.missed.length * 33)} مرة الآن.`
+                                                    : `Expiation: Seek forgiveness ${(selectedFailure.missed.length * 33)} times now.`}
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <button 
+                                onClick={() => {
+                                    setSelectedFailure(null);
+                                    navigate('/athkar');
+                                }}
+                                className="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold uppercase tracking-[0.2em] text-xs hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2"
+                            >
+                                <span className="material-symbols-outlined text-lg">auto_fix_high</span>
+                                {language === 'ar' ? 'ابدأ بالقضاء والكفارة' : 'Start Expiation'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
