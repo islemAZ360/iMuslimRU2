@@ -36,6 +36,47 @@ const Home: React.FC = () => {
         return () => window.removeEventListener('focus', checkDhikr);
     }, [today]);
 
+    // Calculate dynamic progress to next prayer
+    const getProgress = () => {
+        if (!timings || !nextPrayer) return 75; // fallback
+        
+        const parseTime = (timeStr: string, offsetDays: number = 0) => {
+            const [h, m] = timeStr.split(':');
+            const d = new Date();
+            d.setDate(d.getDate() + offsetDays);
+            d.setHours(parseInt(h), parseInt(m), 0, 0);
+            return d.getTime();
+        };
+
+        const now = new Date().getTime();
+        const prayers = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+        
+        const endTimeStr = timings[nextPrayer as keyof typeof timings] || '00:00';
+        let end = parseTime(endTimeStr.split(' ')[0], 0);
+        
+        if (now > end && nextPrayer === 'Fajr') {
+             end = parseTime(endTimeStr.split(' ')[0], 1);
+        } else if (now > end) {
+             end = parseTime(endTimeStr.split(' ')[0], 1);
+        }
+        
+        const nextIdx = prayers.indexOf(nextPrayer);
+        const startPrayer = prayers[nextIdx === 0 ? 5 : nextIdx - 1];
+        const startTimeStr = timings[startPrayer as keyof typeof timings] || '00:00';
+        
+        let start = parseTime(startTimeStr.split(' ')[0], 0);
+        if (start > end) {
+             start = parseTime(startTimeStr.split(' ')[0], -1);
+        }
+        
+        if (now <= start || now >= end) return 100;
+        const total = end - start;
+        const elapsed = now - start;
+        return Math.max(0, Math.min(100, (elapsed / total) * 100));
+    };
+
+    const progress = getProgress();
+
     useEffect(() => {
         if (timings && timings.Fajr && timings.Maghrib) {
             const now = new Date();
@@ -136,8 +177,9 @@ const Home: React.FC = () => {
             </div>
 
             {/* Next Prayer Hero */}
-            <div className="relative w-full rounded-3xl bg-gradient-to-br from-gold/15 via-black/60 to-black p-[1px] shadow-2xl mb-8 overflow-hidden animate-in zoom-in-95 duration-500 z-10">
+            <div className="relative w-full rounded-3xl bg-gradient-to-br from-gold/15 via-black/60 to-black p-[1px] shadow-[0_10px_40px_rgba(212,175,55,0.15)] mb-8 overflow-hidden animate-in zoom-in-95 duration-500 z-10">
                 <div className="bg-emerald-black/80 backdrop-blur-md rounded-3xl p-6 relative overflow-hidden border border-white/5 min-h-[200px] flex flex-col justify-between">
+                    <div className="absolute inset-0 islamic-pattern-bg opacity-30 mix-blend-overlay"></div>
                     <div className="flex justify-between items-start z-10">
                         <div>
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold-bright text-[10px] font-bold uppercase tracking-[0.2em] mb-3">
@@ -175,6 +217,15 @@ const Home: React.FC = () => {
                             </div>
                         )}
                     </div>
+                    {/* Visual Progress Bar */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/5 overflow-hidden backdrop-blur-sm z-20">
+                        <div 
+                            className="h-full bg-gradient-to-r from-gold/60 via-gold to-gold-light relative transition-all duration-1000 ease-linear rounded-full shadow-[0_0_10px_rgba(212,175,55,0.5)]" 
+                            style={{ width: `${progress}%` }}
+                        >
+                            <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-r from-transparent to-white/50 blur-[2px]"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -211,27 +262,31 @@ const Home: React.FC = () => {
                     <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-gold/30 to-transparent"></div>
                 </div>
 
-                <div className="relative rounded-2xl bg-emerald-black border border-white/10 p-6 overflow-hidden">
-                    <p className="font-arabic text-xl sm:text-2xl text-white text-right mb-4 leading-[1.8]">
-                        فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ
-                    </p>
-                    {language !== 'ar' && (
-                        <p className="text-sm text-gray-300 italic font-serif mb-4 leading-relaxed text-center">
-                            "So remember Me; I will remember you. And be grateful to Me and do not deny Me."
+                <div className="relative rounded-2xl bg-emerald-black border border-white/10 p-6 overflow-hidden transition-all duration-500 hover:border-gold/30 hover:bg-emerald-black/80 shadow-[0_0_20px_rgba(212,175,55,0.05)]">
+                    <div className="absolute inset-0 bg-gold/5 animate-pulse-glow rounded-2xl pointer-events-none opacity-50"></div>
+                    <div className="absolute inset-0 islamic-pattern-bg opacity-10 mix-blend-overlay pointer-events-none"></div>
+                    <div className="relative z-10">
+                        <p className="font-arabic text-xl sm:text-2xl text-white text-right mb-4 leading-[1.8]">
+                            فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ
                         </p>
-                    )}
-                    <div className="flex justify-between items-center border-t border-white/10 pt-4">
-                        <div className="flex items-center gap-2 text-[11px] font-bold text-gold-bright/60 uppercase tracking-[0.4em]">
-                            <span className="material-symbols-outlined text-sm">bookmark</span>
-                            Al-Baqarah 2:152
-                        </div>
-                        <div className="flex gap-3">
-                            <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-gold-bright hover:bg-white/10 transition-all">
-                                <span className="material-symbols-outlined text-lg">share</span>
-                            </button>
-                            <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-gold-bright hover:bg-white/10 transition-all">
-                                <span className="material-symbols-outlined text-lg">content_copy</span>
-                            </button>
+                        {language !== 'ar' && (
+                            <p className="text-sm text-gray-300 italic font-serif mb-4 leading-relaxed text-center">
+                                "So remember Me; I will remember you. And be grateful to Me and do not deny Me."
+                            </p>
+                        )}
+                        <div className="flex justify-between items-center border-t border-white/10 pt-4">
+                            <div className="flex items-center gap-2 text-[11px] font-bold text-gold-bright/60 uppercase tracking-[0.4em]">
+                                <span className="material-symbols-outlined text-sm">bookmark</span>
+                                Al-Baqarah 2:152
+                            </div>
+                            <div className="flex gap-3">
+                                <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-gold-bright hover:bg-white/10 transition-all">
+                                    <span className="material-symbols-outlined text-lg">share</span>
+                                </button>
+                                <button className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-gold-bright hover:bg-white/10 transition-all">
+                                    <span className="material-symbols-outlined text-lg">content_copy</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -366,9 +421,9 @@ const Home: React.FC = () => {
             {/* AI Assistant FAB */}
             <button
                 onClick={() => navigate('/aichat')}
-                className="fixed bottom-24 right-6 size-14 bg-gradient-to-br from-gold-light via-gold to-gold-dark rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] flex items-center justify-center text-emerald-black hover:scale-110 active:scale-95 transition-all z-50 animate-bounce"
+                className="fixed bottom-24 right-6 size-14 bg-gradient-to-br from-gold-light via-gold to-gold-dark rounded-full shadow-[0_0_25px_rgba(212,175,55,0.5)] flex items-center justify-center text-[#020402] hover:scale-110 active:scale-95 transition-all z-50 animate-floating-orb"
             >
-                <span className="material-symbols-outlined text-2xl">smart_toy</span>
+                <span className="material-symbols-outlined text-3xl drop-shadow-md">smart_toy</span>
             </button>
 
         </div>
