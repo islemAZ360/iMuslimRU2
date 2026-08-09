@@ -523,13 +523,7 @@ const Prayer: React.FC = () => {
 
             </div>
 
-            {/* AI Assistant FAB */}
-            <button
-                onClick={() => navigate('/aichat')}
-                className="fixed bottom-24 right-6 size-14 bg-gradient-to-br from-gold-light via-gold to-gold-dark rounded-full shadow-[0_0_25px_rgba(212,175,55,0.5)] flex items-center justify-center text-[#020402] hover:scale-110 active:scale-95 transition-all z-50 animate-floating-orb"
-            >
-                <span className="material-symbols-outlined text-3xl drop-shadow-md">smart_toy</span>
-            </button>
+
 
             {/* FULL CALENDAR MODAL */}
             <CalendarModal
