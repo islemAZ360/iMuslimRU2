@@ -154,6 +154,39 @@ const Prayer: React.FC = () => {
     // If next is Dhuhr, we are in the morning wait. 
     // Let's just use the currentPeriodName derived above.
 
+    // Calculate Progress dynamically
+    const getProgress = () => {
+        if (!timings || !nextPrayer || !activePeriodName) return 75; // fallback
+        
+        const parseTime = (timeStr: string, isNextDay: boolean) => {
+            const [h, m] = timeStr.split(':');
+            const d = new Date();
+            if (isNextDay) d.setDate(d.getDate() + 1);
+            d.setHours(parseInt(h), parseInt(m), 0, 0);
+            return d.getTime();
+        };
+
+        const now = new Date().getTime();
+        const startPrayer = activePeriodName === 'Dhuha (Waiting)' ? 'Sunrise' : activePeriodName;
+        const endPrayer = nextPrayer;
+        
+        const startTimeStr = timings[startPrayer as keyof typeof timings] || '00:00';
+        const endTimeStr = timings[endPrayer as keyof typeof timings] || '00:00';
+        
+        const isNextDay = endPrayer === 'Fajr' && startPrayer === 'Isha';
+        
+        const start = parseTime(startTimeStr.split(' ')[0], false);
+        const end = parseTime(endTimeStr.split(' ')[0], isNextDay);
+        
+        if (now <= start || now >= end) return 100;
+        
+        const total = end - start;
+        const elapsed = now - start;
+        return Math.max(0, Math.min(100, (elapsed / total) * 100));
+    };
+
+    const progress = getProgress();
+
     // Next Holiday
     const nextHoliday = calendarData?.find(day => day.date.hijri.holidays && day.date.hijri.holidays.length > 0 && new Date(parseInt(day.date.timestamp) * 1000) >= new Date());
 
@@ -240,9 +273,11 @@ const Prayer: React.FC = () => {
 
                 {/* HERO CARD - NEXT PRAYER */}
                 <div className="px-5 py-2 relative z-10">
-                    <div className="relative rounded-[24px] p-[1px] bg-gradient-to-br from-[#D4AF37] via-[#F9E496] to-transparent shadow-lg">
+                    <div className="relative rounded-[24px] p-[1px] bg-gradient-to-br from-[#D4AF37] via-[#F9E496] to-transparent shadow-[0_10px_40px_rgba(212,175,55,0.15)]">
                         <div className="relative rounded-[23px] glass-panel p-5 overflow-hidden min-h-[200px]">
-
+                            {/* Islamic geometric background */}
+                            <div className="absolute inset-0 islamic-pattern-bg opacity-30 mix-blend-overlay"></div>
+                            
                             <div className="relative z-10 flex flex-col justify-between h-full gap-6">
                                 <div className="flex justify-between items-start">
                                     <div>
@@ -286,8 +321,13 @@ const Prayer: React.FC = () => {
                                 </div>
                                 
                                 {/* Visual Progress Bar */}
-                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/5 rounded-b-[23px] overflow-hidden">
-                                    <div className="h-full bg-gradient-to-r from-gold/40 via-gold to-gold/40 animate-pulse w-3/4 rounded-full"></div>
+                                <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/5 rounded-b-[23px] overflow-hidden backdrop-blur-sm">
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-gold/60 via-gold to-gold-light relative transition-all duration-1000 ease-linear rounded-full shadow-[0_0_10px_rgba(212,175,55,0.5)]" 
+                                        style={{ width: `${progress}%` }}
+                                    >
+                                        <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-r from-transparent to-white/50 blur-[2px]"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -315,10 +355,11 @@ const Prayer: React.FC = () => {
 
                             return (
                                 <div key={prayer} className={`
-                                    flex flex-col p-4 rounded-xl border transition-all duration-300 overflow-hidden
-                                    ${isActive ? 'bg-gold/15 border-gold shadow-[0_0_15px_rgba(212,175,55,0.3)]' : (isNext ? 'bg-gold/5 border-gold/30' : (isSunrise ? 'bg-transparent border-dashed border-white/10 opacity-70 scale-95' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05]'))}
+                                    flex flex-col p-4 rounded-xl border transition-all duration-500 overflow-hidden relative
+                                    ${isActive ? 'bg-gradient-to-br from-gold/15 to-gold/5 border-gold/60 shadow-[0_0_20px_rgba(212,175,55,0.2)] scale-[1.02]' : (isNext ? 'bg-gold/5 border-gold/30' : (isSunrise ? 'bg-transparent border-dashed border-white/10 opacity-70 scale-95' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05]'))}
                                 `}>
-                                    <div className="flex items-center justify-between">
+                                    {isActive && <div className="absolute inset-0 bg-gold/5 animate-pulse-glow rounded-xl pointer-events-none"></div>}
+                                    <div className="flex items-center justify-between relative z-10">
                                         <div className="flex items-center gap-4">
                                             {showTracker && (
                                                 <button 
@@ -346,30 +387,30 @@ const Prayer: React.FC = () => {
                                         if (visibleSunnahs.length === 0) return null;
                                         
                                         return (
-                                            <div className="mt-4 pt-3 border-t border-white/5 flex flex-col gap-2.5 pl-[40px] animate-in slide-in-from-top-2 fade-in duration-300">
+                                            <div className="mt-4 pt-4 border-t border-white/10 flex flex-col gap-3 pl-[40px] animate-in slide-in-from-top-2 fade-in duration-500 relative z-10">
+                                                <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-gold/70 mb-1">Sunnah Checklist</h4>
                                                 {visibleSunnahs.map(sunnah => (
-                                                    <div key={sunnah.id} className="flex flex-col gap-1.5">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-3">
+                                                    <div key={sunnah.id} className="flex flex-col gap-1.5 group">
+                                                        <div className="flex items-center justify-between bg-black/20 p-2 rounded-lg border border-white/5 hover:border-gold/20 transition-all">
+                                                            <div className="flex items-center gap-3 flex-1 cursor-pointer" onClick={() => toggleSunnah(sunnah.id)}>
                                                                 <button 
-                                                                    onClick={() => toggleSunnah(sunnah.id)}
-                                                                    className={`size-5 shrink-0 rounded-full border flex items-center justify-center transition-colors ${sunnahStatus[sunnah.id] ? 'bg-gold border-gold' : 'border-white/20 hover:border-gold/40'}`}
+                                                                    className={`size-6 shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${sunnahStatus[sunnah.id] ? 'bg-gold border-gold shadow-[0_0_10px_rgba(212,175,55,0.4)]' : 'border-white/20 group-hover:border-gold/40'}`}
                                                                 >
-                                                                    {sunnahStatus[sunnah.id] && <span className="material-symbols-outlined text-[12px] text-[#020402] font-bold">check</span>}
+                                                                    {sunnahStatus[sunnah.id] && <span className="material-symbols-outlined text-[14px] text-[#020402] font-bold animate-in zoom-in">check</span>}
                                                                 </button>
-                                                                <span className={`text-xs ${sunnahStatus[sunnah.id] ? 'text-gold' : 'text-white/70'}`}>
+                                                                <span className={`text-xs transition-colors duration-300 ${sunnahStatus[sunnah.id] ? 'text-gold font-bold' : 'text-white/70 group-hover:text-white/90'}`}>
                                                                     {(t as any)[sunnah.labelKey] || sunnah.labelKey}
                                                                 </span>
                                                             </div>
                                                             <button 
-                                                                onClick={() => setActiveSunnahInfo(activeSunnahInfo === sunnah.id ? null : sunnah.id)}
-                                                                className={`p-1 rounded-full transition-colors ${activeSunnahInfo === sunnah.id ? 'text-gold bg-gold/10' : 'text-white/30 hover:text-white/60'}`}
+                                                                onClick={(e) => { e.stopPropagation(); setActiveSunnahInfo(activeSunnahInfo === sunnah.id ? null : sunnah.id); }}
+                                                                className={`p-1.5 rounded-full transition-colors shrink-0 ${activeSunnahInfo === sunnah.id ? 'text-gold bg-gold/10' : 'text-white/30 hover:text-white/80 hover:bg-white/5'}`}
                                                             >
-                                                                <span className="material-symbols-outlined text-[14px]">info</span>
+                                                                <span className="material-symbols-outlined text-[16px]">info</span>
                                                             </button>
                                                         </div>
                                                         {activeSunnahInfo === sunnah.id && (
-                                                            <div className="text-[10px] text-white/50 bg-white/5 p-2.5 rounded-lg ml-8 leading-relaxed animate-in fade-in slide-in-from-top-1">
+                                                            <div className="text-[11px] text-gold-200/80 bg-gold/5 p-3 rounded-xl ml-9 leading-relaxed animate-in fade-in slide-in-from-top-1 border border-gold/10">
                                                                 {(t as any)[sunnah.infoKey]}
                                                             </div>
                                                         )}
@@ -386,8 +427,9 @@ const Prayer: React.FC = () => {
 
                 {/* ANCIENT QIBLA COMPASS */}
                 <section className="px-5 mt-12 relative z-10">
-                    <div className="relative p-6 rounded-3xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 shadow-2xl">
-                        <div className="absolute inset-0 bg-gold/5 blur-3xl rounded-full opacity-20 pointer-events-none"></div>
+                    <div className="relative p-6 rounded-3xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 shadow-2xl overflow-hidden group">
+                        <div className="absolute inset-0 bg-gold/5 blur-3xl rounded-full opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity duration-1000"></div>
+                        <div className="absolute inset-0 islamic-pattern-bg opacity-10 mix-blend-overlay pointer-events-none"></div>
                         <Compass heading={heading} qiblaDirection={qiblaDirection} distanceToKaaba={distanceToKaaba} />
                     </div>
                 </section>
@@ -476,9 +518,9 @@ const Prayer: React.FC = () => {
             {/* AI Assistant FAB */}
             <button
                 onClick={() => navigate('/aichat')}
-                className="fixed bottom-24 right-6 size-14 bg-gradient-to-br from-gold-light via-gold to-gold-dark rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] flex items-center justify-center text-emerald-black hover:scale-110 active:scale-95 transition-all z-50 animate-bounce"
+                className="fixed bottom-24 right-6 size-14 bg-gradient-to-br from-gold-light via-gold to-gold-dark rounded-full shadow-[0_0_25px_rgba(212,175,55,0.5)] flex items-center justify-center text-[#020402] hover:scale-110 active:scale-95 transition-all z-50 animate-floating-orb"
             >
-                <span className="material-symbols-outlined text-2xl">smart_toy</span>
+                <span className="material-symbols-outlined text-3xl drop-shadow-md">smart_toy</span>
             </button>
 
             {/* FULL CALENDAR MODAL */}

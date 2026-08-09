@@ -34,6 +34,25 @@ body {
 /*                                  ANIMATIONS                                */
 /* -------------------------------------------------------------------------- */
 
+@keyframes floating-orb {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+  }
+}
+
+.animate-floating-orb {
+  animation: floating-orb 3s ease-in-out infinite;
+}
+
+.islamic-pattern-bg {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L33 27L60 30L33 33L30 60L27 33L0 30L27 27L30 0Z' fill='rgba(212, 175, 55, 0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+
 @keyframes rotate-atmosphere {
   0% {
     transform: translate(-50%, -50%) rotate(0deg);
@@ -121,7 +140,6 @@ body {
 }
 
 @keyframes pulse-glow {
-
   0%,
   100% {
     box-shadow: 0 0 12px rgba(212, 175, 55, 0.12);
@@ -130,6 +148,10 @@ body {
   50% {
     box-shadow: 0 0 22px rgba(212, 175, 55, 0.3);
   }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes shimmer {
