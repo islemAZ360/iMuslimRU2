@@ -286,6 +286,14 @@ body {
 /*                                  UTILITIES                                 */
 /* -------------------------------------------------------------------------- */
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .glass-panel {
   background: rgba(10, 20, 15, 0.8);
   backdrop-filter: blur(12px);

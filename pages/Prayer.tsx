@@ -6,11 +6,13 @@ import { useCompassHeading } from '../hooks/useCompassHeading';
 import Compass from '../components/Compass';
 import CalendarModal from '../components/CalendarModal';
 import { translations } from '../translations';
+import { useNavigate } from 'react-router-dom';
 
 const Prayer: React.FC = () => {
     const { timings, hijriDate, nextPrayer, timeRemaining, loading, calendarData, qiblaDirection, error, refresh } = usePrayer();
     const { location, settings } = useUser();
     const { heading } = useCompassHeading();
+    const navigate = useNavigate();
     const [distanceToKaaba, setDistanceToKaaba] = useState<string>("...");
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -225,7 +227,7 @@ const Prayer: React.FC = () => {
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gold-light/80 mb-2">
                             <span className="material-symbols-outlined text-sm text-gold">location_on</span>
-                            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-gold">{location?.city || 'Unknown'}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-gold">{location?.city || t.unknown_location || 'Unknown'}</span>
                         </div>
                         <h1 className="text-3xl font-royal font-bold tracking-tight text-transparent bg-clip-text bg-gold-metallic">
                             {hijriDate ? `${hijriDate.day} ${hijriDate.month.en}` : '...'}
@@ -309,10 +311,12 @@ const Prayer: React.FC = () => {
                             const isPrayed = prayedStatus[prayer];
                             const showTracker = prayer !== 'Sunrise';
 
+                            const isSunrise = prayer === 'Sunrise';
+
                             return (
                                 <div key={prayer} className={`
                                     flex flex-col p-4 rounded-xl border transition-all duration-300 overflow-hidden
-                                    ${isActive ? 'bg-gold/15 border-gold shadow-[0_0_15px_rgba(212,175,55,0.3)]' : (isNext ? 'bg-gold/5 border-gold/30' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05]')}
+                                    ${isActive ? 'bg-gold/15 border-gold shadow-[0_0_15px_rgba(212,175,55,0.3)]' : (isNext ? 'bg-gold/5 border-gold/30' : (isSunrise ? 'bg-transparent border-dashed border-white/10 opacity-70 scale-95' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05]'))}
                                 `}>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4">
@@ -382,7 +386,10 @@ const Prayer: React.FC = () => {
 
                 {/* ANCIENT QIBLA COMPASS */}
                 <section className="px-5 mt-12 relative z-10">
-                    <Compass heading={heading} qiblaDirection={qiblaDirection} distanceToKaaba={distanceToKaaba} />
+                    <div className="relative p-6 rounded-3xl bg-gradient-to-b from-white/[0.03] to-transparent border border-white/5 shadow-2xl">
+                        <div className="absolute inset-0 bg-gold/5 blur-3xl rounded-full opacity-20 pointer-events-none"></div>
+                        <Compass heading={heading} qiblaDirection={qiblaDirection} distanceToKaaba={distanceToKaaba} />
+                    </div>
                 </section>
 
                 {/* ROYAL SCROLL CALENDAR */}
@@ -465,6 +472,14 @@ const Prayer: React.FC = () => {
                 </div>
 
             </div>
+
+            {/* AI Assistant FAB */}
+            <button
+                onClick={() => navigate('/aichat')}
+                className="fixed bottom-24 right-6 size-14 bg-gradient-to-br from-gold-light via-gold to-gold-dark rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)] flex items-center justify-center text-emerald-black hover:scale-110 active:scale-95 transition-all z-50 animate-bounce"
+            >
+                <span className="material-symbols-outlined text-2xl">smart_toy</span>
+            </button>
 
             {/* FULL CALENDAR MODAL */}
             <CalendarModal
