@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { DhikrStats } from '../types';
 
 const Stats: React.FC = () => {
+    const navigate = useNavigate();
     const { t, language } = useLanguage();
     const today = new Date().toISOString().split('T')[0];
 
@@ -153,6 +155,21 @@ const Stats: React.FC = () => {
     const sunnahProgress = Math.min((totalSunnah / 50) * 100, 100); // 50 is a good weekly sunnah target
     const dhikrProgress = Math.min((totalDhikr / 5000) * 100, 100); // 5000 is a good baseline for visual
 
+    const handleShareRank = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'My Spiritual Rank in iMuslim',
+                    text: `Alhamdulillah! I have reached the rank of "${(currentRank as any)[language] || currentRank.en}" (${currentXP.toLocaleString()} XP) in iMuslim. Join me in my spiritual journey! 🌙`,
+                });
+            } catch (err) {
+                console.log('Error sharing', err);
+            }
+        } else {
+            alert(language === 'ar' ? 'عذراً، متصفحك لا يدعم المشاركة المباشرة' : 'Sorry, sharing is not supported on this browser');
+        }
+    };
+
 
     return (
         <div className="pb-32 pt-8 px-4 flex flex-col items-center min-h-screen animate-in fade-in duration-500" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -178,7 +195,14 @@ const Stats: React.FC = () => {
                                 <div className="absolute inset-0 rounded-full border-t border-gold animate-spin-slow"></div>
                                 {currentRank.icon}
                             </div>
-                            <span className="text-[10px] text-gold/70 uppercase tracking-widest mb-1">{language === 'ar' ? 'الرتبة الروحية' : 'Spiritual Rank'}</span>
+                            
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[10px] text-gold/70 uppercase tracking-widest">{language === 'ar' ? 'الرتبة الروحية' : 'Spiritual Rank'}</span>
+                                <button onClick={handleShareRank} className="p-1 rounded-full bg-gold/10 text-gold hover:bg-gold/20 transition-colors">
+                                    <span className="material-symbols-outlined text-[14px]">share</span>
+                                </button>
+                            </div>
+                            
                             <h2 className="text-2xl font-arabic font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-gold-dark mb-4">
                                 {(currentRank as any)[language] || currentRank.en}
                             </h2>
@@ -333,6 +357,75 @@ const Stats: React.FC = () => {
                 </div>
             </div>
 
+            {/* DYNAMIC ACTION CARDS (SMART INTERVENTIONS) */}
+            <div className="w-full flex flex-col gap-3 mb-8">
+                {totalFard < 25 && (
+                    <div 
+                        onClick={() => navigate('/prayer')}
+                        className="bg-red-950/40 border border-red-500/30 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-red-900/40 transition-colors group"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="size-10 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center">
+                                <span className="material-symbols-outlined">warning</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-sm font-bold text-red-200">
+                                    {language === 'ar' ? 'تدارك ما فاتك' : 'Catch up on Prayers'}
+                                </span>
+                                <span className="text-[10px] text-red-300/70">
+                                    {language === 'ar' ? 'بعض صلواتك ناقصة هذا الأسبوع' : 'You missed some prayers this week'}
+                                </span>
+                            </div>
+                        </div>
+                        <span className="material-symbols-outlined text-red-400/50 group-hover:translate-x-1 transition-transform">arrow_forward_ios</span>
+                    </div>
+                )}
+                
+                {totalDhikr < 500 && (
+                    <div 
+                        onClick={() => navigate('/athkar')}
+                        className="bg-blue-950/40 border border-blue-500/30 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-blue-900/40 transition-colors group"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="size-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                                <span className="material-symbols-outlined">water_drop</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-sm font-bold text-blue-200">
+                                    {language === 'ar' ? 'قلبك يحتاج إلى الطمأنينة' : 'Your heart needs Dhikr'}
+                                </span>
+                                <span className="text-[10px] text-blue-300/70">
+                                    {language === 'ar' ? 'ابدأ جلسة تسبيح سريعة الآن' : 'Start a quick Tasbih session now'}
+                                </span>
+                            </div>
+                        </div>
+                        <span className="material-symbols-outlined text-blue-400/50 group-hover:translate-x-1 transition-transform">arrow_forward_ios</span>
+                    </div>
+                )}
+
+                {quranProgress === 0 && (
+                    <div 
+                        onClick={() => navigate('/ramadan')}
+                        className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-amber-900/40 transition-colors group"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="size-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                                <span className="material-symbols-outlined">menu_book</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-sm font-bold text-amber-200">
+                                    {language === 'ar' ? 'ابدأ وردك القرآني' : 'Start your Quran Journey'}
+                                </span>
+                                <span className="text-[10px] text-amber-300/70">
+                                    {language === 'ar' ? 'لم تقرأ شيئاً من الختمة بعد' : 'You haven\'t started your Khatmah'}
+                                </span>
+                            </div>
+                        </div>
+                        <span className="material-symbols-outlined text-amber-400/50 group-hover:translate-x-1 transition-transform">arrow_forward_ios</span>
+                    </div>
+                )}
+            </div>
+
             {/* Weekly Prayer Trend Chart */}
             <div className="w-full bg-[#050A08] border border-gold/10 rounded-2xl p-6 relative overflow-hidden mb-6">
                 <h3 className="font-serif font-bold text-white text-lg mb-6 relative z-10 flex items-center gap-3">
@@ -381,22 +474,29 @@ const Stats: React.FC = () => {
                     <div className="space-y-5">
                         {Object.entries(dhikrStats).length > 0 ? (
                             Object.entries(dhikrStats).sort((a, b) => b[1] - a[1]).map(([cat, val]) => (
-                                <div key={cat} className="group flex flex-col gap-2">
+                                <div 
+                                    key={cat} 
+                                    onClick={() => navigate('/athkar')}
+                                    className="group flex flex-col gap-2 cursor-pointer hover:bg-white/5 p-2 rounded-xl transition-colors -mx-2"
+                                >
                                     <div className="flex justify-between items-end px-1">
                                         <div className="flex items-center gap-3">
-                                            <div className="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] text-gray-500 group-hover:text-gold group-hover:border-gold/40 transition-all">
+                                            <div className="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] text-gray-500 group-hover:text-gold group-hover:border-gold/40 group-hover:bg-gold/10 transition-all">
                                                 <span className="material-symbols-outlined text-xs">
                                                     {cat === 'Morning' ? 'wb_twilight' : cat === 'Evening' ? 'dark_mode' : cat === 'Istighfar' ? 'auto_fix_high' : 'favorite'}
                                                 </span>
                                             </div>
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] group-hover:text-white transition-colors">{t(cat.toLowerCase()) || cat}</span>
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] group-hover:text-white transition-colors">{t(cat.toLowerCase()) || cat}</span>
+                                                <span className="text-[8px] text-gold/0 group-hover:text-gold/80 transition-colors uppercase tracking-widest">{language === 'ar' ? 'اضغط للبدء' : 'Tap to start'}</span>
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xl font-serif font-bold text-white">{val.toLocaleString()}</span>
                                             <span className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">{t('counts') || 'Counts'}</span>
                                         </div>
                                     </div>
-                                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden mx-1">
                                         <div
                                             className="h-full bg-gradient-to-r from-gold/40 to-gold rounded-full transition-all duration-500"
                                             style={{ width: `${Math.min((val / (totalDhikr || 1)) * 100, 100)}%` }}
