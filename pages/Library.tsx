@@ -47,6 +47,39 @@ const Library: React.FC = () => {
         return { total, completed, percentage: total === 0 ? 0 : Math.round((completed / total) * 100) };
     };
 
+    const getGlobalProgress = () => {
+        let total = 0;
+        let completed = 0;
+        libraryData.forEach(cat => {
+            cat.topics.forEach(t => {
+                t.subTopics.forEach(s => {
+                    total++;
+                    if (completedTopics.includes(s.id)) completed++;
+                });
+            });
+        });
+        return { total, completed, percentage: total === 0 ? 0 : Math.round((completed / total) * 100) };
+    };
+
+    const getLastReadInfo = () => {
+        if (!profile.lastReadSubTopicId) return null;
+        for (const cat of libraryData) {
+            for (const top of cat.topics) {
+                for (const sub of top.subTopics) {
+                    if (sub.id === profile.lastReadSubTopicId) {
+                        return { category: cat, topic: top, subTopic: sub };
+                    }
+                }
+            }
+        }
+        return null;
+    };
+
+    const handleSubTopicSelect = (sub: LibrarySubTopic) => {
+        setCurrentSubTopic(sub);
+        updateProfile({ lastReadSubTopicId: sub.id });
+    };
+
     // Global Search Logic
     const getSearchResults = () => {
         if (!searchQuery.trim()) return [];
@@ -151,15 +184,58 @@ const Library: React.FC = () => {
                 </div>
             </div>
 
-            {/* Hero Section (Only visible at root level) */}
+            {/* Hero Dashboard Section (Only visible at root level) */}
             {!currentCategory && !currentTopic && !currentSubTopic && !searchQuery && (
-                <div className="relative mb-6 rounded-3xl overflow-hidden glass-panel border border-gold/20 p-6 flex flex-col items-center text-center">
-                    <div className="absolute inset-0 bg-gradient-to-br from-gold/5 to-transparent pointer-events-none"></div>
-                    <span className="material-symbols-outlined text-gold/30 text-5xl mb-2">auto_stories</span>
-                    <h2 className="text-xl font-serif font-bold text-gold-light mb-2">اقرأ باسم ربك</h2>
-                    <p className="text-xs text-gray-300 font-sans leading-relaxed">
-                        مرحباً بك في مكتبة المؤمن، دليلك الشامل في الفقه والعقيدة والسيرة، تصفح وتعلم لترتقي بدرجاتك.
-                    </p>
+                <div className="mb-6 flex flex-col gap-4">
+                    {/* Welcome & Stats */}
+                    <div className="relative rounded-3xl overflow-hidden glass-panel border border-gold/20 p-6 flex flex-row items-center justify-between">
+                        <div className="absolute inset-0 bg-gradient-to-br from-gold/10 to-transparent pointer-events-none"></div>
+                        <div className="flex flex-col z-10">
+                            <h2 className="text-xl font-serif font-bold text-gold-light mb-1">اقرأ باسم ربك</h2>
+                            <p className="text-xs text-gray-300 font-sans">واصل رحلتك في طلب العلم الشرعي.</p>
+                        </div>
+                        <div className="relative size-16 flex items-center justify-center shrink-0 z-10">
+                            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                <path
+                                    className="text-white/10"
+                                    strokeWidth="3"
+                                    stroke="currentColor"
+                                    fill="none"
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                />
+                                <path
+                                    className="text-gold transition-all duration-1000 ease-out"
+                                    strokeWidth="3"
+                                    strokeDasharray={`${getGlobalProgress().percentage}, 100`}
+                                    strokeLinecap="round"
+                                    stroke="currentColor"
+                                    fill="none"
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="text-[10px] font-bold text-gold-light leading-none">{getGlobalProgress().percentage}%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Continue Reading */}
+                    {getLastReadInfo() && (
+                        <div 
+                            onClick={() => handleSubTopicSelect(getLastReadInfo()!.subTopic)}
+                            className="glass-panel p-4 rounded-2xl border border-emerald-500/30 hover:border-emerald-500/60 transition-all flex items-center gap-4 cursor-pointer relative overflow-hidden group"
+                        >
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500/50 group-hover:bg-emerald-400 transition-colors"></div>
+                            <div className="size-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                <span className="material-symbols-outlined">menu_book</span>
+                            </div>
+                            <div className="flex flex-col flex-1 text-right">
+                                <span className="text-[10px] text-emerald-400/70 mb-0.5">مواصلة القراءة</span>
+                                <span className="font-serif font-bold text-sm text-gray-200">{getLastReadInfo()!.subTopic.title}</span>
+                            </div>
+                            <span className="material-symbols-outlined text-gray-500 text-sm">arrow_forward_ios</span>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -202,7 +278,7 @@ const Library: React.FC = () => {
                                     <motion.button
                                         variants={itemVariants}
                                         key={res.subTopic.id + index}
-                                        onClick={() => setCurrentSubTopic(res.subTopic)}
+                                        onClick={() => handleSubTopicSelect(res.subTopic)}
                                         className="glass-panel p-4 rounded-2xl border border-white/10 hover:border-gold/50 transition-all flex items-center gap-4 group text-right relative overflow-hidden"
                                     >
                                         <div className={`absolute left-0 top-0 bottom-0 w-1 transition-colors ${isCompleted ? 'bg-emerald-500' : 'bg-gold/30 group-hover:bg-gold'}`}></div>
@@ -301,7 +377,7 @@ const Library: React.FC = () => {
                                 <motion.button
                                     variants={itemVariants}
                                     key={sub.id}
-                                    onClick={() => setCurrentSubTopic(sub)}
+                                    onClick={() => handleSubTopicSelect(sub)}
                                     className="glass-panel p-4 rounded-2xl border border-white/10 hover:border-gold/50 transition-all flex items-center gap-4 group text-right relative overflow-hidden"
                                 >
                                     <div className={`absolute left-0 top-0 bottom-0 w-1 transition-colors ${isCompleted ? 'bg-emerald-500' : 'bg-gold/30 group-hover:bg-gold'}`}></div>

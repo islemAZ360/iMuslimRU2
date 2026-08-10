@@ -35,6 +35,7 @@ export interface UserProfile {
     email?: string;
     avatar?: string; // Base64 string or URL
     completedLibraryTopics?: string[]; // Array of completed subTopic IDs
+    lastReadSubTopicId?: string; // ID of the last opened library subTopic
 }
 
 export interface HealthStats {
