@@ -151,6 +151,18 @@ const Library: React.FC = () => {
                 </div>
             </div>
 
+            {/* Hero Section (Only visible at root level) */}
+            {!currentCategory && !currentTopic && !currentSubTopic && !searchQuery && (
+                <div className="relative mb-6 rounded-3xl overflow-hidden glass-panel border border-gold/20 p-6 flex flex-col items-center text-center">
+                    <div className="absolute inset-0 bg-gradient-to-br from-gold/5 to-transparent pointer-events-none"></div>
+                    <span className="material-symbols-outlined text-gold/30 text-5xl mb-2">auto_stories</span>
+                    <h2 className="text-xl font-serif font-bold text-gold-light mb-2">اقرأ باسم ربك</h2>
+                    <p className="text-xs text-gray-300 font-sans leading-relaxed">
+                        مرحباً بك في مكتبة المؤمن، دليلك الشامل في الفقه والعقيدة والسيرة، تصفح وتعلم لترتقي بدرجاتك.
+                    </p>
+                </div>
+            )}
+
             {/* Search Bar (Only visible at root level) */}
             {!currentCategory && !currentTopic && !currentSubTopic && (
                 <div className="relative mb-8 z-10">
