@@ -174,7 +174,7 @@ const Scan: React.FC = () => {
         try {
             const { createScanConversation } = await import('../services/aiChatService');
             const conv = await createScanConversation(lastImage, result);
-            navigate('/aichat', { state: { conversationId: conv.id } });
+            navigate('/ai', { state: { conversationId: conv.id } });
         } catch (error) {
             console.error('Failed to create Sheikh AI conversation:', error);
         }

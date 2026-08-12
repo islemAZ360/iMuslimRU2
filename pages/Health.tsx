@@ -181,7 +181,7 @@ const Health: React.FC = () => {
                 alternatives: result.tags || [],
             };
             const conv = await createScanConversation(lastImage, summary, 'Doctor AI');
-            navigate('/aichat', { state: { conversationId: conv.id } });
+            navigate('/ai', { state: { conversationId: conv.id } });
         } catch (error) {
             console.error('Failed to create Doctor AI conversation:', error);
         }

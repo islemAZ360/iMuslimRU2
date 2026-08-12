@@ -410,7 +410,7 @@ const Athkar: React.FC = () => {
                                             const prompt = language === 'ar' 
                                                 ? `اشرح لي فضل وأسرار هذا الذكر: "${dhikr.arabic}"`
                                                 : `Explain the virtues and secrets of this Dhikr: "${dhikr.arabic}"`;
-                                            navigate('/aichat', { state: { initialPrompt: prompt } });
+                                            navigate('/ai', { state: { initialPrompt: prompt } });
                                         }}
                                         className="size-10 rounded-xl bg-gold/10 text-gold-bright border border-gold/30 flex items-center justify-center hover:bg-gold/20 transition-all"
                                     >

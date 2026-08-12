@@ -305,7 +305,7 @@ const Home: React.FC = () => {
                     { icon: 'calendar_month', label: t('calendar') || 'Calendar', path: '/prayer', color: 'bg-purple-500/10 text-purple-400 border-purple-500/30' },
                     { icon: 'nights_stay', label: t('ramadan') || 'Ramadan', path: '/ramadan', color: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' },
                     { icon: 'monitoring', label: t('statistics') || 'Stats', path: '/stats', color: 'bg-rose-500/10 text-rose-400 border-rose-500/30' },
-                    { icon: 'smart_toy', label: t('sheikh_ai') || 'AI Chat', path: '/aichat', color: 'bg-teal-500/10 text-teal-400 border-teal-500/30' },
+                    { icon: 'smart_toy', label: t('sheikh_ai') || 'AI Chat', path: '/ai', color: 'bg-teal-500/10 text-teal-400 border-teal-500/30' },
                 ].map((action, i) => (
                     <button
                         key={i}
